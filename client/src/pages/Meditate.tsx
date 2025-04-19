@@ -2,10 +2,105 @@ import { useState } from 'react';
 import MeditationTimer from '@/components/features/MeditationTimer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useAudio } from '@/hooks/use-audio';
+
+const GuidedMeditationPlayer = ({ title, description, duration, imageUrl, audioUrl }: { 
+  title: string, 
+  description: string, 
+  duration: number, 
+  imageUrl: string,
+  audioUrl: string
+}) => {
+  const { 
+    isPlaying, 
+    toggle, 
+    currentTime, 
+    duration: audioDuration,
+    audioError
+  } = useAudio(audioUrl);
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds)) return '0:00';
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const progress = audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0;
+  
+  return (
+    <Card className="bg-[#1E293B] border-[#334155]">
+      <CardContent className="p-0">
+        <div className="flex flex-col md:flex-row">
+          <div className="md:w-1/3 h-48 md:h-auto relative">
+            <img 
+              src={imageUrl}
+              alt={title} 
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="p-6 md:w-2/3">
+            <h3 className="text-xl font-medium mb-2">{title}</h3>
+            <p className="mb-4 text-[#64748B]">{description}</p>
+            
+            {isPlaying && (
+              <div className="mb-4">
+                <Progress value={progress} className="h-1.5 mb-1" />
+                <div className="flex justify-between">
+                  <span className="text-xs text-[#64748B]">{formatTime(currentTime)}</span>
+                  <span className="text-xs text-[#64748B]">{formatTime(audioDuration)}</span>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center">
+              <button 
+                onClick={toggle}
+                className="bg-[#7E22CE] hover:bg-purple-800 text-white py-2 px-4 rounded-md transition-colors flex items-center gap-2"
+              >
+                <i className={`ri-${isPlaying ? 'pause' : 'play'}-circle-line`}></i> 
+                {isPlaying ? 'Pause Meditation' : 'Begin Meditation'}
+              </button>
+              <span className="text-xs text-[#64748B] ml-4">Duration: {duration} min</span>
+              
+              {audioError && (
+                <span className="text-xs text-[#EC4899] ml-4">Using fallback audio</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Meditate = () => {
   const [activeTab, setActiveTab] = useState('timer');
+  
+  const guidedMeditations = [
+    {
+      title: "Cosmic Consciousness Meditation",
+      description: "Connect with the vastness of the universe and recognize your place within it. This meditation helps you sense the interconnectedness of all things.",
+      imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      audioUrl: "https://assets.mixkit.co/sfx/preview/mixkit-serene-new-age-muzak-loop-524.mp3",
+      duration: 15
+    },
+    {
+      title: "Starlight Healing Meditation",
+      description: "Visualize cosmic light flowing through your body, clearing blockages and revitalizing your energy centers with the pure energy of the stars.",
+      imageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      audioUrl: "https://assets.mixkit.co/sfx/preview/mixkit-atmosphere-fairy-tale-titanium-hum-686.mp3",
+      duration: 20
+    },
+    {
+      title: "Cosmic Journey Meditation",
+      description: "Take a journey through the cosmos, exploring planets, stars, and galaxies while expanding your consciousness beyond earthly limitations.",
+      imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+      audioUrl: "https://assets.mixkit.co/sfx/preview/mixkit-cinematic-fairy-tale-percussion-556.mp3",
+      duration: 18
+    }
+  ];
   
   return (
     <main className="container mx-auto px-4 py-8">
@@ -22,10 +117,9 @@ const Meditate = () => {
         </div>
         
         <Tabs defaultValue="timer" onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-2 mb-8">
             <TabsTrigger value="timer">Meditation Timer</TabsTrigger>
             <TabsTrigger value="guided">Guided Meditations</TabsTrigger>
-            <TabsTrigger value="soundscapes">Cosmic Soundscapes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="timer" className="focus:outline-none">
@@ -74,157 +168,16 @@ const Meditate = () => {
           
           <TabsContent value="guided" className="focus:outline-none">
             <div className="grid gap-6">
-              <Card className="bg-[#1E293B] border-[#334155]">
-                <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-1/3 h-48 md:h-auto relative">
-                      <img 
-                        src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
-                        alt="Cosmic Consciousness Meditation" 
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="p-6 md:w-2/3">
-                      <h3 className="text-xl font-medium mb-2">Cosmic Consciousness Meditation</h3>
-                      <p className="mb-4 text-[#64748B]">Connect with the vastness of the universe and recognize your place within it. This meditation helps you sense the interconnectedness of all things.</p>
-                      <div className="flex items-center">
-                        <button className="bg-[#7E22CE] hover:bg-purple-800 text-white py-2 px-4 rounded-md transition-colors flex items-center gap-2">
-                          <i className="ri-play-circle-line"></i> Begin Meditation
-                        </button>
-                        <span className="text-xs text-[#64748B] ml-4">Duration: 15 min</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-[#1E293B] border-[#334155]">
-                <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-1/3 h-48 md:h-auto relative">
-                      <img 
-                        src="https://images.unsplash.com/photo-1465101162946-4377e57745c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
-                        alt="Starlight Healing" 
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="p-6 md:w-2/3">
-                      <h3 className="text-xl font-medium mb-2">Starlight Healing Meditation</h3>
-                      <p className="mb-4 text-[#64748B]">Visualize cosmic light flowing through your body, clearing blockages and revitalizing your energy centers with the pure energy of the stars.</p>
-                      <div className="flex items-center">
-                        <button className="bg-[#7E22CE] hover:bg-purple-800 text-white py-2 px-4 rounded-md transition-colors flex items-center gap-2">
-                          <i className="ri-play-circle-line"></i> Begin Meditation
-                        </button>
-                        <span className="text-xs text-[#64748B] ml-4">Duration: 20 min</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="soundscapes" className="focus:outline-none">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-[#1E293B] border-[#334155]">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Galactic Ambient</h3>
-                    <div className="h-12 w-12 rounded-full bg-[#0F172A] flex items-center justify-center">
-                      <button className="text-[#0EA5E9] hover:text-[#EC4899] transition-colors">
-                        <i className="ri-play-circle-fill text-2xl"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <div className="h-1.5 w-full bg-[#334155] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#0EA5E9] rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-[#64748B]">0:00</span>
-                      <span className="text-xs text-[#64748B]">5:30</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#64748B]">
-                    Immerse yourself in the gentle symphony of the cosmos with this ambient soundscape designed to induce deep relaxation.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-[#1E293B] border-[#334155]">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Quantum Field</h3>
-                    <div className="h-12 w-12 rounded-full bg-[#0F172A] flex items-center justify-center">
-                      <button className="text-[#0EA5E9] hover:text-[#EC4899] transition-colors">
-                        <i className="ri-play-circle-fill text-2xl"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <div className="h-1.5 w-full bg-[#334155] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#0EA5E9] rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-[#64748B]">0:00</span>
-                      <span className="text-xs text-[#64748B]">7:15</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#64748B]">
-                    Subatomic particles in sonic form. This binaural soundscape helps synchronize brain hemispheres and access deep meditative states.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-[#1E293B] border-[#334155]">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Stellar Lullaby</h3>
-                    <div className="h-12 w-12 rounded-full bg-[#0F172A] flex items-center justify-center">
-                      <button className="text-[#0EA5E9] hover:text-[#EC4899] transition-colors">
-                        <i className="ri-play-circle-fill text-2xl"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <div className="h-1.5 w-full bg-[#334155] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#0EA5E9] rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-[#64748B]">0:00</span>
-                      <span className="text-xs text-[#64748B]">10:00</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#64748B]">
-                    The gentle pulse of stars and distant nebulae transformed into a soothing soundscape perfect for deep relaxation and sleep.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-[#1E293B] border-[#334155]">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Cosmic Voyage</h3>
-                    <div className="h-12 w-12 rounded-full bg-[#0F172A] flex items-center justify-center">
-                      <button className="text-[#0EA5E9] hover:text-[#EC4899] transition-colors">
-                        <i className="ri-play-circle-fill text-2xl"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <div className="h-1.5 w-full bg-[#334155] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#0EA5E9] rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-[#64748B]">0:00</span>
-                      <span className="text-xs text-[#64748B]">8:45</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#64748B]">
-                    An immersive journey through the cosmos, with dynamic soundscapes that evolve and transform throughout the meditation.
-                  </p>
-                </CardContent>
-              </Card>
+              {guidedMeditations.map((meditation, index) => (
+                <GuidedMeditationPlayer 
+                  key={index}
+                  title={meditation.title}
+                  description={meditation.description}
+                  duration={meditation.duration}
+                  imageUrl={meditation.imageUrl}
+                  audioUrl={meditation.audioUrl}
+                />
+              ))}
             </div>
           </TabsContent>
         </Tabs>

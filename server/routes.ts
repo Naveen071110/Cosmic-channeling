@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { quotes, celestialObjects, cosmicPatterns } from "../client/src/lib/data";
+import Parser from 'rss-parser';
+import fetch from 'node-fetch';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -184,6 +186,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     return res.json(archetypes[archetypeIndex]);
+  });
+  
+  // Space News API endpoint
+  app.get('/api/space-news', async (req, res) => {
+    try {
+      const parser = new Parser();
+      
+      // NASA Breaking News RSS feed
+      const nasaFeed = await parser.parseURL('https://www.nasa.gov/feed/');
+      
+      // Space.com RSS feed
+      const spaceComFeed = await parser.parseURL('https://www.space.com/feeds/all');
+      
+      // Additional space facts
+      const additionalSpaceFacts = [
+        {
+          title: "Jupiter's Great Red Spot",
+          content: "Jupiter's Great Red Spot is a giant, spinning storm that has been observed for more than 350 years. The storm is so large that about three Earths could fit inside it.",
+          url: "https://science.nasa.gov/jupiter/",
+          type: "fact",
+          image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA24237_800.jpg"
+        },
+        {
+          title: "Saturn's Rings",
+          content: "Saturn's magnificent rings are made up of billions of particles of ice and rock, ranging in size from tiny dust grains to objects as large as mountains.",
+          url: "https://science.nasa.gov/saturn/",
+          type: "fact",
+          image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA03545-scaled.jpg"
+        },
+        {
+          title: "Black Hole at the Center of the Milky Way",
+          content: "At the center of our Milky Way galaxy lies a supermassive black hole named Sagittarius A*, which has a mass of about 4 million times that of our Sun.",
+          url: "https://www.nasa.gov/image-article/our-black-hole/",
+          type: "fact",
+          image: "https://www.nasa.gov/wp-content/uploads/2023/03/blackhole-milkyway.jpg"
+        },
+        {
+          title: "Voyager Missions",
+          content: "NASA's Voyager 1 and 2 spacecraft are the only human-made objects to have entered interstellar space. Launched in 1977, they continue to send back data from beyond our solar system.",
+          url: "https://voyager.jpl.nasa.gov/",
+          type: "fact",
+          image: "https://voyager.jpl.nasa.gov/assets/images/gallery/voyager-spacecraft.jpg"
+        },
+        {
+          title: "Venus: Earth's Evil Twin",
+          content: "Venus is often called Earth's 'evil twin' because while similar in size and composition to Earth, its thick atmosphere traps heat in a runaway greenhouse effect, making it the hottest planet in our solar system with surface temperatures hot enough to melt lead.",
+          url: "https://science.nasa.gov/venus/",
+          type: "fact",
+          image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA00271-Venus-Computer-Simulated-Global-View-of-the-Northern-Hemisphere-scaled.jpg"
+        }
+      ];
+      
+      // Process NASA feed items
+      const nasaItems = nasaFeed.items.slice(0, 5).map(item => ({
+        title: item.title,
+        content: item.contentSnippet || item.content,
+        pubDate: item.pubDate,
+        url: item.link,
+        type: "news",
+        source: "NASA",
+        image: item.enclosure?.url || "https://www.nasa.gov/wp-content/uploads/2023/03/nasa-logo-web-rgb.png"
+      }));
+      
+      // Process Space.com feed items
+      const spaceComItems = spaceComFeed.items.slice(0, 5).map(item => ({
+        title: item.title,
+        content: item.contentSnippet || item.content,
+        pubDate: item.pubDate,
+        url: item.link,
+        type: "news",
+        source: "Space.com",
+        image: item.enclosure?.url || "https://cdn.mos.cms.futurecdn.net/6Ud2GEwbAa3UV4UWLKYR8K-970-80.jpg"
+      }));
+      
+      // Combine all items and shuffle
+      const allItems = [...nasaItems, ...spaceComItems, ...additionalSpaceFacts];
+      const shuffled = allItems.sort(() => 0.5 - Math.random());
+      
+      res.json(shuffled);
+    } catch (error) {
+      console.error('Error fetching space news:', error);
+      res.status(500).json({ 
+        message: 'Error fetching space news', 
+        fallbackData: true,
+        data: [
+          {
+            title: "Jupiter's Great Red Spot",
+            content: "Jupiter's Great Red Spot is a giant, spinning storm that has been observed for more than 350 years. The storm is so large that about three Earths could fit inside it.",
+            type: "fact",
+            url: "https://science.nasa.gov/jupiter/",
+            image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA24237_800.jpg"
+          },
+          {
+            title: "Saturn's Rings",
+            content: "Saturn's magnificent rings are made up of billions of particles of ice and rock, ranging in size from tiny dust grains to objects as large as mountains.",
+            type: "fact",
+            url: "https://science.nasa.gov/saturn/",
+            image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA03545-scaled.jpg"
+          },
+          {
+            title: "Black Hole at the Center of the Milky Way",
+            content: "At the center of our Milky Way galaxy lies a supermassive black hole named Sagittarius A*, which has a mass of about 4 million times that of our Sun.",
+            type: "fact",
+            url: "https://www.nasa.gov/image-article/our-black-hole/",
+            image: "https://www.nasa.gov/wp-content/uploads/2023/03/blackhole-milkyway.jpg"
+          },
+          {
+            title: "Voyager Missions",
+            content: "NASA's Voyager 1 and 2 spacecraft are the only human-made objects to have entered interstellar space. Launched in 1977, they continue to send back data from beyond our solar system.",
+            type: "fact",
+            url: "https://voyager.jpl.nasa.gov/",
+            image: "https://voyager.jpl.nasa.gov/assets/images/gallery/voyager-spacecraft.jpg"
+          },
+          {
+            title: "Venus: Earth's Evil Twin",
+            content: "Venus is often called Earth's 'evil twin' because while similar in size and composition to Earth, its thick atmosphere traps heat in a runaway greenhouse effect, making it the hottest planet in our solar system with surface temperatures hot enough to melt lead.",
+            type: "fact",
+            url: "https://science.nasa.gov/venus/",
+            image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA00271-Venus-Computer-Simulated-Global-View-of-the-Northern-Hemisphere-scaled.jpg"
+          }
+        ]
+      });
+    }
   });
 
   const httpServer = createServer(app);
