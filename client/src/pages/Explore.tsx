@@ -2,14 +2,83 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { CelestialObject } from '@/types';
+
+// Type for space news and facts coming from the API
+interface SpaceNewsItem {
+  title: string;
+  content: string;
+  pubDate?: string;
+  url: string;
+  type: 'news' | 'fact';
+  source?: string;
+  image: string;
+}
+
+const SpaceNewsCard = ({ item }: { item: SpaceNewsItem }) => {
+  // Format date if it exists
+  const formattedDate = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : null;
+  
+  return (
+    <Card className="bg-[#1E293B] border-[#334155] hover:shadow-[0_0_15px_rgba(124,58,237,0.5)] transition-all hover:border-[#7E22CE]/40">
+      <CardContent className="p-0">
+        <div className="flex flex-col md:flex-row">
+          <div className="md:w-1/3 h-36 md:h-auto relative">
+            <img 
+              src={item.image} 
+              alt={item.title}
+              className="h-full w-full object-cover"
+            />
+            {item.type === 'news' && (
+              <Badge className="absolute top-2 right-2 bg-[#EC4899]">
+                {item.source || 'News'}
+              </Badge>
+            )}
+            {item.type === 'fact' && (
+              <Badge className="absolute top-2 right-2 bg-[#0EA5E9]">
+                Fact
+              </Badge>
+            )}
+          </div>
+          <div className="p-4 md:p-6 md:w-2/3">
+            <h3 className="text-lg font-medium mb-2">{item.title}</h3>
+            <p className="text-sm text-[#94A3B8] mb-3 line-clamp-2">
+              {item.content}
+            </p>
+            {formattedDate && (
+              <p className="text-xs text-[#64748B] mb-3">
+                Published: {formattedDate}
+              </p>
+            )}
+            <a 
+              href={item.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[#7E22CE] hover:text-[#EC4899] text-sm flex items-center transition-colors"
+            >
+              Read more <i className="ri-external-link-line ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Explore = () => {
   const [selectedObject, setSelectedObject] = useState<CelestialObject | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('planets');
   
-  const { data: celestialObjects, isLoading } = useQuery({
+  // Query for celestial objects
+  const { data: celestialObjects, isLoading: isLoadingCelestial } = useQuery({
     queryKey: ['/api/celestial'],
+  });
+
+  // Query for space news and facts
+  const { data: spaceNews, isLoading: isLoadingNews } = useQuery({
+    queryKey: ['/api/space-news'],
   });
 
   useEffect(() => {
@@ -73,13 +142,13 @@ const Explore = () => {
 
   // Use fallback data if API fails
   useEffect(() => {
-    if (!celestialObjects && !isLoading) {
+    if (!celestialObjects && !isLoadingCelestial) {
       const categoryData = fallbackData[selectedCategory as keyof typeof fallbackData];
       if (categoryData && categoryData.length > 0) {
         setSelectedObject(categoryData[0]);
       }
     }
-  }, [celestialObjects, isLoading, selectedCategory]);
+  }, [celestialObjects, isLoadingCelestial, selectedCategory]);
 
   const getFilteredObjects = () => {
     if (celestialObjects) {
@@ -90,9 +159,12 @@ const Explore = () => {
     return fallbackData[selectedCategory as keyof typeof fallbackData] || [];
   };
 
+  // Whether to show news tab content
+  const [showingNews, setShowingNews] = useState(false);
+
   return (
     <main className="container mx-auto px-4 py-8">
-      <section className="max-w-5xl mx-auto">
+      <section className="max-w-5xl mx-auto mb-16">
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 font-space">
             <span className="bg-gradient-to-r from-[#EC4899] to-[#0EA5E9] bg-clip-text text-transparent">
@@ -104,19 +176,28 @@ const Explore = () => {
           </p>
         </div>
         
-        <Tabs defaultValue="planets" onValueChange={setSelectedCategory}>
-          <TabsList className="grid grid-cols-4 mb-8">
+        <Tabs defaultValue="planets" onValueChange={(value) => {
+          if (value === 'news') {
+            setShowingNews(true);
+          } else {
+            setShowingNews(false);
+            setSelectedCategory(value);
+          }
+        }}>
+          <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="planets">Planets</TabsTrigger>
             <TabsTrigger value="galaxies">Galaxies</TabsTrigger>
             <TabsTrigger value="nebulae">Nebulae</TabsTrigger>
             <TabsTrigger value="exoplanets">Exoplanets</TabsTrigger>
+            <TabsTrigger value="news">Space News</TabsTrigger>
           </TabsList>
           
+          {/* Celestial objects tabs content */}
           {['planets', 'galaxies', 'nebulae', 'exoplanets'].map((category) => (
             <TabsContent key={category} value={category} className="focus:outline-none">
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="md:col-span-2">
-                  {isLoading ? (
+                  {isLoadingCelestial ? (
                     <div className="bg-[#1E293B] rounded-lg w-full h-96 flex items-center justify-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0EA5E9]"></div>
                     </div>
@@ -134,8 +215,22 @@ const Explore = () => {
                         <p className="text-[#F1F5F9] mb-4">{selectedObject.description}</p>
                         <div className="flex flex-wrap gap-2">
                           <span className="text-xs bg-[#7E22CE]/20 text-[#7E22CE] px-3 py-1 rounded-full">{selectedObject.type}</span>
-                          <span className="text-xs bg-[#0EA5E9]/20 text-[#0EA5E9] px-3 py-1 rounded-full">Scientific Data</span>
-                          <span className="text-xs bg-[#EC4899]/20 text-[#EC4899] px-3 py-1 rounded-full">Cosmic Energy</span>
+                          <a 
+                            href={`https://science.nasa.gov/${selectedObject.type !== 'planet' ? 'universe' : selectedObject.name.toLowerCase()}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-xs bg-[#0EA5E9]/20 text-[#0EA5E9] px-3 py-1 rounded-full hover:bg-[#0EA5E9]/30 transition-colors"
+                          >
+                            Scientific Data
+                          </a>
+                          <a 
+                            href={`https://en.wikipedia.org/wiki/${selectedObject.name}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-xs bg-[#EC4899]/20 text-[#EC4899] px-3 py-1 rounded-full hover:bg-[#EC4899]/30 transition-colors"
+                          >
+                            Learn More
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -149,7 +244,7 @@ const Explore = () => {
                 <div>
                   <h3 className="text-lg font-space font-medium mb-3">Browse {category}</h3>
                   <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                    {isLoading ? (
+                    {isLoadingCelestial ? (
                       Array(3).fill(0).map((_, i) => (
                         <div key={i} className="h-20 bg-[#1E293B] rounded-md animate-pulse"></div>
                       ))
@@ -183,7 +278,7 @@ const Explore = () => {
                       ))
                     )}
                     
-                    {!isLoading && getFilteredObjects().length === 0 && (
+                    {!isLoadingCelestial && getFilteredObjects().length === 0 && (
                       <p className="text-center text-[#64748B] py-6">No {category} available</p>
                     )}
                   </div>
@@ -191,6 +286,41 @@ const Explore = () => {
               </div>
             </TabsContent>
           ))}
+          
+          {/* Space News tab content */}
+          <TabsContent value="news" className="focus:outline-none">
+            {isLoadingNews ? (
+              <div className="space-y-4">
+                {Array(3).fill(0).map((_, i) => (
+                  <div key={i} className="h-36 bg-[#1E293B] rounded-md animate-pulse"></div>
+                ))}
+              </div>
+            ) : spaceNews && (spaceNews.data || spaceNews.length > 0) ? (
+              <div className="space-y-6">
+                {/* Handle both array and object response */}
+                {Array.isArray(spaceNews) 
+                  ? spaceNews.map((item: SpaceNewsItem, i: number) => (
+                      <SpaceNewsCard key={i} item={item} />
+                    ))
+                  : spaceNews.data && spaceNews.data.map((item: SpaceNewsItem, i: number) => (
+                      <SpaceNewsCard key={i} item={item} />
+                    ))
+                }
+              </div>
+            ) : (
+              <div className="bg-[#1E293B] rounded-lg w-full py-12 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-[#64748B] mb-4">Unable to fetch space news at the moment</p>
+                  <Button 
+                    onClick={() => window.location.reload()}
+                    className="bg-[#7E22CE] hover:bg-purple-800"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </section>
     </main>
