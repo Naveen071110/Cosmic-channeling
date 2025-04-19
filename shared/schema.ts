@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // User table for authentication
 export const users = pgTable("users", {
@@ -33,7 +34,7 @@ export const journalEntries = pgTable("journal_entries", {
 export const celestialObjects = pgTable("celestial_objects", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  type: text("type").notNull(), // planet, galaxy, nebula, exoplanet
+  type: varchar("type", { length: 20 }).notNull().$type<"planet" | "galaxy" | "nebula" | "exoplanet">(), // planet, galaxy, nebula, exoplanet
   image: text("image").notNull(),
   description: text("description").notNull(),
   scientificData: jsonb("scientific_data"),
@@ -126,6 +127,18 @@ export const insertQuizResultSchema = createInsertSchema(quizResults).pick({
   description: true,
   archetype: true,
 });
+
+// Define relations between tables
+export const usersRelations = relations(users, ({ many }) => ({
+  journalEntries: many(journalEntries),
+}));
+
+export const journalEntriesRelations = relations(journalEntries, ({ one }) => ({
+  user: one(users, {
+    fields: [journalEntries.userId],
+    references: [users.id],
+  }),
+}));
 
 // Export types
 export type InsertUser = z.infer<typeof insertUserSchema>;

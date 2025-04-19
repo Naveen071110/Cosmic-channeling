@@ -8,6 +8,8 @@ import {
   quizQuestions, type QuizQuestion, type InsertQuizQuestion,
   quizResults, type QuizResult, type InsertQuizResult
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 
 // Storage interface with CRUD methods for all entities
 export interface IStorage {
@@ -273,4 +275,190 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+  
+  // Quote methods
+  async getAllQuotes(): Promise<Quote[]> {
+    return db.select().from(quotes);
+  }
+  
+  async getQuote(id: number): Promise<Quote | undefined> {
+    const [quote] = await db.select().from(quotes).where(eq(quotes.id, id));
+    return quote;
+  }
+  
+  async getRandomQuote(): Promise<Quote | undefined> {
+    const [quote] = await db.select().from(quotes).orderBy(sql`RANDOM()`).limit(1);
+    return quote;
+  }
+  
+  async createQuote(insertQuote: InsertQuote): Promise<Quote> {
+    const [quote] = await db
+      .insert(quotes)
+      .values(insertQuote)
+      .returning();
+    return quote;
+  }
+  
+  // Journal entry methods
+  async getJournalEntriesByUserId(userId: number): Promise<JournalEntry[]> {
+    return db
+      .select()
+      .from(journalEntries)
+      .where(eq(journalEntries.userId, userId))
+      .orderBy(journalEntries.createdAt);
+  }
+  
+  async getJournalEntry(id: number): Promise<JournalEntry | undefined> {
+    const [entry] = await db.select().from(journalEntries).where(eq(journalEntries.id, id));
+    return entry;
+  }
+  
+  async createJournalEntry(insertEntry: InsertJournalEntry): Promise<JournalEntry> {
+    const [entry] = await db
+      .insert(journalEntries)
+      .values(insertEntry)
+      .returning();
+    return entry;
+  }
+  
+  async updateJournalEntry(id: number, updateData: Partial<InsertJournalEntry>): Promise<JournalEntry | undefined> {
+    const [updatedEntry] = await db
+      .update(journalEntries)
+      .set(updateData)
+      .where(eq(journalEntries.id, id))
+      .returning();
+    return updatedEntry;
+  }
+  
+  async deleteJournalEntry(id: number): Promise<boolean> {
+    const result = await db
+      .delete(journalEntries)
+      .where(eq(journalEntries.id, id));
+    return result.rowCount > 0;
+  }
+  
+  // Celestial object methods
+  async getAllCelestialObjects(): Promise<CelestialObject[]> {
+    return db.select().from(celestialObjects);
+  }
+  
+  async getCelestialObjectsByType(type: string): Promise<CelestialObject[]> {
+    return db
+      .select()
+      .from(celestialObjects)
+      .where(eq(celestialObjects.type, type as any));
+  }
+  
+  async getCelestialObject(id: number): Promise<CelestialObject | undefined> {
+    const [object] = await db.select().from(celestialObjects).where(eq(celestialObjects.id, id));
+    return object;
+  }
+  
+  async createCelestialObject(insertObject: InsertCelestialObject): Promise<CelestialObject> {
+    const [object] = await db
+      .insert(celestialObjects)
+      .values(insertObject)
+      .returning();
+    return object;
+  }
+  
+  // Cosmic pattern methods
+  async getAllCosmicPatterns(): Promise<CosmicPattern[]> {
+    return db.select().from(cosmicPatterns);
+  }
+  
+  async getCosmicPattern(id: number): Promise<CosmicPattern | undefined> {
+    const [pattern] = await db.select().from(cosmicPatterns).where(eq(cosmicPatterns.id, id));
+    return pattern;
+  }
+  
+  async getRandomCosmicPattern(): Promise<CosmicPattern | undefined> {
+    const [pattern] = await db.select().from(cosmicPatterns).orderBy(sql`RANDOM()`).limit(1);
+    return pattern;
+  }
+  
+  async createCosmicPattern(insertPattern: InsertCosmicPattern): Promise<CosmicPattern> {
+    const [pattern] = await db
+      .insert(cosmicPatterns)
+      .values(insertPattern)
+      .returning();
+    return pattern;
+  }
+  
+  // Cosmic sound methods
+  async getAllCosmicSounds(): Promise<CosmicSound[]> {
+    return db.select().from(cosmicSounds);
+  }
+  
+  async getCosmicSound(id: number): Promise<CosmicSound | undefined> {
+    const [sound] = await db.select().from(cosmicSounds).where(eq(cosmicSounds.id, id));
+    return sound;
+  }
+  
+  async createCosmicSound(insertSound: InsertCosmicSound): Promise<CosmicSound> {
+    const [sound] = await db
+      .insert(cosmicSounds)
+      .values(insertSound)
+      .returning();
+    return sound;
+  }
+  
+  // Quiz question methods
+  async getAllQuizQuestions(): Promise<QuizQuestion[]> {
+    return db.select().from(quizQuestions);
+  }
+  
+  async getQuizQuestion(id: number): Promise<QuizQuestion | undefined> {
+    const [question] = await db.select().from(quizQuestions).where(eq(quizQuestions.id, id));
+    return question;
+  }
+  
+  async createQuizQuestion(insertQuestion: InsertQuizQuestion): Promise<QuizQuestion> {
+    const [question] = await db
+      .insert(quizQuestions)
+      .values(insertQuestion)
+      .returning();
+    return question;
+  }
+  
+  // Quiz result methods
+  async getAllQuizResults(): Promise<QuizResult[]> {
+    return db.select().from(quizResults);
+  }
+  
+  async getQuizResult(id: number): Promise<QuizResult | undefined> {
+    const [result] = await db.select().from(quizResults).where(eq(quizResults.id, id));
+    return result;
+  }
+  
+  async createQuizResult(insertResult: InsertQuizResult): Promise<QuizResult> {
+    const [result] = await db
+      .insert(quizResults)
+      .values(insertResult)
+      .returning();
+    return result;
+  }
+}
+
+// Use DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();

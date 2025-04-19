@@ -72,12 +72,12 @@ const Explore = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('planets');
   
   // Query for celestial objects
-  const { data: celestialObjects, isLoading: isLoadingCelestial } = useQuery({
+  const { data: celestialObjects = [], isLoading: isLoadingCelestial } = useQuery<CelestialObject[]>({
     queryKey: ['/api/celestial'],
   });
 
   // Query for space news and facts
-  const { data: spaceNews, isLoading: isLoadingNews } = useQuery({
+  const { data: spaceNews = [], isLoading: isLoadingNews } = useQuery<SpaceNewsItem[]>({
     queryKey: ['/api/space-news'],
   });
 
@@ -295,17 +295,11 @@ const Explore = () => {
                   <div key={i} className="h-36 bg-[#1E293B] rounded-md animate-pulse"></div>
                 ))}
               </div>
-            ) : spaceNews && (spaceNews.data || spaceNews.length > 0) ? (
+            ) : spaceNews.length > 0 ? (
               <div className="space-y-6">
-                {/* Handle both array and object response */}
-                {Array.isArray(spaceNews) 
-                  ? spaceNews.map((item: SpaceNewsItem, i: number) => (
-                      <SpaceNewsCard key={i} item={item} />
-                    ))
-                  : spaceNews.data && spaceNews.data.map((item: SpaceNewsItem, i: number) => (
-                      <SpaceNewsCard key={i} item={item} />
-                    ))
-                }
+                {spaceNews.map((item: SpaceNewsItem, i: number) => (
+                  <SpaceNewsCard key={i} item={item} />
+                ))}
               </div>
             ) : (
               <div className="bg-[#1E293B] rounded-lg w-full py-12 flex items-center justify-center">
