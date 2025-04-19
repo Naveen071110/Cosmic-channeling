@@ -83,21 +83,21 @@ const Meditate = () => {
       title: "Cosmic Consciousness Meditation",
       description: "Connect with the vastness of the universe and recognize your place within it. This meditation helps you sense the interconnectedness of all things.",
       imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      audioUrl: "https://assets.mixkit.co/sfx/preview/mixkit-serene-new-age-muzak-loop-524.mp3",
+      audioUrl: "/audio/cosmic-consciousness.mp3",
       duration: 15
     },
     {
       title: "Starlight Healing Meditation",
       description: "Visualize cosmic light flowing through your body, clearing blockages and revitalizing your energy centers with the pure energy of the stars.",
       imageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      audioUrl: "https://assets.mixkit.co/sfx/preview/mixkit-atmosphere-fairy-tale-titanium-hum-686.mp3",
+      audioUrl: "/audio/starlight-healing.mp3",
       duration: 20
     },
     {
       title: "Cosmic Journey Meditation",
       description: "Take a journey through the cosmos, exploring planets, stars, and galaxies while expanding your consciousness beyond earthly limitations.",
       imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      audioUrl: "https://assets.mixkit.co/sfx/preview/mixkit-cinematic-fairy-tale-percussion-556.mp3",
+      audioUrl: "/audio/cosmic-journey.mp3",
       duration: 18
     }
   ];

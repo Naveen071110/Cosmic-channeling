@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 
-// Updated list of reliable audio files
+// Updated list of reliable local audio files
 const fallbackAudios = {
-  galactic: "https://assets.mixkit.co/sfx/preview/mixkit-cinematic-fairy-tale-percussion-556.mp3",
-  quantum: "https://assets.mixkit.co/sfx/preview/mixkit-magical-ball-boing-1493.mp3",
-  stellar: "https://assets.mixkit.co/sfx/preview/mixkit-atmosphere-fairy-tale-titanium-hum-686.mp3",
-  cosmic: "https://assets.mixkit.co/sfx/preview/mixkit-fairy-message-notification-2291.mp3",
-  meditation: "https://assets.mixkit.co/sfx/preview/mixkit-serene-new-age-muzak-loop-524.mp3"
+  galactic: "/audio/cosmic-journey.mp3",
+  quantum: "/audio/starlight-healing.mp3",
+  stellar: "/audio/cosmic-consciousness.mp3",
+  cosmic: "/audio/cosmic-journey.mp3",
+  meditation: "/audio/cosmic-consciousness.mp3"
 };
 
 export function useAudio(url: string) {
