@@ -14,7 +14,7 @@ const Footer = () => {
           
           <div className="flex items-center space-x-6">
             <a 
-              href="https://youtube.com" 
+              href="https://www.youtube.com/@CosmicChanneling001" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" 
@@ -23,11 +23,11 @@ const Footer = () => {
               <i className="ri-youtube-line text-xl"></i>
             </a>
             <a 
-              href="https://twitter.com" 
+              href="https://x.com/cosmichanneling" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" 
-              aria-label="Twitter"
+              aria-label="X"
             >
               <i className="ri-twitter-x-line text-xl"></i>
             </a>

@@ -84,15 +84,29 @@ const CosmicPatternGenerator = () => {
     }
   ];
   
-  const generateRandomPattern = () => {
+  const generateRandomPattern = async () => {
     setIsLoading(true);
     
-    // Simulate API call latency
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/cosmic-patterns/random');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentPattern(data);
+      } else {
+        console.error('Error fetching cosmic pattern');
+        // Fallback to local patterns if API fails
+        const randomIndex = Math.floor(Math.random() * patterns.length);
+        setCurrentPattern(patterns[randomIndex]);
+      }
+    } catch (error) {
+      console.error('Error fetching cosmic pattern:', error);
+      // Fallback to local patterns if API fails
       const randomIndex = Math.floor(Math.random() * patterns.length);
       setCurrentPattern(patterns[randomIndex]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
   
   return (
@@ -176,17 +190,41 @@ const DreamInterpreter = () => {
     }
   ];
   
-  const analyzeDream = () => {
+  const analyzeDream = async () => {
     if (!dreamText.trim()) return;
     
     setIsAnalyzing(true);
     
-    // Simulate API call latency
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/interpret-dream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ dreamText }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setInterpretation({
+          text: data.interpretation,
+          themes: data.tags || []
+        });
+      } else {
+        console.error('Error interpreting dream:', data.message);
+        // Fallback to local interpretation if API fails
+        const randomIndex = Math.floor(Math.random() * interpretations.length);
+        setInterpretation(interpretations[randomIndex]);
+      }
+    } catch (error) {
+      console.error('Dream interpretation error:', error);
+      // Fallback to local interpretation if API fails
       const randomIndex = Math.floor(Math.random() * interpretations.length);
       setInterpretation(interpretations[randomIndex]);
+    } finally {
       setIsAnalyzing(false);
-    }, 1500);
+    }
   };
   
   return (

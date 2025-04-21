@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !email.includes('@')) {
@@ -20,15 +21,38 @@ export default function Newsletter() {
     
     setSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await apiRequest(
+        'POST',
+        '/api/newsletter/subscribe',
+        { email }
+      );
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Subscription successful!",
+          description: "You've joined our cosmic community. Look for our newsletter soon!",
+        });
+        setEmail('');
+      } else {
+        toast({
+          title: "Subscription failed",
+          description: data.message || "There was an error subscribing to the newsletter. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error);
       toast({
-        title: "Subscription successful!",
-        description: "You've joined our cosmic community. Look for our newsletter soon!",
+        title: "Subscription failed",
+        description: "There was an error connecting to our cosmic server. Please try again later.",
+        variant: "destructive"
       });
-      setEmail('');
+    } finally {
       setSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (

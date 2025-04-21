@@ -4,9 +4,13 @@ import { storage } from "./storage";
 import { quotes, celestialObjects, cosmicPatterns } from "../client/src/lib/data";
 import Parser from 'rss-parser';
 import fetch from 'node-fetch';
+import newsletterRoutes from './routes/newsletter';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
+  
+  // Register newsletter routes
+  app.use('/api/newsletter', newsletterRoutes);
   
   // Quote API endpoints
   app.get('/api/quotes', (req, res) => {
