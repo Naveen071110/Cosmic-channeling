@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import Meditate from "@/pages/Meditate";
 import Explore from "@/pages/Explore";
 import Journal from "@/pages/Journal";
+import Tools from "@/pages/Tools";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Header from "@/components/layout/Header";
@@ -22,6 +23,7 @@ function AppRouter() {
         <Route path="/meditate" component={Meditate} />
         <Route path="/explore" component={Explore} />
         <Route path="/journal" component={Journal} />
+        <Route path="/tools" component={Tools} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route component={NotFound} />

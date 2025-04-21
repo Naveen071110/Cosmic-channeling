@@ -29,14 +29,14 @@ const FeatureGrid = () => {
       description: "Receive a random cosmic pattern with a thought-provoking question and affirmation.",
       icon: "seedling-line",
       color: "#059669",
-      path: "/"
+      path: "/tools"
     },
     {
       title: "Dream Interpreter",
       description: "Analyze your dreams through a cosmic lens to reveal their spiritual and intuitive meanings.",
       icon: "sparkling-line",
       color: "#F59E0B",
-      path: "/"
+      path: "/tools"
     }
   ];
 
