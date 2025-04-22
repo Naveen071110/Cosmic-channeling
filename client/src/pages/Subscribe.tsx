@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useLocation } from 'wouter';
+import { useSubscription } from '@/hooks/use-subscription';
 
 // Form schema
 const subscriptionFormSchema = z.object({
@@ -37,6 +38,7 @@ export default function Subscribe() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { setSubscribed } = useSubscription();
   
   // Default values
   const defaultValues: Partial<SubscriptionFormValues> = {
@@ -59,6 +61,9 @@ export default function Subscribe() {
     
     // In a real implementation, this would connect to Stripe or another payment processor
     setTimeout(() => {
+      // Set user as subscribed in local storage
+      setSubscribed(true);
+      
       toast({
         title: "Subscription successful!",
         description: "Welcome to Cosmic Channeling Premium. Your cosmic journey awaits!",
