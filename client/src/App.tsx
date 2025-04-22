@@ -26,6 +26,8 @@ function AppRouter() {
         <Route path="/explore" component={Explore} />
         <Route path="/journal" component={Journal} />
         <Route path="/tools" component={Tools} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/subscribe" component={Subscribe} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route component={NotFound} />

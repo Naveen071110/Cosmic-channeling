@@ -46,10 +46,16 @@ const Header = () => {
           <Link href="/journal" className={`transition-colors ${isActive('/journal') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
             Journal
           </Link>
+          <Link href="/tools" className={`transition-colors ${isActive('/tools') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+            Tools
+          </Link>
+          <Link href="/pricing" className={`transition-colors ${isActive('/pricing') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+            Pricing
+          </Link>
         </nav>
         
         <div className="flex items-center space-x-4">
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" aria-label="YouTube Channel">
+          <a href="https://www.youtube.com/@CosmicChanneling001" target="_blank" rel="noopener noreferrer" className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" aria-label="YouTube Channel">
             <i className="ri-youtube-line text-xl"></i>
           </a>
           <a href="#newsletter" className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" aria-label="Newsletter">
@@ -85,6 +91,12 @@ const Header = () => {
             </Link>
             <Link href="/journal" onClick={closeMenu} className={isActive('/journal') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9] transition-colors'}>
               Journal
+            </Link>
+            <Link href="/tools" onClick={closeMenu} className={isActive('/tools') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9] transition-colors'}>
+              Tools
+            </Link>
+            <Link href="/pricing" onClick={closeMenu} className={isActive('/pricing') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9] transition-colors'}>
+              Pricing
             </Link>
           </nav>
         </div>

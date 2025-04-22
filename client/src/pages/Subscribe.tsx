@@ -20,7 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 
 // Form schema
 const subscriptionFormSchema = z.object({
@@ -36,7 +36,7 @@ type SubscriptionFormValues = z.infer<typeof subscriptionFormSchema>;
 export default function Subscribe() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   
   // Default values
   const defaultValues: Partial<SubscriptionFormValues> = {
@@ -65,7 +65,7 @@ export default function Subscribe() {
       });
       
       // Navigate to tools page after successful subscription
-      setTimeout(() => navigate("/tools"), 2000);
+      setTimeout(() => setLocation("/tools"), 2000);
       
       setIsProcessing(false);
     }, 2000);
