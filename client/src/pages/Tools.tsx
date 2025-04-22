@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
 import { 
   Tabs, 
   TabsContent, 
@@ -10,11 +11,13 @@ import {
   CardContent, 
   CardHeader, 
   CardTitle, 
-  CardDescription 
+  CardDescription, 
+  CardFooter 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useSubscription } from '@/hooks/use-subscription';
 
 const Tools = () => {
   const [activeTab, setActiveTab] = useState('patterns');
@@ -55,6 +58,8 @@ const Tools = () => {
 const CosmicPatternGenerator = () => {
   const [currentPattern, setCurrentPattern] = useState<CosmicPattern | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSubscribed } = useSubscription();
+  const [, setLocation] = useLocation();
   
   const patterns: CosmicPattern[] = [
     {
@@ -109,49 +114,88 @@ const CosmicPatternGenerator = () => {
     }
   };
   
+  // Handle redirect to pricing if not subscribed
+  const redirectToPricing = () => {
+    setLocation('/pricing');
+  };
+  
   return (
     <div className="space-y-6">
       <Card className="bg-[#1E293B] border-[#334155]">
         <CardHeader>
           <CardTitle className="text-[#F1F5F9]">Cosmic Pattern Generator</CardTitle>
           <CardDescription>Receive a unique cosmic pattern with a reflective question and empowering affirmation</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {currentPattern ? (
-            <div className="space-y-4">
-              <div className="aspect-video overflow-hidden rounded-lg">
-                <img src={currentPattern.imageUrl} alt="Cosmic Pattern" className="w-full h-full object-cover" />
-              </div>
-              
-              <div className="p-4 border border-[#334155] rounded-lg bg-[#0F172A]">
-                <h4 className="text-lg font-medium text-[#059669] mb-2">Cosmic Question:</h4>
-                <p className="text-[#F1F5F9] italic">{currentPattern.question}</p>
-              </div>
-              
-              <div className="p-4 border border-[#334155] rounded-lg bg-[#0F172A]">
-                <h4 className="text-lg font-medium text-[#F59E0B] mb-2">Affirmation:</h4>
-                <p className="text-[#F1F5F9]">{currentPattern.affirmation}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-10">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#059669]/20 flex items-center justify-center">
-                <i className="ri-seedling-line text-3xl text-[#059669]"></i>
-              </div>
-              <p className="text-[#94A3B8] mb-6">Press the button below to generate a random cosmic pattern for reflection and insight.</p>
+          
+          {!isSubscribed && (
+            <div className="mt-2 py-2 px-3 bg-[#7C3AED]/10 border border-[#7C3AED]/30 rounded-md text-sm text-[#F1F5F9]">
+              <span className="font-medium text-[#7C3AED]">Premium Feature:</span> Subscribe to unlock the Cosmic Pattern Generator
             </div>
           )}
-          
-          <div className="mt-6 text-center">
-            <Button 
-              onClick={generateRandomPattern} 
-              disabled={isLoading}
-              className="bg-gradient-to-r from-[#059669] to-[#0EA5E9] hover:opacity-90 text-white"
-            >
-              {isLoading ? 'Channeling Cosmic Energy...' : 'Generate Cosmic Pattern'}
-            </Button>
-          </div>
-        </CardContent>
+        </CardHeader>
+        
+        {isSubscribed ? (
+          <CardContent>
+            {currentPattern ? (
+              <div className="space-y-4">
+                <div className="aspect-video overflow-hidden rounded-lg">
+                  <img src={currentPattern.imageUrl} alt="Cosmic Pattern" className="w-full h-full object-cover" />
+                </div>
+                
+                <div className="p-4 border border-[#334155] rounded-lg bg-[#0F172A]">
+                  <h4 className="text-lg font-medium text-[#059669] mb-2">Cosmic Question:</h4>
+                  <p className="text-[#F1F5F9] italic">{currentPattern.question}</p>
+                </div>
+                
+                <div className="p-4 border border-[#334155] rounded-lg bg-[#0F172A]">
+                  <h4 className="text-lg font-medium text-[#F59E0B] mb-2">Affirmation:</h4>
+                  <p className="text-[#F1F5F9]">{currentPattern.affirmation}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#059669]/20 flex items-center justify-center">
+                  <i className="ri-seedling-line text-3xl text-[#059669]"></i>
+                </div>
+                <p className="text-[#94A3B8] mb-6">Press the button below to generate a random cosmic pattern for reflection and insight.</p>
+              </div>
+            )}
+            
+            <div className="mt-6 text-center">
+              <Button 
+                onClick={generateRandomPattern} 
+                disabled={isLoading}
+                className="bg-gradient-to-r from-[#059669] to-[#0EA5E9] hover:opacity-90 text-white"
+              >
+                {isLoading ? 'Channeling Cosmic Energy...' : 'Generate Cosmic Pattern'}
+              </Button>
+            </div>
+          </CardContent>
+        ) : (
+          <>
+            <CardContent className="pb-2">
+              <div className="text-center py-8">
+                <img 
+                  src="https://images.unsplash.com/photo-1505506874110-6a7a69069a08?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" 
+                  alt="Premium cosmic content" 
+                  className="w-64 h-64 object-cover rounded-full mx-auto mb-6 opacity-50 grayscale"
+                />
+                <h3 className="text-xl font-medium text-[#F1F5F9] mb-2">Unlock Cosmic Insights</h3>
+                <p className="text-[#94A3B8] mb-6 max-w-md mx-auto">
+                  Subscribe to Cosmic Channeling Premium to access the Cosmic Pattern Generator and receive unique cosmic guidance tailored for your spiritual journey.
+                </p>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="flex justify-center pb-8">
+              <Button 
+                onClick={redirectToPricing}
+                className="bg-gradient-to-r from-[#7C3AED] to-[#EC4899] hover:opacity-90 text-white"
+              >
+                Subscribe Now
+              </Button>
+            </CardFooter>
+          </>
+        )}
       </Card>
     </div>
   );
@@ -161,6 +205,8 @@ const DreamInterpreter = () => {
   const [dreamText, setDreamText] = useState('');
   const [interpretation, setInterpretation] = useState<Interpretation | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { isSubscribed } = useSubscription();
+  const [, setLocation] = useLocation();
   
   type Interpretation = {
     text: string;
@@ -227,56 +273,95 @@ const DreamInterpreter = () => {
     }
   };
   
+  // Handle redirect to pricing if not subscribed
+  const redirectToPricing = () => {
+    setLocation('/pricing');
+  };
+  
   return (
     <div className="space-y-6">
       <Card className="bg-[#1E293B] border-[#334155]">
         <CardHeader>
           <CardTitle className="text-[#F1F5F9]">Dream Interpreter</CardTitle>
           <CardDescription>Analyze your dreams through a cosmic lens to unveil their spiritual meaning</CardDescription>
+          
+          {!isSubscribed && (
+            <div className="mt-2 py-2 px-3 bg-[#7C3AED]/10 border border-[#7C3AED]/30 rounded-md text-sm text-[#F1F5F9]">
+              <span className="font-medium text-[#7C3AED]">Premium Feature:</span> Subscribe to unlock the Dream Interpreter
+            </div>
+          )}
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="dreamText" className="text-[#F1F5F9]">Describe your dream:</Label>
-              <Textarea 
-                id="dreamText"
-                placeholder="Enter the key elements of your dream... (e.g., I was floating among stars and encountered a being of light...)"
-                className="mt-2 bg-[#0F172A] border-[#334155] resize-none min-h-[150px]"
-                value={dreamText}
-                onChange={(e) => setDreamText(e.target.value)}
-              />
-            </div>
-            
-            <div className="text-center">
-              <Button 
-                onClick={analyzeDream} 
-                disabled={isAnalyzing || !dreamText.trim()}
-                className="bg-gradient-to-r from-[#F59E0B] to-[#EC4899] hover:opacity-90 text-white"
-              >
-                {isAnalyzing ? 'Consulting the Cosmic Consciousness...' : 'Interpret Dream'}
-              </Button>
-            </div>
-            
-            {interpretation && (
-              <div className="mt-6 p-4 border border-[#334155] rounded-lg bg-[#0F172A]">
-                <h4 className="text-lg font-medium text-[#F59E0B] mb-3">Cosmic Interpretation:</h4>
-                <p className="text-[#F1F5F9] mb-4">{interpretation.text}</p>
-                
-                <h5 className="text-md font-medium text-[#EC4899] mb-2">Key Themes:</h5>
-                <div className="flex flex-wrap gap-2">
-                  {interpretation.themes.map((theme, index) => (
-                    <span 
-                      key={index} 
-                      className="px-3 py-1 bg-[#EC4899]/20 text-[#EC4899] text-xs rounded-full"
-                    >
-                      {theme}
-                    </span>
-                  ))}
-                </div>
+        
+        {isSubscribed ? (
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="dreamText" className="text-[#F1F5F9]">Describe your dream:</Label>
+                <Textarea 
+                  id="dreamText"
+                  placeholder="Enter the key elements of your dream... (e.g., I was floating among stars and encountered a being of light...)"
+                  className="mt-2 bg-[#0F172A] border-[#334155] resize-none min-h-[150px]"
+                  value={dreamText}
+                  onChange={(e) => setDreamText(e.target.value)}
+                />
               </div>
-            )}
-          </div>
-        </CardContent>
+              
+              <div className="text-center">
+                <Button 
+                  onClick={analyzeDream} 
+                  disabled={isAnalyzing || !dreamText.trim()}
+                  className="bg-gradient-to-r from-[#F59E0B] to-[#EC4899] hover:opacity-90 text-white"
+                >
+                  {isAnalyzing ? 'Consulting the Cosmic Consciousness...' : 'Interpret Dream'}
+                </Button>
+              </div>
+              
+              {interpretation && (
+                <div className="mt-6 p-4 border border-[#334155] rounded-lg bg-[#0F172A]">
+                  <h4 className="text-lg font-medium text-[#F59E0B] mb-3">Cosmic Interpretation:</h4>
+                  <p className="text-[#F1F5F9] mb-4">{interpretation.text}</p>
+                  
+                  <h5 className="text-md font-medium text-[#EC4899] mb-2">Key Themes:</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {interpretation.themes.map((theme, index) => (
+                      <span 
+                        key={index} 
+                        className="px-3 py-1 bg-[#EC4899]/20 text-[#EC4899] text-xs rounded-full"
+                      >
+                        {theme}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        ) : (
+          <>
+            <CardContent className="pb-2">
+              <div className="text-center py-8">
+                <img 
+                  src="https://images.unsplash.com/photo-1492446845049-9c50cc313f00?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" 
+                  alt="Premium dream interpretation" 
+                  className="w-64 h-64 object-cover rounded-full mx-auto mb-6 opacity-50 grayscale"
+                />
+                <h3 className="text-xl font-medium text-[#F1F5F9] mb-2">Interpret Your Dreams</h3>
+                <p className="text-[#94A3B8] mb-6 max-w-md mx-auto">
+                  Subscribe to Cosmic Channeling Premium to unlock the Dream Interpreter and discover the hidden cosmic messages in your dreams.
+                </p>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="flex justify-center pb-8">
+              <Button 
+                onClick={redirectToPricing}
+                className="bg-gradient-to-r from-[#7C3AED] to-[#EC4899] hover:opacity-90 text-white"
+              >
+                Subscribe Now
+              </Button>
+            </CardFooter>
+          </>
+        )}
       </Card>
     </div>
   );
