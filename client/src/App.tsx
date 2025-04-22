@@ -13,9 +13,12 @@ import Pricing from "@/pages/Pricing";
 import Subscribe from "@/pages/Subscribe";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Auth from "./pages/Auth";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StarBackground from "@/components/ui/StarBackground";
+import { AuthProvider } from "./hooks/use-auth";
+import { ProtectedRoute } from "./lib/ProtectedRoute";
 
 function AppRouter() {
   return (
@@ -25,12 +28,13 @@ function AppRouter() {
         <Route path="/" component={Home} />
         <Route path="/meditate" component={Meditate} />
         <Route path="/explore" component={Explore} />
-        <Route path="/journal" component={Journal} />
+        <ProtectedRoute path="/journal" component={Journal} />
         <Route path="/tools" component={Tools} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/subscribe" component={Subscribe} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/auth" component={Auth} />
         <Route component={NotFound} />
       </Switch>
       <Footer />
@@ -41,15 +45,17 @@ function AppRouter() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="min-h-screen flex flex-col text-[#F8FAFC] bg-[#0F172A]">
-          <StarBackground />
-          <Toaster />
-          <Router>
-            <AppRouter />
-          </Router>
-        </div>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <div className="min-h-screen flex flex-col text-[#F8FAFC] bg-[#0F172A]">
+            <StarBackground />
+            <Toaster />
+            <Router>
+              <AppRouter />
+            </Router>
+          </div>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
