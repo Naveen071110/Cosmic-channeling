@@ -15,6 +15,7 @@ import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import StarBackground from "@/components/ui/StarBackground";
 
 function AppRouter() {
   return (
@@ -41,7 +42,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="star-bg min-h-screen flex flex-col text-[#F8FAFC]">
+        <div className="min-h-screen flex flex-col text-[#F8FAFC] bg-[#0F172A]">
+          <StarBackground />
           <Toaster />
           <Router>
             <AppRouter />
