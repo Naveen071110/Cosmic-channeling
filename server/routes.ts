@@ -135,6 +135,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // User subscription update endpoint
+  app.post('/api/users/:id/subscription', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    const userId = parseInt(req.params.id);
+    
+    // Check if the user is trying to update their own subscription
+    if (req.user.id !== userId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    
+    const { isSubscribed } = req.body;
+    
+    if (typeof isSubscribed !== 'boolean') {
+      return res.status(400).json({ message: 'Invalid subscription status' });
+    }
+    
+    try {
+      const updatedUser = await storage.updateUserSubscription(userId, isSubscribed);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      return res.json(updatedUser);
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      return res.status(500).json({ message: 'Error updating subscription' });
+    }
+  });
+
   // Quiz results endpoint
   app.post('/api/quiz-results', (req, res) => {
     const { answers } = req.body;

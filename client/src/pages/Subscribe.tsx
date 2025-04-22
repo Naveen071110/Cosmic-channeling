@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -21,7 +21,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useLocation } from 'wouter';
-import { useSubscription } from '@/hooks/use-subscription';
+import { useSubscription } from '../hooks/use-subscription';
+import { useAuth } from '../hooks/use-auth';
 
 // Form schema
 const subscriptionFormSchema = z.object({
@@ -35,15 +36,38 @@ const subscriptionFormSchema = z.object({
 type SubscriptionFormValues = z.infer<typeof subscriptionFormSchema>;
 
 export default function Subscribe() {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { user, isLoading } = useAuth();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-  const { setSubscribed } = useSubscription();
+  const [location, setLocation] = useLocation();
+  const { isSubscribed, setSubscribed, isUpdating } = useSubscription();
+  
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!isLoading && !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to subscribe to Cosmic Channeling Premium.",
+        variant: "destructive",
+      });
+      setLocation("/auth");
+    }
+  }, [user, isLoading, setLocation, toast]);
+  
+  // Redirect if already subscribed
+  useEffect(() => {
+    if (isSubscribed) {
+      toast({
+        title: "Already Subscribed",
+        description: "You are already subscribed to Cosmic Channeling Premium.",
+      });
+      setLocation("/tools");
+    }
+  }, [isSubscribed, setLocation, toast]);
   
   // Default values
   const defaultValues: Partial<SubscriptionFormValues> = {
-    fullName: "",
-    email: "",
+    fullName: user?.username || "",
+    email: user?.email || "",
     cardNumber: "",
     cardExpiry: "",
     cardCvc: "",
@@ -57,23 +81,11 @@ export default function Subscribe() {
   
   // Form submission handler
   const onSubmit = (data: SubscriptionFormValues) => {
-    setIsProcessing(true);
-    
     // In a real implementation, this would connect to Stripe or another payment processor
-    setTimeout(() => {
-      // Set user as subscribed in local storage
-      setSubscribed(true);
+    setSubscribed(true);
       
-      toast({
-        title: "Subscription successful!",
-        description: "Welcome to Cosmic Channeling Premium. Your cosmic journey awaits!",
-      });
-      
-      // Navigate to tools page after successful subscription
-      setTimeout(() => setLocation("/tools"), 2000);
-      
-      setIsProcessing(false);
-    }, 2000);
+    // Navigate to tools page after successful subscription
+    setTimeout(() => setLocation("/tools"), 2000);
   };
   
   const formatCardNumber = (value: string) => {
@@ -218,9 +230,9 @@ export default function Subscribe() {
                   <Button 
                     type="submit" 
                     className="w-full bg-[#7C3AED] hover:bg-[#6D28D9]"
-                    disabled={isProcessing}
+                    disabled={isUpdating}
                   >
-                    {isProcessing ? 'Processing...' : 'Subscribe Now'}
+                    {isUpdating ? 'Processing...' : 'Subscribe Now'}
                   </Button>
                   <p className="text-xs text-center mt-2 text-[#94A3B8]">
                     By subscribing, you agree to our Terms of Service and Privacy Policy.

@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useSubscription } from '@/hooks/use-subscription';
+import { useSubscription } from '../hooks/use-subscription';
 
 const Tools = () => {
   const [activeTab, setActiveTab] = useState('patterns');

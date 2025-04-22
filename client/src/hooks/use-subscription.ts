@@ -1,29 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useAuth } from './use-auth';
+import { apiRequest, queryClient } from '../lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 export function useSubscription() {
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const isSubscribed = user?.isSubscribed || false;
   
-  useEffect(() => {
-    // Check if user has subscription in local storage
-    const checkSubscription = () => {
-      const subscriptionStatus = localStorage.getItem('cosmicSubscription');
-      setIsSubscribed(subscriptionStatus === 'active');
-    };
-    
-    checkSubscription();
-    
-    // Listen for storage changes (in case subscription is updated in another tab)
-    window.addEventListener('storage', checkSubscription);
-    
-    return () => {
-      window.removeEventListener('storage', checkSubscription);
-    };
-  }, []);
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: async (status: boolean) => {
+      if (!user) {
+        throw new Error("You must be logged in to update your subscription");
+      }
+      
+      const res = await apiRequest(
+        "POST", 
+        `/api/users/${user.id}/subscription`, 
+        { isSubscribed: status }
+      );
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update subscription");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: () => {
+      // Invalidate user cache to refresh user data
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      toast({
+        title: "Subscription Updated",
+        description: isSubscribed 
+          ? "Your subscription has been canceled" 
+          : "Welcome to Cosmic Channeling Premium!",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Subscription Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
   
   const setSubscribed = (status: boolean) => {
-    localStorage.setItem('cosmicSubscription', status ? 'active' : 'inactive');
-    setIsSubscribed(status);
+    updateSubscriptionMutation.mutate(status);
   };
   
-  return { isSubscribed, setSubscribed };
+  return { 
+    isSubscribed, 
+    setSubscribed,
+    isUpdating: updateSubscriptionMutation.isPending
+  };
 }
