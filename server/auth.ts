@@ -101,11 +101,11 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: Error | null, user: SelectUser | false, info: { message: string }) => {
       if (err) return next(err);
       if (!user) return res.status(401).json({ message: "Invalid username or password" });
       
-      req.login(user, (err) => {
+      req.login(user, (err: Error | null) => {
         if (err) return next(err);
         res.status(200).json(user);
       });
@@ -113,7 +113,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
+    req.logout((err: Error | null) => {
       if (err) return next(err);
       res.sendStatus(200);
     });
@@ -133,10 +133,10 @@ export function setupAuth(app: Express) {
     const isSubscribed = req.body.isSubscribed === true;
     
     storage.updateUserSubscription(req.user.id, isSubscribed)
-      .then(updatedUser => {
+      .then((updatedUser: SelectUser | undefined) => {
         res.json(updatedUser);
       })
-      .catch(error => {
+      .catch((error: Error) => {
         console.error("Subscription update error:", error);
         res.status(500).json({ message: "Error updating subscription" });
       });

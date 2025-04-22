@@ -5,8 +5,12 @@ import { quotes, celestialObjects, cosmicPatterns } from "../client/src/lib/data
 import Parser from 'rss-parser';
 import fetch from 'node-fetch';
 import newsletterRoutes from './routes/newsletter';
+import { setupAuth } from './auth';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  setupAuth(app);
+  
   // prefix all routes with /api
   
   // Register newsletter routes

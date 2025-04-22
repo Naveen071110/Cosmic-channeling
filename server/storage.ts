@@ -313,6 +313,15 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
+  async updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ isSubscribed })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+  
   // Quote methods
   async getAllQuotes(): Promise<Quote[]> {
     return db.select().from(quotes);
