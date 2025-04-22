@@ -9,6 +9,8 @@ import Meditate from "@/pages/Meditate";
 import Explore from "@/pages/Explore";
 import Journal from "@/pages/Journal";
 import Tools from "@/pages/Tools";
+import Pricing from "@/pages/Pricing";
+import Subscribe from "@/pages/Subscribe";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Header from "@/components/layout/Header";
