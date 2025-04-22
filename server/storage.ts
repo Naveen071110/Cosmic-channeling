@@ -17,6 +17,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User | undefined>;
   
   // Quote operations
   getAllQuotes(): Promise<Quote[]>;
@@ -114,9 +115,25 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserIds.users++;
     const createdAt = new Date();
-    const user: User = { ...insertUser, id, createdAt };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      createdAt, 
+      isSubscribed: false,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null
+    };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, isSubscribed };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
   
   // Quote methods

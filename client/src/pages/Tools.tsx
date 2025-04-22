@@ -341,7 +341,7 @@ const DreamInterpreter = () => {
             <CardContent className="pb-2">
               <div className="text-center py-8">
                 <img 
-                  src="https://images.unsplash.com/photo-1492446845049-9c50cc313f00?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" 
+                  src="https://images.unsplash.com/photo-1535979014625-490718314e4a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" 
                   alt="Premium dream interpretation" 
                   className="w-64 h-64 object-cover rounded-full mx-auto mb-6 opacity-50 grayscale"
                 />
