@@ -5,6 +5,7 @@ import { quotes, celestialObjects, cosmicPatterns } from "../client/src/lib/data
 import Parser from 'rss-parser';
 import fetch from 'node-fetch';
 import newsletterRoutes from './routes/newsletter';
+import authRoutes from './routes/auth';
 import { setupAuth } from './auth';
 import { createOrder, captureOrder, getOrderDetails, createSubscription } from './paypal';
 
@@ -14,8 +15,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // prefix all routes with /api
   
-  // Register newsletter routes
+  // Register newsletter and auth routes
   app.use('/api/newsletter', newsletterRoutes);
+  app.use('/api/auth', authRoutes);
   
   // Quote API endpoints
   app.get('/api/quotes', (req, res) => {
