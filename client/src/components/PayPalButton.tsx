@@ -44,6 +44,7 @@ const ButtonWrapper = ({
         disabled={false}
         createOrder={(data, actions) => {
           return actions.order.create({
+            intent: "CAPTURE",
             purchase_units: [
               {
                 amount: {
@@ -109,7 +110,7 @@ export default function PayPalButton({
   return (
     <PayPalScriptProvider
       options={{
-        "client-id": clientId,
+        clientId: clientId,
         currency: "USD",
         intent: "capture"
       }}
