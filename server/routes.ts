@@ -7,11 +7,13 @@ import fetch from 'node-fetch';
 import newsletterRoutes from './routes/newsletter';
 import authRoutes from './routes/auth';
 import { setupAuth } from './auth';
+import { setupGoogleAuth } from './google-auth';
 import { createOrder, captureOrder, getOrderDetails, createSubscription } from './paypal';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   setupAuth(app);
+  setupGoogleAuth(app);
   
   // prefix all routes with /api
   

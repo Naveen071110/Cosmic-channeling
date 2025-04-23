@@ -86,6 +86,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   isSubscribed: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
 });
 
 export const insertQuoteSchema = createInsertSchema(quotes).pick({
