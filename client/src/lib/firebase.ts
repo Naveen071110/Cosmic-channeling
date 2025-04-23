@@ -1,18 +1,22 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyB-SXSPiTaWZNa0JGXaVO8WCl8CCT8hqsw",
+  authDomain: "cosmic-channeling.firebaseapp.com",
+  projectId: "cosmic-channeling",
+  storageBucket: "cosmic-channeling.firebasestorage.app",
+  messagingSenderId: "291863078941",
+  appId: "1:291863078941:web:08ffa6bea0de0e5ee57ef4",
+  measurementId: "G-1MYQ3NM73W"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const analytics = getAnalytics(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // Google sign-in function
