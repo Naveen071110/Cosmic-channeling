@@ -6,6 +6,7 @@ import Parser from 'rss-parser';
 import fetch from 'node-fetch';
 import newsletterRoutes from './routes/newsletter';
 import { setupAuth } from './auth';
+import { createOrder, captureOrder, getOrderDetails, createSubscription } from './paypal';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -229,6 +230,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.json(archetypes[archetypeIndex]);
   });
   
+  // PayPal API endpoints
+  app.post('/api/paypal/create-order', async (req, res) => {
+    try {
+      const { amount, description } = req.body;
+      
+      if (!amount || isNaN(parseFloat(amount))) {
+        return res.status(400).json({ message: 'Valid amount is required' });
+      }
+      
+      const order = await createOrder(parseFloat(amount), description || 'Cosmic Channeling Purchase');
+      res.json(order);
+    } catch (error) {
+      console.error('Error creating PayPal order:', error);
+      res.status(500).json({ message: 'Error creating PayPal order' });
+    }
+  });
+  
+  app.post('/api/paypal/capture-order', async (req, res) => {
+    try {
+      const { orderId } = req.body;
+      
+      if (!orderId) {
+        return res.status(400).json({ message: 'Order ID is required' });
+      }
+      
+      const captureData = await captureOrder(orderId);
+      res.json(captureData);
+    } catch (error) {
+      console.error('Error capturing PayPal order:', error);
+      res.status(500).json({ message: 'Error capturing PayPal order' });
+    }
+  });
+  
+  app.get('/api/paypal/order/:orderId', async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      const orderDetails = await getOrderDetails(orderId);
+      res.json(orderDetails);
+    } catch (error) {
+      console.error('Error getting PayPal order details:', error);
+      res.status(500).json({ message: 'Error getting PayPal order details' });
+    }
+  });
+  
+  app.post('/api/paypal/create-subscription', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    try {
+      const subscription = await createSubscription();
+      res.json(subscription);
+    } catch (error) {
+      console.error('Error creating PayPal subscription:', error);
+      res.status(500).json({ message: 'Error creating PayPal subscription' });
+    }
+  });
+  
+  // Webhook for PayPal subscription events
+  app.post('/api/paypal/webhook', async (req, res) => {
+    // In a production app, this would validate the webhook signature
+    // and process subscription events
+    
+    const { event_type, resource } = req.body;
+    
+    if (event_type === 'PAYMENT.CAPTURE.COMPLETED') {
+      // Handle successful payment
+      try {
+        if (req.isAuthenticated() && req.user) {
+          // Update the user's subscription status
+          await storage.updateUserSubscription(req.user.id, true);
+        }
+      } catch (error) {
+        console.error('Error processing PayPal webhook:', error);
+      }
+    }
+    
+    // Acknowledge receipt of the event
+    res.status(200).end();
+  });
+
   // Space News API endpoint
   app.get('/api/space-news', async (req, res) => {
     try {
