@@ -128,8 +128,14 @@ function LoginForm({ handleGoogleLogin }: { handleGoogleLogin: () => void }) {
     try {
       await loginMutation.mutateAsync({ username, password });
       setLocation("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      toast({
+        title: "Login Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
   };
   
@@ -236,8 +242,14 @@ function RegisterForm({ handleGoogleLogin }: { handleGoogleLogin: () => void }) 
         description: "Your cosmic account has been created!",
       });
       setLocation("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Registration failed";
+      toast({
+        title: "Registration Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
   };
   

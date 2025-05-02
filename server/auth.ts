@@ -35,7 +35,8 @@ export function setupAuth(app: Express) {
   const PgSessionStore = connectPgSimple(session);
   const sessionStore = new PgSessionStore({
     pool,
-    tableName: 'session' // Default is 'session'
+    tableName: 'session', // Default is 'session'
+    createTableIfMissing: true // Create the session table if it doesn't exist
   });
 
   const sessionSettings: session.SessionOptions = {
@@ -127,9 +128,21 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("Registration request body:", req.body);
+      
+      // Validate required fields
+      if (!req.body.username || !req.body.password || !req.body.email) {
+        return res.status(400).json({ message: "Username, password, and email are required" });
+      }
+      
       const existingUser = await storage.getUserByUsername(req.body.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      const existingEmail = await storage.getUserByEmail(req.body.email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already in use" });
       }
 
       const user = await storage.createUser({
@@ -138,12 +151,16 @@ export function setupAuth(app: Express) {
       });
 
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Login after registration error:", err);
+          return next(err);
+        }
+        console.log("User registered and logged in successfully:", user.id);
         res.status(201).json(user);
       });
     } catch (error) {
       console.error("Register error:", error);
-      res.status(500).json({ message: "Error during registration" });
+      res.status(500).json({ message: "Error during registration", error: String(error) });
     }
   });
 
