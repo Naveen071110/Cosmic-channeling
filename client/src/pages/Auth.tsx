@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import StarBackground from "@/components/ui/StarBackground";
 import { Separator } from "@/components/ui/separator";
-import { signInWithGoogle, handleAuthRedirect } from "@/lib/firebase";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function AuthPage() {
@@ -19,49 +18,46 @@ export default function AuthPage() {
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   useEffect(() => {
-    // Check if user was redirected from Google OAuth
-    const processGoogleAuth = async () => {
-      try {
-        setIsProcessingOAuth(true);
-        const result = await handleAuthRedirect();
-        if (result?.user) {
-          // User authenticated with Google, send to backend
-          const response = await apiRequest('POST', '/api/auth/google', {
-            email: result.user.email,
-            displayName: result.user.displayName,
-            uid: result.user.uid
-          });
-          
+    // Check for query parameters indicating OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('auth') && urlParams.get('auth') === 'success') {
+      // Refresh the user data from the server
+      apiRequest('GET', '/api/user')
+        .then(response => {
           if (response.ok) {
-            const userData = await response.json();
-            // Manually update the auth context with the user data
-            loginMutation.mutate({ username: userData.username, password: '' });
-            toast({
-              title: "Login Successful",
-              description: "You've logged in with Google!",
-            });
+            return response.json();
           }
-        }
-      } catch (error) {
-        console.error('Google auth error:', error);
-        toast({
-          title: "Authentication Failed",
-          description: "Error logging in with Google",
-          variant: "destructive"
+          throw new Error('Failed to get user data');
+        })
+        .then(userData => {
+          toast({
+            title: "Login Successful",
+            description: "You've logged in with Google!",
+          });
+        })
+        .catch(error => {
+          console.error('Error refreshing user data after OAuth:', error);
+          toast({
+            title: "Authentication Error",
+            description: "Something went wrong with the authentication process",
+            variant: "destructive"
+          });
         });
-      } finally {
-        setIsProcessingOAuth(false);
-      }
-    };
-
-    processGoogleAuth();
-  }, [toast, loginMutation]);
+      
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
   
   // Redirect to home if already logged in
   if (user) {
     setLocation("/");
     return null;
   }
+
+  const handleGoogleLogin = () => {
+    window.location.href = '/api/auth/google';
+  };
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -81,10 +77,10 @@ export default function AuthPage() {
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
-              <LoginForm />
+              <LoginForm handleGoogleLogin={handleGoogleLogin} />
             </TabsContent>
             <TabsContent value="register">
-              <RegisterForm />
+              <RegisterForm handleGoogleLogin={handleGoogleLogin} />
             </TabsContent>
           </Tabs>
         </Card>
@@ -110,7 +106,7 @@ export default function AuthPage() {
   );
 }
 
-function LoginForm() {
+function LoginForm({ handleGoogleLogin }: { handleGoogleLogin: () => void }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { loginMutation } = useAuth();
@@ -183,7 +179,7 @@ function LoginForm() {
           type="button" 
           variant="outline" 
           className="w-full"
-          onClick={() => signInWithGoogle()}
+          onClick={handleGoogleLogin}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -198,7 +194,7 @@ function LoginForm() {
   );
 }
 
-function RegisterForm() {
+function RegisterForm({ handleGoogleLogin }: { handleGoogleLogin: () => void }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -312,7 +308,7 @@ function RegisterForm() {
           type="button" 
           variant="outline" 
           className="w-full"
-          onClick={() => signInWithGoogle()}
+          onClick={handleGoogleLogin}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
