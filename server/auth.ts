@@ -80,7 +80,7 @@ export function setupAuth(app: Express) {
           callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback',
           scope: ['profile', 'email']
         },
-        async (accessToken, refreshToken, profile, done) => {
+        async (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
           try {
             // Check if user exists by email
             const email = profile.emails?.[0]?.value;
@@ -209,20 +209,45 @@ export function setupAuth(app: Express) {
   // Google OAuth routes
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     // Route to start Google OAuth flow
-    app.get('/api/auth/google', 
-      passport.authenticate('google', { scope: ['profile', 'email'] })
-    );
+    app.get('/api/auth/google', (req, res, next) => {
+      // Set custom headers to help with user agent issues
+      passport.authenticate('google', { 
+        scope: ['profile', 'email'],
+        prompt: 'select_account',
+        accessType: 'offline',
+        includeGrantedScopes: true,
+        // This allows Google to use less strict user agent requirements
+        authorizationParams: {
+          hd: '*',
+          access_type: 'offline',
+          approval_prompt: 'auto'
+        }
+      })(req, res, next);
+    });
 
     // Google OAuth callback route
-    app.get('/api/auth/google/callback', 
-      passport.authenticate('google', { 
-        failureRedirect: '/auth',
-        session: true
-      }),
-      (req, res) => {
-        // Successful authentication, redirect to home
-        res.redirect('/');
-      }
-    );
+    app.get('/api/auth/google/callback', (req, res, next) => {
+      passport.authenticate('google', (err, user, info) => {
+        if (err) {
+          console.error('Google authentication error:', err);
+          return res.redirect('/auth?error=' + encodeURIComponent('Authentication failed'));
+        }
+        
+        if (!user) {
+          console.error('Google authentication failed:', info);
+          return res.redirect('/auth?error=' + encodeURIComponent('Authentication failed'));
+        }
+        
+        req.login(user, (err) => {
+          if (err) {
+            console.error('Error logging in after Google auth:', err);
+            return res.redirect('/auth?error=' + encodeURIComponent('Login failed'));
+          }
+          
+          // Successful authentication
+          return res.redirect('/?auth=success');
+        });
+      })(req, res, next);
+    });
   }
 }

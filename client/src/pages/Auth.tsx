@@ -56,7 +56,31 @@ export default function AuthPage() {
   }
 
   const handleGoogleLogin = () => {
-    window.location.href = '/api/auth/google';
+    // Open Google sign-in in a new browser window to avoid the disallowed_useragent issue
+    const googleAuthUrl = '/api/auth/google';
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2.5;
+    const features = `width=${width},height=${height},left=${left},top=${top},status=yes,scrollbars=yes`;
+    
+    const authWindow = window.open(googleAuthUrl, 'googleAuthPopup', features);
+    
+    // Handle the auth window close event
+    const checkPopup = setInterval(() => {
+      if (!authWindow || authWindow.closed) {
+        clearInterval(checkPopup);
+        // The popup was closed, check if authentication succeeded
+        apiRequest('GET', '/api/user')
+          .then(response => {
+            if (response.ok) {
+              // User is logged in, refresh the page
+              window.location.href = '/';
+            }
+          })
+          .catch(err => console.error('Error checking auth status:', err));
+      }
+    }, 1000);
   };
   
   return (
