@@ -1,5 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
@@ -67,6 +68,52 @@ export function setupAuth(app: Express) {
       }
     }),
   );
+
+  // Google OAuth Strategy
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback',
+          scope: ['profile', 'email']
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            // Check if user exists by email
+            const email = profile.emails?.[0]?.value;
+            if (!email) {
+              return done(new Error('No email provided by Google'));
+            }
+
+            let user = await storage.getUserByEmail(email);
+
+            // If user doesn't exist, create a new one
+            if (!user) {
+              // Generate a random username if none is provided by Google
+              const username = profile.displayName?.replace(/\s+/g, '') || 
+                               `user${Math.floor(Math.random() * 10000)}`;
+              
+              // Generate a random secure password since they'll use Google to login
+              const password = await hashPassword(randomBytes(16).toString('hex'));
+              
+              user = await storage.createUser({
+                username,
+                email,
+                password,
+                isSubscribed: false
+              });
+            }
+
+            return done(null, user);
+          } catch (error) {
+            return done(error as Error);
+          }
+        }
+      )
+    );
+  }
 
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
@@ -141,4 +188,24 @@ export function setupAuth(app: Express) {
         res.status(500).json({ message: "Error updating subscription" });
       });
   });
+
+  // Google OAuth routes
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    // Route to start Google OAuth flow
+    app.get('/api/auth/google', 
+      passport.authenticate('google', { scope: ['profile', 'email'] })
+    );
+
+    // Google OAuth callback route
+    app.get('/api/auth/google/callback', 
+      passport.authenticate('google', { 
+        failureRedirect: '/auth',
+        session: true
+      }),
+      (req, res) => {
+        // Successful authentication, redirect to home
+        res.redirect('/');
+      }
+    );
+  }
 }
