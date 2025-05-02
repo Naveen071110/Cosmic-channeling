@@ -82,9 +82,16 @@ export function setupAuth(app: Express) {
         },
         async (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
           try {
+            console.log('Google profile received:', JSON.stringify({
+              id: profile.id,
+              displayName: profile.displayName,
+              emails: profile.emails?.map((e: any) => e.value) || []  
+            }));
+            
             // Check if user exists by email
             const email = profile.emails?.[0]?.value;
             if (!email) {
+              console.error('No email provided by Google');
               return done(new Error('No email provided by Google'));
             }
 
@@ -92,9 +99,22 @@ export function setupAuth(app: Express) {
 
             // If user doesn't exist, create a new one
             if (!user) {
-              // Generate a random username if none is provided by Google
-              const username = profile.displayName?.replace(/\s+/g, '') || 
-                               `user${Math.floor(Math.random() * 10000)}`;
+              console.log('Creating new user with Google profile');
+              
+              // Generate a username based on display name or email prefix
+              let username = '';
+              if (profile.displayName) {
+                // Replace spaces and special characters
+                username = profile.displayName.replace(/[^\w]/g, '');
+              } else {
+                // Use email prefix
+                username = email.split('@')[0];
+              }
+              
+              // Add timestamp to ensure uniqueness
+              username = `${username}${Date.now().toString().slice(-4)}`;
+              
+              console.log('Generated username:', username);
               
               // Generate a random secure password since they'll use Google to login
               const password = await hashPassword(randomBytes(16).toString('hex'));
@@ -105,10 +125,15 @@ export function setupAuth(app: Express) {
                 password,
                 isSubscribed: false
               });
+              
+              console.log('New user created with ID:', user.id);
+            } else {
+              console.log('Existing user found with email:', email);
             }
 
             return done(null, user);
           } catch (error) {
+            console.error('Error in Google authentication:', error);
             return done(error as Error);
           }
         }
@@ -209,42 +234,32 @@ export function setupAuth(app: Express) {
   // Google OAuth routes
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     // Route to start Google OAuth flow
-    app.get('/api/auth/google', (req, res, next) => {
-      // Set custom headers to help with user agent issues
-      passport.authenticate('google', { 
-        scope: ['profile', 'email'],
-        prompt: 'select_account',
-        accessType: 'offline',
-        includeGrantedScopes: true,
-        // This allows Google to use less strict user agent requirements
-        authorizationParams: {
-          hd: '*',
-          access_type: 'offline',
-          approval_prompt: 'auto'
-        }
-      })(req, res, next);
+    app.get('/api/auth/google', function(req, res, next) {
+      passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
     });
 
     // Google OAuth callback route
-    app.get('/api/auth/google/callback', (req, res, next) => {
-      passport.authenticate('google', (err, user, info) => {
-        if (err) {
-          console.error('Google authentication error:', err);
-          return res.redirect('/auth?error=' + encodeURIComponent('Authentication failed'));
+    app.get('/api/auth/google/callback', function(req, res, next) {
+      // @ts-ignore - Ignore type errors for the authenticate callback
+      passport.authenticate('google', function(error: any, user: any, info: any) {
+        if (error) {
+          console.error('Google authentication error:', error);
+          return res.redirect('/auth?error=auth_error');
         }
         
         if (!user) {
           console.error('Google authentication failed:', info);
-          return res.redirect('/auth?error=' + encodeURIComponent('Authentication failed'));
+          return res.redirect('/auth?error=auth_failed');
         }
         
-        req.login(user, (err) => {
+        req.login(user, function(err: any) {
           if (err) {
             console.error('Error logging in after Google auth:', err);
-            return res.redirect('/auth?error=' + encodeURIComponent('Login failed'));
+            return res.redirect('/auth?error=login_error');
           }
           
           // Successful authentication
+          console.log('Google authentication successful for user:', user.id);
           return res.redirect('/?auth=success');
         });
       })(req, res, next);
