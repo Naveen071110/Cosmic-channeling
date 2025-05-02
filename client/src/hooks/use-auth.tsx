@@ -4,7 +4,7 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { User as SelectUser, InsertUser } from "../../shared/schema";
+import { User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,9 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
+      console.log('Sending login credentials:', { username: credentials.username, password: '***' });
       const res = await apiRequest("POST", "/api/login", credentials);
+      console.log('Login response status:', res.status);
       if (!res.ok) {
         const error = await res.json();
+        console.log('Login error response:', error);
         throw new Error(error.message || "Login failed");
       }
       return await res.json();
@@ -69,9 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: RegisterData) => {
+      console.log('Sending registration data:', userData);
       const res = await apiRequest("POST", "/api/register", userData);
+      console.log('Registration response status:', res.status);
       if (!res.ok) {
         const error = await res.json();
+        console.log('Registration error response:', error);
         throw new Error(error.message || "Registration failed");
       }
       return await res.json();
