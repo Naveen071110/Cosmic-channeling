@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import StarBackground from "@/components/ui/StarBackground";
 import { Separator } from "@/components/ui/separator";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function AuthPage() {
   const [location, setLocation] = useLocation();
@@ -124,7 +124,10 @@ export default function AuthPage() {
                 title: "Success",
                 description: "You've been successfully authenticated!",
               });
-              window.location.href = '/';
+              queryClient.invalidateQueries({ queryKey: ["/api/user"] })
+                .then(() => {
+                  setLocation('/');
+                });
             } else {
               // Not logged in after popup closed
               toast({
