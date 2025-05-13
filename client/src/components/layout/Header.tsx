@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [location] = useLocation();
+  const { logoutMutation } = useAuth();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -20,6 +24,15 @@ const Header = () => {
   };
 
   const isActive = (path: string) => location === path;
+  
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      closeMenu(); // Close mobile menu if open
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
     <>
@@ -55,6 +68,16 @@ const Header = () => {
         </nav>
         
         <div className="flex items-center space-x-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleLogout} 
+            className="hidden md:flex items-center gap-2 text-[#F1F5F9] hover:text-[#EC4899] transition-colors"
+            disabled={logoutMutation.isPending}
+          >
+            <LogOut size={16} />
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+          </Button>
           <a href="https://www.youtube.com/@CosmicChanneling001" target="_blank" rel="noopener noreferrer" className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" aria-label="YouTube Channel">
             <i className="ri-youtube-line text-xl"></i>
           </a>
@@ -98,6 +121,16 @@ const Header = () => {
             <Link href="/pricing" onClick={closeMenu} className={isActive('/pricing') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9] transition-colors'}>
               Pricing
             </Link>
+            <Button 
+              variant="ghost" 
+              size="lg" 
+              onClick={handleLogout} 
+              className="flex items-center gap-2 mt-6 text-[#F1F5F9] hover:text-[#EC4899] transition-colors"
+              disabled={logoutMutation.isPending}
+            >
+              <LogOut size={18} />
+              {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            </Button>
           </nav>
         </div>
       )}
