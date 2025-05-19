@@ -23,25 +23,23 @@ import { ProtectedRoute } from "./lib/ProtectedRoute";
 import { useAuth } from "./hooks/use-auth";
 
 function AppRouter() {
-  const { user } = useAuth();
-  
   return (
     <>
-      {user && <Header />}
+      <Header />
       <Switch>
         <Route path="/auth" component={Auth} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/privacy" component={PrivacyPolicy} />
-        <ProtectedRoute path="/" component={Home} />
-        <ProtectedRoute path="/meditate" component={Meditate} />
-        <ProtectedRoute path="/explore" component={Explore} />
-        <ProtectedRoute path="/journal" component={Journal} />
-        <ProtectedRoute path="/tools" component={Tools} />
-        <ProtectedRoute path="/pricing" component={Pricing} />
-        <ProtectedRoute path="/subscribe" component={Subscribe} />
+        <Route path="/" component={Home} />
+        <Route path="/meditate" component={Meditate} />
+        <Route path="/explore" component={Explore} />
+        <Route path="/journal" component={Journal} />
+        <Route path="/tools" component={Tools} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/subscribe" component={Subscribe} />
         <Route component={NotFound} />
       </Switch>
-      {user && <Footer />}
+      <Footer />
     </>
   );
 }
