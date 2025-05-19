@@ -32,18 +32,11 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  const PgSessionStore = connectPgSimple(session);
-  const sessionStore = new PgSessionStore({
-    pool,
-    tableName: 'session', // Default is 'session'
-    createTableIfMissing: true // Create the session table if it doesn't exist
-  });
-
+  // Use in-memory session store for now since we're making the app public
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "cosmic_channeling_secret",
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
