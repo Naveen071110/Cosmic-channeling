@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import MeditationTimer from '@/components/features/MeditationTimer';
+import MeditationLibrary from '@/components/meditation/MeditationLibrary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
