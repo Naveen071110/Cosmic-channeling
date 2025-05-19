@@ -62,7 +62,7 @@ interface JournalPrompt {
   tags: string[];
 }
 
-// Sample data
+// Journal prompts to help users get started
 const samplePrompts: JournalPrompt[] = [
   {
     id: "1",
@@ -96,42 +96,13 @@ const samplePrompts: JournalPrompt[] = [
   }
 ];
 
-const sampleJournalEntries: JournalEntry[] = [
-  {
-    id: "1",
-    date: new Date(Date.now() - 86400000), // Yesterday
-    content: "Today I meditated under the stars and felt a profound connection to the cosmos. The twinkling lights above seemed to synchronize with my breath, creating a rhythm that felt both ancient and deeply personal. I'm beginning to understand that we truly are made of stardust.",
-    tags: ["meditation", "stars", "connection"],
-    prompt: "Describe a connection you felt with the universe today. How did it manifest?",
-    sentiment: 0.8,
-    wordCount: 54,
-    themes: ["cosmic connection", "meditation", "self-discovery"]
-  },
-  {
-    id: "2",
-    date: new Date(Date.now() - 172800000), // 2 days ago
-    content: "I'm struggling with finding my place in the grand scheme of things. Sometimes the vastness of the universe makes me feel insignificant, but today during my cosmic channeling session, I felt a spark of purpose. Maybe our significance isn't measured by our size in the cosmos but by our capacity to perceive and appreciate its wonder.",
-    tags: ["struggle", "purpose", "channeling"],
-    sentiment: 0.2,
-    wordCount: 62,
-    themes: ["existential questions", "purpose", "perspective"]
-  },
-  {
-    id: "3",
-    date: new Date(Date.now() - 259200000), // 3 days ago
-    content: "The planetary alignment this week has coincided with some interesting synchronicities in my life. Three people from my past reached out independently, all bearing similar messages about new beginnings. I can't help but wonder if there's a cosmic orchestration happening. I'm remaining open to the guidance.",
-    tags: ["synchronicity", "planets", "guidance"],
-    prompt: "What cosmic patterns have you noticed repeating in your life lately?",
-    sentiment: 0.6,
-    wordCount: 58,
-    themes: ["synchronicity", "celestial influence", "connections"]
-  }
-];
+// We'll load journal entries from the server when the user is logged in
+const emptyJournalEntries: JournalEntry[] = [];
 
 export default function EnhancedJournal() {
   const [activeTab, setActiveTab] = useState<string>("write");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(sampleJournalEntries);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(emptyJournalEntries);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [journalContent, setJournalContent] = useState<string>("");
   const [currentTags, setCurrentTags] = useState<string[]>([]);

@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import StarBackground from "@/components/ui/StarBackground";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Lock, Star, Book } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function AuthPage() {

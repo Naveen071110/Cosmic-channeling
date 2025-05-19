@@ -42,36 +42,13 @@ const dreamSymbols = [
   { symbol: 'Darkness', meaning: 'Unknown, fear, potential for growth', cosmic: 'The void of creation, where all possibilities exist' },
 ];
 
-// Sample past dream records
-const sampleDreamRecords: DreamRecord[] = [
-  {
-    id: '1',
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    dream: 'I was flying among the stars, touching them with my hands. They felt warm and comforting. I could see Earth below me, beautiful and blue.',
-    interpretation: {
-      text: "Your dream symbolizes a spiritual journey and deep connection with the cosmos. Flying represents transcending earthly concerns while touching stars indicates you're reaching for your aspirations and feeling a connection to something greater than yourself.",
-      themes: ["Spirituality", "Freedom", "Connection"],
-      cosmicSignificance: "This dream occurred during a meteor shower, suggesting you're particularly receptive to cosmic energies during celestial events.",
-      advice: "Practice meditation focused on cosmic connection. The warmth you felt indicates you're on the right spiritual path."
-    }
-  },
-  {
-    id: '2',
-    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-    dream: 'I was walking through a forest at night. The moon was full and illuminating my path. I found a door embedded in an ancient tree, but I woke up before I could open it.',
-    interpretation: {
-      text: "The night forest represents your journey through the unconscious mind, with the moon as your intuitive guide. The door in the tree symbolizes an opportunity for growth or a new path that you're hesitant to explore.",
-      themes: ["Discovery", "Intuition", "Opportunity"],
-      cosmicSignificance: "The full moon in your dream suggests timing is important. The next full moon may bring clarity about a decision you need to make.",
-      advice: "Meditate on what might be behind that door. Your unconscious is trying to lead you toward an important discovery."
-    }
-  }
-];
+// Dream records will be loaded from the server when the user is logged in
+const emptyDreamRecords: DreamRecord[] = [];
 
 export default function DreamInterpreter() {
   const [dreamText, setDreamText] = useState('');
   const [currentInterpretation, setCurrentInterpretation] = useState<Interpretation | null>(null);
-  const [dreamRecords, setDreamRecords] = useState<DreamRecord[]>(sampleDreamRecords);
+  const [dreamRecords, setDreamRecords] = useState<DreamRecord[]>(emptyDreamRecords);
   const [isInterpreting, setIsInterpreting] = useState(false);
   const [activeTab, setActiveTab] = useState('interpret');
   
