@@ -108,6 +108,18 @@ export default function EnhancedJournal() {
   const [loginDialogContext, setLoginDialogContext] = useState<string>('entries');
   
   const [activeTab, setActiveTab] = useState<string>("write");
+  
+  // Handle tab changes and check for authentication
+  const handleTabChange = (value: string) => {
+    // If user is trying to view entries or insights but not logged in
+    if ((value === 'entries' || value === 'insights') && !user) {
+      setLoginDialogContext('view');
+      setShowLoginDialog(true);
+      return;
+    }
+    
+    setActiveTab(value);
+  };
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(emptyJournalEntries);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
@@ -256,7 +268,7 @@ export default function EnhancedJournal() {
         }
       />
       
-      <Tabs defaultValue="write" onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue="write" onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="write">
             <FileText className="w-4 h-4 mr-2" />
