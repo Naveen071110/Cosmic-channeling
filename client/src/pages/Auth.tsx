@@ -19,9 +19,16 @@ export default function AuthPage() {
   const { toast } = useToast();
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
+  const [referringPath, setReferringPath] = useState<string | null>(null);
+  
   useEffect(() => {
     // Check for query parameters
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Check if user was redirected from a protected route
+    if (urlParams.has('from')) {
+      setReferringPath(urlParams.get('from'));
+    }
     
     // Check for OAuth callback success
     if (urlParams.has('auth') && urlParams.get('auth') === 'success') {
@@ -162,6 +169,22 @@ export default function AuthPage() {
             <CardDescription className="text-center">
               Enter your sacred space to explore the cosmos
             </CardDescription>
+            
+            {referringPath && (
+              <Alert className="mx-4 mt-2 bg-purple-900/20 border-purple-500/30">
+                <Lock className="h-4 w-4 text-purple-400" />
+                <AlertTitle>Protected Feature</AlertTitle>
+                <AlertDescription>
+                  {referringPath === '/journal' ? (
+                    <>You need to sign in to access your personal Cosmic Journal.</>
+                  ) : referringPath === '/tools' ? (
+                    <>You need to sign in to access your Dream Interpreter and save your interpretations.</>
+                  ) : (
+                    <>You need to sign in to access this feature.</>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
           </CardHeader>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
