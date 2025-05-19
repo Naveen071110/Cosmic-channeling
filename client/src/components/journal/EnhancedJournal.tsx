@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,8 +41,10 @@ import {
   Download, 
   FileText, 
   Sparkles,
-  Lightbulb
+  Lightbulb,
+  Lock
 } from "lucide-react";
+import LoginDialog from "@/components/ui/LoginDialog";
 
 // Type definitions for journal-related data
 interface JournalEntry {
@@ -100,6 +103,10 @@ const samplePrompts: JournalPrompt[] = [
 const emptyJournalEntries: JournalEntry[] = [];
 
 export default function EnhancedJournal() {
+  const { user } = useAuth();
+  const [showLoginDialog, setShowLoginDialog] = useState<boolean>(false);
+  const [loginDialogContext, setLoginDialogContext] = useState<string>('entries');
+  
   const [activeTab, setActiveTab] = useState<string>("write");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(emptyJournalEntries);
@@ -156,6 +163,13 @@ export default function EnhancedJournal() {
   
   // Handle saving the journal entry
   const handleSaveEntry = () => {
+    // If user is not logged in, show login dialog
+    if (!user) {
+      setLoginDialogContext('save');
+      setShowLoginDialog(true);
+      return;
+    }
+    
     if (!journalContent.trim()) return;
     
     // Calculate word count

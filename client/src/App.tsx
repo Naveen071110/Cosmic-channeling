@@ -33,8 +33,8 @@ function AppRouter() {
         <Route path="/" component={Home} />
         <Route path="/meditate" component={Meditate} />
         <Route path="/explore" component={Explore} />
-        <ProtectedRoute path="/journal" component={Journal} />
-        <ProtectedRoute path="/tools" component={Tools} />
+        <Route path="/journal" component={Journal} />
+        <Route path="/tools" component={Tools} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/subscribe" component={Subscribe} />
         <Route component={NotFound} />
