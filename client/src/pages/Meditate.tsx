@@ -118,9 +118,10 @@ const Meditate = () => {
         </div>
         
         <Tabs defaultValue="timer" onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2 mb-8">
+          <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="timer">Meditation Timer</TabsTrigger>
             <TabsTrigger value="guided">Guided Meditations</TabsTrigger>
+            <TabsTrigger value="library">Meditation Library</TabsTrigger>
           </TabsList>
           
           <TabsContent value="timer" className="focus:outline-none">
@@ -180,6 +181,10 @@ const Meditate = () => {
                 />
               ))}
             </div>
+          </TabsContent>
+          
+          <TabsContent value="library" className="focus:outline-none">
+            <MeditationLibrary />
           </TabsContent>
         </Tabs>
       </section>
