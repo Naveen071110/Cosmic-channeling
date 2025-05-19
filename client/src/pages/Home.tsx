@@ -4,8 +4,8 @@ import FeatureGrid from '@/components/home/FeatureGrid';
 import Newsletter from '@/components/home/Newsletter';
 import SpiritualSpaceQuiz from '@/components/features/SpiritualSpaceQuiz';
 import WelcomeCarousel from '@/components/onboarding/WelcomeCarousel';
-// import DailyQuote from '@/components/features/FixedDailyQuote';
-// import AstralConnectionTest from '@/components/features/AstralConnectionTest';
+import QuoteGenerator from '@/components/features/QuoteGenerator';
+import AstralTest from '@/components/features/AstralTest';
 
 const Home = () => {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -20,29 +20,25 @@ const Home = () => {
       <main className="container mx-auto px-4 py-8">
         <Hero />
         
-        {/* Daily Quote section - temporarily disabled
         <section className="mb-16">
           <h2 className="text-2xl font-bold mb-8 text-center">
             <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
               Daily Cosmic Inspiration
             </span>
           </h2>
-          <DailyQuote />
+          <QuoteGenerator />
         </section>
-        */}
 
         <FeatureGrid />
         
-        {/* Astral Connection Test section - temporarily disabled
         <section className="my-16">
           <h2 className="text-2xl font-bold mb-8 text-center">
             <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
               Discover Your Cosmic Potential
             </span>
           </h2>
-          <AstralConnectionTest />
+          <AstralTest />
         </section>
-        */}
         
         <SpiritualSpaceQuiz />
         <Newsletter />
