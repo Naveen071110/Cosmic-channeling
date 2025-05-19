@@ -231,8 +231,31 @@ export default function EnhancedJournal() {
     return "text-red-500";
   };
   
+  // Function to handle login dialog close
+  const handleCloseLoginDialog = () => {
+    setShowLoginDialog(false);
+  };
+  
   return (
     <div className="container max-w-6xl mx-auto px-4">
+      {/* Login Dialog */}
+      <LoginDialog 
+        isOpen={showLoginDialog} 
+        onClose={handleCloseLoginDialog}
+        title={loginDialogContext === 'save' 
+          ? "Sign in to save your journal" 
+          : loginDialogContext === 'view' 
+            ? "Sign in to view your entries" 
+            : "Sign in to access"
+        }
+        description={loginDialogContext === 'save' 
+          ? "Create an account or sign in to save your cosmic journal entries" 
+          : loginDialogContext === 'view' 
+            ? "Sign in to view your personal journey through the cosmos" 
+            : "Please sign in to continue"
+        }
+      />
+      
       <Tabs defaultValue="write" onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="write">

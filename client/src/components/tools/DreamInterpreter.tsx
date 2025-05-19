@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,7 +12,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Moon, Stars, Sparkles, History, Bookmark, Calendar } from 'lucide-react';
+import { Moon, Stars, Sparkles, History, Bookmark, Calendar, Lock } from 'lucide-react';
+import LoginDialog from '@/components/ui/LoginDialog';
 
 // Types for dream interpretation data
 type Interpretation = {
@@ -46,6 +48,10 @@ const dreamSymbols = [
 const emptyDreamRecords: DreamRecord[] = [];
 
 export default function DreamInterpreter() {
+  const { user } = useAuth();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginDialogContext, setLoginDialogContext] = useState('history');
+  
   const [dreamText, setDreamText] = useState('');
   const [currentInterpretation, setCurrentInterpretation] = useState<Interpretation | null>(null);
   const [dreamRecords, setDreamRecords] = useState<DreamRecord[]>(emptyDreamRecords);
@@ -97,15 +103,24 @@ export default function DreamInterpreter() {
         advice: 'Reflect on the symbols in this dream during meditation. Consider journaling about the emotions you felt and any insights that arise.'
       };
       
-      // Save the dream and interpretation
-      const newDreamRecord: DreamRecord = {
-        id: Date.now().toString(),
-        date: new Date(),
-        dream: dreamText,
-        interpretation
-      };
+      // If user is logged in, save the dream record
+      if (user) {
+        // Save the dream and interpretation
+        const newDreamRecord: DreamRecord = {
+          id: Date.now().toString(),
+          date: new Date(),
+          dream: dreamText,
+          interpretation
+        };
+        
+        setDreamRecords([newDreamRecord, ...dreamRecords]);
+      } else {
+        // Show login dialog to save the interpretation
+        setLoginDialogContext('save');
+        setShowLoginDialog(true);
+      }
       
-      setDreamRecords([newDreamRecord, ...dreamRecords]);
+      // Show the interpretation to the user regardless of login status
       setCurrentInterpretation(interpretation);
       setIsInterpreting(false);
     }, 2000); // Simulate 2-second processing time
@@ -119,13 +134,43 @@ export default function DreamInterpreter() {
   
   // Function to load a past dream for viewing
   const viewDreamRecord = (record: DreamRecord) => {
+    // If user is not logged in, show login dialog
+    if (!user) {
+      setLoginDialogContext('view');
+      setShowLoginDialog(true);
+      return;
+    }
+    
     setDreamText(record.dream);
     setCurrentInterpretation(record.interpretation || null);
     setActiveTab('interpret');
   };
   
+  // Function to handle login dialog close
+  const handleCloseLoginDialog = () => {
+    setShowLoginDialog(false);
+  };
+  
   return (
     <div className="container mx-auto px-4">
+      {/* Login Dialog */}
+      <LoginDialog 
+        isOpen={showLoginDialog} 
+        onClose={handleCloseLoginDialog}
+        title={loginDialogContext === 'view' 
+          ? "Sign in to view your dream history" 
+          : loginDialogContext === 'save' 
+            ? "Sign in to save your interpretation" 
+            : "Sign in to access"
+        }
+        description={loginDialogContext === 'view' 
+          ? "Create an account or sign in to access your personal dream interpretations" 
+          : loginDialogContext === 'save' 
+            ? "Sign in to save this dream interpretation to your personal history" 
+            : "Please sign in to continue"
+        }
+      />
+      
       <Tabs defaultValue="interpret" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 mb-8">
           <TabsTrigger value="interpret" className="flex items-center">
