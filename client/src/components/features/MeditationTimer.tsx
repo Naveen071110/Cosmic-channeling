@@ -7,14 +7,35 @@ const MeditationTimer = () => {
   const [isActive, setIsActive] = useState(false);
   const [timeDisplay, setTimeDisplay] = useState('05:00');
   const [selectedDuration, setSelectedDuration] = useState(5);
+  const [meditationMusic, setMeditationMusic] = useState<string | null>(null);
   const intervalRef = useRef<number | null>(null);
+  
+  // Fetch meditation music from Pixabay
+  const fetchMeditationMusic = async () => {
+    try {
+      const response = await fetch(`https://pixabay.com/api/?key=${import.meta.env.VITE_PIXABAY_API_KEY || process.env.PIXABAY_API_KEY}&q=meditation+music&audio_type=music&min_duration=300&per_page=10`);
+      const data = await response.json();
+      
+      if (data.hits && data.hits.length > 0) {
+        // Get a random meditation track
+        const randomTrack = data.hits[Math.floor(Math.random() * data.hits.length)];
+        setMeditationMusic(randomTrack.previewURL);
+      }
+    } catch (error) {
+      console.error('Error fetching meditation music:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMeditationMusic();
+  }, []);
   
   const { 
     isPlaying, 
     toggle, 
     audioSource, 
     setAudioSource 
-  } = useAudio('https://cdn.freesound.org/previews/460/460409_5121236-lq.mp3');
+  } = useAudio(meditationMusic || '');
 
   useEffect(() => {
     if (isActive && time > 0) {

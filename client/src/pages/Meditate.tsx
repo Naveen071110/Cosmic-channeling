@@ -3,105 +3,9 @@ import MeditationTimer from '@/components/features/MeditationTimer';
 import MeditationLibrary from '@/components/meditation/MeditationLibrary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { useAudio } from '@/hooks/use-audio';
-
-const GuidedMeditationPlayer = ({ title, description, duration, imageUrl, audioUrl }: { 
-  title: string, 
-  description: string, 
-  duration: number, 
-  imageUrl: string,
-  audioUrl: string
-}) => {
-  const { 
-    isPlaying, 
-    toggle, 
-    currentTime, 
-    duration: audioDuration,
-    audioError
-  } = useAudio(audioUrl);
-
-  const formatTime = (seconds: number) => {
-    if (isNaN(seconds)) return '0:00';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const progress = audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0;
-  
-  return (
-    <Card className="bg-[#1E293B] border-[#334155]">
-      <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/3 h-48 md:h-auto relative">
-            <img 
-              src={imageUrl}
-              alt={title} 
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <div className="p-6 md:w-2/3">
-            <h3 className="text-xl font-medium mb-2">{title}</h3>
-            <p className="mb-4 text-[#64748B]">{description}</p>
-            
-            {isPlaying && (
-              <div className="mb-4">
-                <Progress value={progress} className="h-1.5 mb-1" />
-                <div className="flex justify-between">
-                  <span className="text-xs text-[#64748B]">{formatTime(currentTime)}</span>
-                  <span className="text-xs text-[#64748B]">{formatTime(audioDuration)}</span>
-                </div>
-              </div>
-            )}
-            
-            <div className="flex items-center">
-              <button 
-                onClick={toggle}
-                className="bg-[#7E22CE] hover:bg-purple-800 text-white py-2 px-4 rounded-md transition-colors flex items-center gap-2"
-              >
-                <i className={`ri-${isPlaying ? 'pause' : 'play'}-circle-line`}></i> 
-                {isPlaying ? 'Pause Meditation' : 'Begin Meditation'}
-              </button>
-              <span className="text-xs text-[#64748B] ml-4">Duration: {duration} min</span>
-              
-              {audioError && (
-                <span className="text-xs text-[#EC4899] ml-4">Using fallback audio</span>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 const Meditate = () => {
   const [activeTab, setActiveTab] = useState('timer');
-  
-  const guidedMeditations = [
-    {
-      title: "Cosmic Consciousness Meditation",
-      description: "Connect with the vastness of the universe and recognize your place within it. This meditation helps you sense the interconnectedness of all things.",
-      imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      audioUrl: "/audio/cosmic-consciousness.mp3",
-      duration: 15
-    },
-    {
-      title: "Starlight Healing Meditation",
-      description: "Visualize cosmic light flowing through your body, clearing blockages and revitalizing your energy centers with the pure energy of the stars.",
-      imageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      audioUrl: "/audio/starlight-healing.mp3",
-      duration: 20
-    },
-    {
-      title: "Cosmic Journey Meditation",
-      description: "Take a journey through the cosmos, exploring planets, stars, and galaxies while expanding your consciousness beyond earthly limitations.",
-      imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-      audioUrl: "/audio/cosmic-journey.mp3",
-      duration: 18
-    }
-  ];
   
   return (
     <main className="container mx-auto px-4 py-8">
@@ -118,9 +22,8 @@ const Meditate = () => {
         </div>
         
         <Tabs defaultValue="timer" onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-2 mb-8">
             <TabsTrigger value="timer">Meditation Timer</TabsTrigger>
-            <TabsTrigger value="guided">Guided Meditations</TabsTrigger>
             <TabsTrigger value="library">Meditation Library</TabsTrigger>
           </TabsList>
           
@@ -168,20 +71,7 @@ const Meditate = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="guided" className="focus:outline-none">
-            <div className="grid gap-6">
-              {guidedMeditations.map((meditation, index) => (
-                <GuidedMeditationPlayer 
-                  key={index}
-                  title={meditation.title}
-                  description={meditation.description}
-                  duration={meditation.duration}
-                  imageUrl={meditation.imageUrl}
-                  audioUrl={meditation.audioUrl}
-                />
-              ))}
-            </div>
-          </TabsContent>
+
           
           <TabsContent value="library" className="focus:outline-none">
             <MeditationLibrary />
