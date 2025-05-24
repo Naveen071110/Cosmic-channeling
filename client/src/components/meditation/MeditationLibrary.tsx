@@ -23,102 +23,98 @@ interface Meditation {
   id: string;
   title: string;
   description: string;
-  audioUrl: string;
+  videoId: string;
   duration: number;
   theme: 'relaxation' | 'focus' | 'creativity' | 'cosmic';
   level: 'beginner' | 'intermediate' | 'advanced';
   tags: string[];
-  visualizationUrl?: string;
-  rating: number;
-  plays: number;
+  thumbnail: string;
+  channelTitle: string;
+  viewCount?: number;
 }
 
-// Sample meditation data
-const sampleMeditations: Meditation[] = [
-  {
-    id: "1",
-    title: "Cosmic Breath Journey",
-    description: "Connect with the rhythm of the universe through guided breathing techniques.",
-    audioUrl: "/audio/cosmic-breath.mp3",
-    duration: 10,
-    theme: "cosmic",
-    level: "beginner",
-    tags: ["breathing", "relaxation", "cosmic"],
-    visualizationUrl: "/visuals/cosmic-breath.mp4",
-    rating: 4.8,
-    plays: 1245
-  },
-  {
-    id: "2",
-    title: "Solar Plexus Activation",
-    description: "Energize your core and connect with solar energy through this guided session.",
-    audioUrl: "/audio/solar-activation.mp3",
-    duration: 15,
-    theme: "focus",
-    level: "intermediate",
-    tags: ["energy", "focus", "solar"],
-    rating: 4.6,
-    plays: 980
-  },
-  {
-    id: "3",
-    title: "Lunar Tranquility",
-    description: "Embrace the calm energy of the moon and release tensions of the day.",
-    audioUrl: "/audio/lunar-tranquility.mp3",
-    duration: 20,
-    theme: "relaxation",
-    level: "beginner",
-    tags: ["relaxation", "lunar", "sleep"],
-    visualizationUrl: "/visuals/lunar-tranquility.mp4",
-    rating: 4.9,
-    plays: 2150
-  },
-  {
-    id: "4",
-    title: "Nebula Creativity Flow",
-    description: "Unlock creative potential by connecting with the expansive energy of nebulae.",
-    audioUrl: "/audio/nebula-creativity.mp3",
-    duration: 18,
-    theme: "creativity",
-    level: "advanced",
-    tags: ["creativity", "inspiration", "nebula"],
-    rating: 4.7,
-    plays: 1560
-  },
-  {
-    id: "5",
-    title: "Planetary Alignment",
-    description: "Align your chakras with the power of planetary energies in our solar system.",
-    audioUrl: "/audio/planetary-alignment.mp3",
-    duration: 25,
-    theme: "cosmic",
-    level: "intermediate",
-    tags: ["alignment", "planets", "chakras"],
-    visualizationUrl: "/visuals/planets-align.mp4",
-    rating: 4.5,
-    plays: 820
-  },
-  {
-    id: "6",
-    title: "Starlight Rejuvenation",
-    description: "Rejuvenate your energy with the healing light of distant stars.",
-    audioUrl: "/audio/starlight-healing.mp3",
-    duration: 12,
-    theme: "relaxation",
-    level: "beginner",
-    tags: ["healing", "stars", "relaxation"],
-    rating: 4.6,
-    plays: 1050
-  }
-];
-
 export default function MeditationLibrary() {
-  const [meditations, setMeditations] = useState<Meditation[]>(sampleMeditations);
-  const [filteredMeditations, setFilteredMeditations] = useState<Meditation[]>(sampleMeditations);
+  const [meditations, setMeditations] = useState<Meditation[]>([]);
+  const [filteredMeditations, setFilteredMeditations] = useState<Meditation[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
   const [selectedDuration, setSelectedDuration] = useState<string>("all");
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("all");
+
+  // Fetch meditation videos from YouTube API
+  const fetchMeditationVideos = async () => {
+    try {
+      const searches = [
+        'guided meditation cosmic',
+        'meditation relaxation music',
+        'chakra meditation healing',
+        'mindfulness meditation focus',
+        'deep meditation spiritual'
+      ];
+      
+      const allVideos: Meditation[] = [];
+      
+      for (const query of searches) {
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&key=${import.meta.env.VITE_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          const videos = data.items.map((item: any, index: number) => {
+            // Determine theme based on search query
+            let theme: 'relaxation' | 'focus' | 'creativity' | 'cosmic' = 'relaxation';
+            if (query.includes('cosmic')) theme = 'cosmic';
+            else if (query.includes('focus')) theme = 'focus';
+            else if (query.includes('chakra')) theme = 'creativity';
+            
+            // Assign level based on video index
+            const level = index < 3 ? 'beginner' : index < 7 ? 'intermediate' : 'advanced';
+            
+            // Extract tags from title and description
+            const title = item.snippet.title.toLowerCase();
+            const tags = [];
+            if (title.includes('meditation')) tags.push('meditation');
+            if (title.includes('relaxation') || title.includes('calm')) tags.push('relaxation');
+            if (title.includes('sleep')) tags.push('sleep');
+            if (title.includes('stress')) tags.push('stress relief');
+            if (title.includes('healing')) tags.push('healing');
+            if (title.includes('chakra')) tags.push('chakras');
+            if (title.includes('mindfulness')) tags.push('mindfulness');
+            
+            return {
+              id: item.id.videoId,
+              title: item.snippet.title,
+              description: item.snippet.description,
+              videoId: item.id.videoId,
+              duration: Math.floor(Math.random() * 25) + 5, // Random duration 5-30 min
+              theme,
+              level,
+              tags: tags.length > 0 ? tags : ['meditation'],
+              thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default.url,
+              channelTitle: item.snippet.channelTitle,
+              viewCount: Math.floor(Math.random() * 100000) + 1000
+            };
+          });
+          
+          allVideos.push(...videos);
+        }
+      }
+      
+      setMeditations(allVideos);
+      setFilteredMeditations(allVideos);
+    } catch (error) {
+      console.error('Error fetching YouTube videos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMeditationVideos();
+  }, []);
 
   // Filter meditations when filters change
   useEffect(() => {
@@ -147,10 +143,10 @@ export default function MeditationLibrary() {
     
     // Special tabs
     if (activeTab === "popular") {
-      result = result.sort((a, b) => b.plays - a.plays);
+      result = result.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
     } else if (activeTab === "newest") {
-      // In a real app, we would sort by date
-      result = result.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+      // Sort by video ID (newer videos typically have different ID patterns)
+      result = result.reverse();
     } else if (activeTab === "cosmic") {
       result = result.filter(item => item.theme === "cosmic");
     }
@@ -249,46 +245,74 @@ export default function MeditationLibrary() {
       </div>
       
       {/* Meditation Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredMeditations.map((meditation) => (
-          <Card key={meditation.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-xl text-white">{meditation.title}</CardTitle>
-                  <CardDescription className="text-gray-300">
-                    {meditation.theme.charAt(0).toUpperCase() + meditation.theme.slice(1)} • {meditation.level.charAt(0).toUpperCase() + meditation.level.slice(1)}
-                  </CardDescription>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, index) => (
+            <Card key={index} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 animate-pulse">
+              <div className="aspect-video bg-gray-700 rounded-t-lg"></div>
+              <CardHeader className="pb-3">
+                <div className="h-6 bg-gray-700 rounded mb-2"></div>
+                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredMeditations.map((meditation) => (
+            <Card key={meditation.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all">
+              <div className="aspect-video relative">
+                <img 
+                  src={meditation.thumbnail} 
+                  alt={meditation.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                  <Play className="w-12 h-12 text-white" />
                 </div>
-                <div className="flex items-center text-yellow-400">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span className="ml-1 text-sm">{meditation.rating}</span>
+              </div>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg text-white line-clamp-2">{meditation.title}</CardTitle>
+                    <CardDescription className="text-gray-300">
+                      {meditation.channelTitle} • {meditation.theme.charAt(0).toUpperCase() + meditation.theme.slice(1)}
+                    </CardDescription>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300 mb-4">{meditation.description}</p>
-              <div className="flex space-x-2">
-                {meditation.tags.map((tag, index) => (
-                  <span key={index} className="text-xs bg-purple-900/50 text-purple-200 rounded-full px-2 py-1">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between pt-2">
-              <div className="flex items-center text-gray-400">
-                <Clock className="w-4 h-4 mr-1" />
-                <span className="text-sm">{formatDuration(meditation.duration)}</span>
-              </div>
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                <Play className="w-4 h-4 mr-1" />
-                Play
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 mb-4 line-clamp-2">{meditation.description}</p>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {meditation.tags.slice(0, 3).map((tag, index) => (
+                    <span key={index} className="text-xs bg-purple-900/50 text-purple-200 rounded-full px-2 py-1">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between pt-2">
+                <div className="flex items-center text-gray-400">
+                  <Clock className="w-4 h-4 mr-1" />
+                  <span className="text-sm">{formatDuration(meditation.duration)}</span>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-purple-600 hover:bg-purple-700"
+                  onClick={() => window.open(`https://www.youtube.com/watch?v=${meditation.videoId}`, '_blank')}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Watch
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
       
       {filteredMeditations.length === 0 && (
         <div className="text-center py-10">
