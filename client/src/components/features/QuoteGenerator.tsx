@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, BookmarkPlus, Share2 } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 // Type for quotes
 interface CosmicQuote {
@@ -96,14 +96,14 @@ export default function QuoteGenerator() {
                 <blockquote className="text-gray-100 text-xl font-light leading-relaxed">
                   "{currentQuote.text}"
                 </blockquote>
-                <div className="flex justify-between items-end">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
+                  <div className="flex-shrink-0">
                     <p className="text-purple-300 text-lg">— {currentQuote.author}</p>
                     {currentQuote.source && (
                       <p className="text-gray-400">{currentQuote.source}</p>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-1 justify-end">
+                  <div className="flex flex-wrap gap-1 justify-start sm:justify-end">
                     {currentQuote.tags.map((tag, idx) => (
                       <Badge 
                         key={idx}
@@ -122,7 +122,7 @@ export default function QuoteGenerator() {
           </div>
         </CardContent>
         <CardFooter className="border-t border-purple-500/20 pt-4">
-          <div className="flex space-x-2">
+          <div className="flex justify-center">
             <Button
               variant="outline"
               size="sm"
@@ -132,33 +132,6 @@ export default function QuoteGenerator() {
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               New Quote
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                alert('Quote saved to favorites!');
-              }}
-              className="border-purple-500/30 hover:bg-purple-900/30"
-            >
-              <BookmarkPlus className="mr-2 h-4 w-4" />
-              Save
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (currentQuote) {
-                  navigator.clipboard.writeText(`"${currentQuote.text}" — ${currentQuote.author}`);
-                  alert('Quote copied to clipboard!');
-                }
-              }}
-              className="border-purple-500/30 hover:bg-purple-900/30"
-            >
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
             </Button>
           </div>
         </CardFooter>

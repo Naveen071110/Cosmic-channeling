@@ -21,21 +21,6 @@ const Hero = () => {
         <p className="text-lg md:text-xl text-[#F1F5F9] mb-8 max-w-xl mx-auto">
           Explore the universe, expand your consciousness, and discover your place in the cosmic tapestry.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link href="/explore">
-            <button className="bg-[#7E22CE] hover:bg-purple-800 text-white font-medium py-2 px-6 rounded-md shadow-[0_0_15px_rgba(124,58,237,0.5)] transition-all hover:shadow-[0_0_25px_rgba(124,58,237,0.5)]">
-              Begin Journey
-            </button>
-          </Link>
-          <a 
-            href="https://youtube.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="inline-flex items-center justify-center text-[#0EA5E9] hover:text-[#EC4899] transition-colors py-2 px-6"
-          >
-            <i className="ri-play-circle-line mr-2"></i> Watch Introduction
-          </a>
-        </div>
       </div>
     </section>
   );
