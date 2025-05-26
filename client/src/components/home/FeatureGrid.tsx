@@ -37,6 +37,13 @@ const FeatureGrid = () => {
       icon: "sparkling-line",
       color: "#F59E0B",
       path: "/tools"
+    },
+    {
+      title: "Cosmic Blog",
+      description: "Read inspiring articles about cosmic wisdom, spiritual growth, and connecting with the universe.",
+      icon: "article-line",
+      color: "#8B5CF6",
+      path: "/blog"
     }
   ];
 
