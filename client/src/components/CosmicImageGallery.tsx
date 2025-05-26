@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Clock, Star, ListFilter } from "lucide-react";
+import { Eye, Download, Star, ListFilter } from "lucide-react";
 
 // Cosmic image data types
 interface CosmicImage {
@@ -31,7 +30,7 @@ interface CosmicImage {
   views?: number;
 }
 
-export default function CosmicGallery() {
+export default function CosmicImageGallery() {
   const [images, setImages] = useState<CosmicImage[]>([]);
   const [filteredImages, setFilteredImages] = useState<CosmicImage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +77,39 @@ export default function CosmicGallery() {
             tags: ["earth", "planet", "blue", "atmosphere"],
             photographer: "ISS",
             views: 18500
+          },
+          {
+            id: "4",
+            title: "Starry Night Sky",
+            description: "Countless stars illuminating the cosmic darkness",
+            imageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=400",
+            largeImageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=1200",
+            category: "stars",
+            tags: ["stars", "night", "sky", "astronomy"],
+            photographer: "ESO",
+            views: 12000
+          },
+          {
+            id: "5",
+            title: "Deep Space Wonder",
+            description: "The infinite expanse of cosmic space",
+            imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400",
+            largeImageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200",
+            category: "space",
+            tags: ["space", "cosmic", "universe", "infinity"],
+            photographer: "NASA",
+            views: 25000
+          },
+          {
+            id: "6",
+            title: "Mars Surface",
+            description: "The red planet's fascinating landscape",
+            imageUrl: "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=400",
+            largeImageUrl: "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=1200",
+            category: "planets",
+            tags: ["mars", "planet", "red", "landscape"],
+            photographer: "Mars Rover",
+            views: 19000
           }
         ];
         setImages(sampleImages);
@@ -89,7 +121,7 @@ export default function CosmicGallery() {
       console.log('Fetching cosmic images from Pixabay...');
       const searches = [
         'galaxy space',
-        'nebula cosmic',
+        'nebula cosmic', 
         'planet universe',
         'stars astronomy',
         'milky way'
@@ -107,7 +139,6 @@ export default function CosmicGallery() {
           
           if (data.hits && data.hits.length > 0) {
             const cosmicImages = data.hits.map((item: any) => {
-              // Determine category based on search query
               let category: 'galaxies' | 'nebulae' | 'planets' | 'stars' | 'space' = 'space';
               if (query.includes('galaxy')) category = 'galaxies';
               else if (query.includes('nebula')) category = 'nebulae';
@@ -145,16 +176,13 @@ export default function CosmicGallery() {
     fetchCosmicImages();
   }, []);
 
-  // Filter images when filters change
   useEffect(() => {
     let result = [...images];
     
-    // Filter by category
     if (selectedCategory !== "all") {
       result = result.filter(item => item.category === selectedCategory);
     }
     
-    // Special tabs
     if (activeTab === "popular") {
       result = result.sort((a, b) => (b.views || 0) - (a.views || 0));
     } else if (activeTab === "newest") {
@@ -168,87 +196,50 @@ export default function CosmicGallery() {
     setFilteredImages(result);
   }, [selectedCategory, activeTab, images]);
 
-  // Handle category selection
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
-  };
-
-  // Format duration display
-  const formatDuration = (minutes: number) => {
-    return `${minutes} min`;
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 text-center">
         <h2 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
-          Cosmic Meditation Library
+          Cosmic Visions Gallery
         </h2>
         <p className="text-gray-300 max-w-2xl mx-auto">
-          Explore our collection of guided meditations to connect with cosmic energies and enhance your spiritual journey.
+          Explore breathtaking images of the cosmos - from distant galaxies to vibrant nebulae, capturing the beauty and wonder of our universe.
         </p>
       </div>
       
-      {/* Tabs and Filters */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
           <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full md:w-auto">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="popular">Popular</TabsTrigger>
-              <TabsTrigger value="newest">Newest</TabsTrigger>
-              <TabsTrigger value="cosmic">Cosmic</TabsTrigger>
+              <TabsTrigger value="galaxies">Galaxies</TabsTrigger>
+              <TabsTrigger value="nebulae">Nebulae</TabsTrigger>
             </TabsList>
           </Tabs>
           
-          <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            <div className="flex items-center">
-              <Select onValueChange={handleThemeChange} defaultValue="all">
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Theme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Themes</SelectItem>
-                  <SelectItem value="relaxation">Relaxation</SelectItem>
-                  <SelectItem value="focus">Focus</SelectItem>
-                  <SelectItem value="creativity">Creativity</SelectItem>
-                  <SelectItem value="cosmic">Cosmic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center">
-              <Select onValueChange={handleDurationChange} defaultValue="all">
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Durations</SelectItem>
-                  <SelectItem value="short">Short (&lt;=10 min)</SelectItem>
-                  <SelectItem value="medium">Medium (11-20 min)</SelectItem>
-                  <SelectItem value="long">Long (&gt;20 min)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center">
-              <Select onValueChange={handleLevelChange} defaultValue="all">
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <Select onValueChange={handleCategoryChange} defaultValue="all">
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="galaxies">Galaxies</SelectItem>
+                <SelectItem value="nebulae">Nebulae</SelectItem>
+                <SelectItem value="planets">Planets</SelectItem>
+                <SelectItem value="stars">Stars</SelectItem>
+                <SelectItem value="space">Deep Space</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
       
-      {/* Meditation Cards Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, index) => (
@@ -267,67 +258,64 @@ export default function CosmicGallery() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMeditations.map((meditation) => (
-            <Card key={meditation.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all">
-              <div className="aspect-video relative">
+          {filteredImages.map((image) => (
+            <Card key={image.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all group">
+              <div className="aspect-video relative overflow-hidden">
                 <img 
-                  src={meditation.thumbnail} 
-                  alt={meditation.title}
-                  className="w-full h-full object-cover"
+                  src={image.imageUrl} 
+                  alt={image.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                  <Play className="w-12 h-12 text-white" />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => window.open(image.largeImageUrl, '_blank')}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    View Full
+                  </Button>
                 </div>
               </div>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="text-lg text-white line-clamp-2">{meditation.title}</CardTitle>
+                    <CardTitle className="text-lg text-white line-clamp-2">{image.title}</CardTitle>
                     <CardDescription className="text-gray-300">
-                      {meditation.channelTitle} • {meditation.theme.charAt(0).toUpperCase() + meditation.theme.slice(1)}
+                      {image.photographer} • {image.category.charAt(0).toUpperCase() + image.category.slice(1)}
                     </CardDescription>
                   </div>
+                  {image.views && (
+                    <div className="flex items-center text-yellow-400">
+                      <Eye className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{image.views.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-300 mb-4 line-clamp-2">{meditation.description}</p>
+                <p className="text-gray-300 mb-4 line-clamp-2">{image.description}</p>
                 <div className="flex flex-wrap gap-1 mb-2">
-                  {meditation.tags.slice(0, 3).map((tag, index) => (
+                  {image.tags.slice(0, 3).map((tag, index) => (
                     <span key={index} className="text-xs bg-purple-900/50 text-purple-200 rounded-full px-2 py-1">
                       {tag}
                     </span>
                   ))}
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between pt-2">
-                <div className="flex items-center text-gray-400">
-                  <Clock className="w-4 h-4 mr-1" />
-                  <span className="text-sm">{formatDuration(meditation.duration)}</span>
-                </div>
-                <Button 
-                  size="sm" 
-                  className="bg-purple-600 hover:bg-purple-700"
-                  onClick={() => window.open(`https://www.youtube.com/watch?v=${meditation.videoId}`, '_blank')}
-                >
-                  <Play className="w-4 h-4 mr-1" />
-                  Watch
-                </Button>
-              </CardFooter>
             </Card>
           ))}
         </div>
       )}
       
-      {filteredMeditations.length === 0 && (
+      {filteredImages.length === 0 && !loading && (
         <div className="text-center py-10">
-          <p className="text-gray-400">No meditations match your filters. Try adjusting your selection.</p>
+          <p className="text-gray-400">No cosmic images match your filters. Try adjusting your selection.</p>
           <Button 
             variant="outline" 
             className="mt-4"
             onClick={() => {
-              setSelectedTheme("all");
-              setSelectedDuration("all");
-              setSelectedLevel("all");
+              setSelectedCategory("all");
               setActiveTab("all");
             }}
           >
