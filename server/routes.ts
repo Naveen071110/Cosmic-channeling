@@ -447,23 +447,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch posts from Medium RSS feed
       const parser = new Parser({
         customFields: {
-          item: ['creator', 'pubDate', 'guid']
+          item: ['creator', 'pubDate', 'guid', 'description']
         }
       });
       
       const feed = await parser.parseURL(`https://medium.com/feed/@${mediumUsername}`);
       
       const posts = feed.items.map((item, index) => {
-        const content = item.contentSnippet || item.content || '';
-        // Clean HTML and get plain text for better word count
-        const plainText = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-        // Calculate reading time: average 200 words per minute
-        const wordCount = plainText.split(' ').length;
-        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+        // Try multiple sources for content
+        const content = item.contentSnippet || item.content || item.description || item.summary || '';
         
-        // Extract first meaningful paragraph as excerpt
-        const sentences = plainText.split(/[.!?]+/).filter(s => s.trim().length > 20);
-        const excerpt = sentences.length > 0 ? sentences[0].trim() + '...' : plainText.substring(0, 150) + '...';
+        // Clean HTML and get plain text
+        const plainText = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        
+        // Create a meaningful excerpt
+        let excerpt = '';
+        if (plainText.length > 0) {
+          // Take first sentence or first 200 characters
+          const sentences = plainText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+          if (sentences.length > 0) {
+            excerpt = sentences[0].trim() + '...';
+          } else {
+            excerpt = plainText.substring(0, 200) + '...';
+          }
+        } else {
+          // Fallback excerpt based on title
+          excerpt = `Explore insights about ${item.title?.toLowerCase()} and discover cosmic wisdom in this thought-provoking article.`;
+        }
 
         return {
           id: item.guid || `post-${index}`,
@@ -478,8 +488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: item.creator || mediumUsername,
             url: `https://medium.com/@${mediumUsername}`
           },
-          tags: item.categories || [],
-          readingTime: readingTime
+          tags: item.categories || []
         };
       });
 

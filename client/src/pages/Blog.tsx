@@ -161,10 +161,7 @@ const Blog = () => {
                       <Calendar className="w-4 h-4" />
                       <span>{formatDate(post.publishedAt)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{post.readingTime} min read</span>
-                    </div>
+
                   </div>
                 </CardHeader>
                 
