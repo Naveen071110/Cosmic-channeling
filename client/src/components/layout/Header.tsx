@@ -49,6 +49,9 @@ const Header = () => {
           <Link href="/tools" className={`transition-colors ${isActive('/tools') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
             Tools
           </Link>
+          <Link href="/blog" className={`transition-colors ${isActive('/blog') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+            Blog
+          </Link>
         </nav>
         
         <div className="flex items-center space-x-4">
@@ -91,6 +94,9 @@ const Header = () => {
             </Link>
             <Link href="/tools" onClick={closeMenu} className={isActive('/tools') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9] transition-colors'}>
               Tools
+            </Link>
+            <Link href="/blog" onClick={closeMenu} className={isActive('/blog') ? 'text-[#F1F5F9]' : 'text-[#64748B] hover:text-[#0EA5E9] transition-colors'}>
+              Blog
             </Link>
           </nav>
         </div>

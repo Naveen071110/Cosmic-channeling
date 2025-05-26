@@ -9,7 +9,7 @@ import Meditate from "@/pages/Meditate";
 import Explore from "@/pages/Explore";
 import Journal from "@/pages/Journal";
 import Tools from "@/pages/Tools";
-
+import Blog from "@/pages/Blog";
 import Subscribe from "@/pages/Subscribe";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
@@ -35,7 +35,7 @@ function AppRouter() {
         <Route path="/explore" component={Explore} />
         <Route path="/journal" component={Journal} />
         <Route path="/tools" component={Tools} />
-
+        <Route path="/blog" component={Blog} />
         <Route path="/subscribe" component={Subscribe} />
         <Route component={NotFound} />
       </Switch>

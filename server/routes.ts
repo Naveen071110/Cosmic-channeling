@@ -438,6 +438,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Medium RSS feed endpoint to fetch blog posts
+  app.get("/api/medium-posts", async (req, res) => {
+    try {
+      // Medium username - this should be configured as an environment variable
+      const mediumUsername = process.env.MEDIUM_USERNAME || 'your-medium-username';
+      
+      if (!mediumUsername || mediumUsername === 'your-medium-username') {
+        return res.status(400).json({ 
+          error: "Medium username not configured",
+          message: "Please provide your Medium username to fetch blog posts",
+          posts: []
+        });
+      }
+
+      // Fetch posts from Medium RSS feed
+      const parser = new Parser({
+        customFields: {
+          item: ['creator', 'pubDate', 'guid']
+        }
+      });
+      
+      const feed = await parser.parseURL(`https://medium.com/feed/@${mediumUsername}`);
+      
+      const posts = feed.items.map((item, index) => ({
+        id: item.guid || `post-${index}`,
+        title: item.title || 'Untitled',
+        content: item.contentSnippet || item.content || '',
+        url: item.link || '',
+        publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
+        author: {
+          id: mediumUsername,
+          username: mediumUsername,
+          name: item.creator || mediumUsername,
+          url: `https://medium.com/@${mediumUsername}`
+        },
+        tags: item.categories || [],
+        readingTime: Math.max(1, Math.ceil((item.contentSnippet || '').length / 1000)) // Rough estimate
+      }));
+
+      res.json({
+        posts,
+        total: posts.length,
+        source: 'Medium RSS'
+      });
+
+    } catch (error) {
+      console.error('Medium RSS error:', error);
+      res.status(500).json({ 
+        error: "Failed to fetch Medium posts",
+        message: "Unable to fetch posts from Medium RSS feed. Please check if the username is correct.",
+        posts: []
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
