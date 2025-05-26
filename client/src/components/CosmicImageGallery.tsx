@@ -28,6 +28,7 @@ interface CosmicImage {
   tags: string[];
   photographer: string;
   views?: number;
+  fact?: string;
 }
 
 export default function CosmicImageGallery() {
@@ -54,7 +55,8 @@ export default function CosmicImageGallery() {
             category: "galaxies",
             tags: ["galaxy", "spiral", "space", "stars"],
             photographer: "NASA",
-            views: 15000
+            views: 15000,
+            fact: "Spiral galaxies like this contain billions of stars and can span over 100,000 light-years across"
           },
           {
             id: "2", 
@@ -65,7 +67,8 @@ export default function CosmicImageGallery() {
             category: "nebulae",
             tags: ["nebula", "colors", "cosmic", "space"],
             photographer: "Hubble",
-            views: 22000
+            views: 22000,
+            fact: "Nebulae are stellar nurseries where new stars are born from gas and dust over millions of years"
           },
           {
             id: "3",
@@ -76,7 +79,8 @@ export default function CosmicImageGallery() {
             category: "planets",
             tags: ["earth", "planet", "blue", "atmosphere"],
             photographer: "ISS",
-            views: 18500
+            views: 18500,
+            fact: "Earth is the only known planet with liquid water on its surface, making life as we know it possible"
           },
           {
             id: "4",
@@ -87,7 +91,8 @@ export default function CosmicImageGallery() {
             category: "stars",
             tags: ["stars", "night", "sky", "astronomy"],
             photographer: "ESO",
-            views: 12000
+            views: 12000,
+            fact: "Each star you see is a massive nuclear reactor, converting hydrogen into helium and releasing enormous energy"
           },
           {
             id: "5",
@@ -98,7 +103,8 @@ export default function CosmicImageGallery() {
             category: "space",
             tags: ["space", "cosmic", "universe", "infinity"],
             photographer: "NASA",
-            views: 25000
+            views: 25000,
+            fact: "The observable universe contains over 2 trillion galaxies, each with billions of stars"
           },
           {
             id: "6",
@@ -109,7 +115,8 @@ export default function CosmicImageGallery() {
             category: "planets",
             tags: ["mars", "planet", "red", "landscape"],
             photographer: "Mars Rover",
-            views: 19000
+            views: 19000,
+            fact: "Mars has the largest volcano in the solar system - Olympus Mons, which is 16 miles high"
           }
         ];
         setImages(sampleImages);
@@ -300,43 +307,17 @@ export default function CosmicImageGallery() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredImages.map((image) => (
-            <Card key={image.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all group">
+            <Card key={image.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all group flex flex-col">
               <div className="aspect-video relative overflow-hidden">
                 <img 
                   src={image.imageUrl} 
                   alt={image.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={() => window.open(image.largeImageUrl, '_blank')}
-                  >
-                    <Eye className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={() => downloadImage(image.largeImageUrl, image.title)}
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={() => shareImage(image)}
-                  >
-                    <Share2 className="w-4 h-4 mr-1" />
-                    Share
-                  </Button>
-                </div>
               </div>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
+              <CardHeader className="pb-3 flex-grow">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-grow">
                     <CardTitle className="text-lg text-white line-clamp-2">{image.title}</CardTitle>
                     <CardDescription className="text-gray-300">
                       {image.photographer} • {image.category.charAt(0).toUpperCase() + image.category.slice(1)}
@@ -349,15 +330,53 @@ export default function CosmicImageGallery() {
                     </div>
                   )}
                 </div>
+                
+                {image.fact && (
+                  <div className="bg-purple-900/30 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-purple-200 italic">💫 {image.fact}</p>
+                  </div>
+                )}
               </CardHeader>
-              <CardContent>
+              
+              <CardContent className="pt-0">
                 <p className="text-gray-300 mb-4 line-clamp-2">{image.description}</p>
-                <div className="flex flex-wrap gap-1 mb-2">
+                <div className="flex flex-wrap gap-1 mb-4">
                   {image.tags.slice(0, 3).map((tag, index) => (
                     <span key={index} className="text-xs bg-purple-900/50 text-purple-200 rounded-full px-2 py-1">
                       {tag}
                     </span>
                   ))}
+                </div>
+                
+                {/* Action Buttons at Bottom */}
+                <div className="flex gap-2 mt-auto">
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => window.open(image.largeImageUrl, '_blank')}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    View
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => downloadImage(image.largeImageUrl, image.title)}
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    Download
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => shareImage(image)}
+                  >
+                    <Share2 className="w-4 h-4 mr-1" />
+                    Share
+                  </Button>
                 </div>
               </CardContent>
             </Card>
