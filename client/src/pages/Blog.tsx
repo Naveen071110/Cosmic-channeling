@@ -7,6 +7,7 @@ interface MediumPost {
   id: string;
   title: string;
   content: string;
+  excerpt: string;
   url: string;
   publishedAt: string;
   author: {
@@ -169,7 +170,7 @@ const Blog = () => {
                 
                 <CardContent>
                   <p className="text-gray-300 mb-4 line-clamp-3">
-                    {post.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
+                    {post.excerpt}
                   </p>
                   
                   {post.tags && post.tags.length > 0 && (

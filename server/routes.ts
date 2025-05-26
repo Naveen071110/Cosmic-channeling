@@ -453,21 +453,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const feed = await parser.parseURL(`https://medium.com/feed/@${mediumUsername}`);
       
-      const posts = feed.items.map((item, index) => ({
-        id: item.guid || `post-${index}`,
-        title: item.title || 'Untitled',
-        content: item.contentSnippet || item.content || '',
-        url: item.link || '',
-        publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
-        author: {
-          id: mediumUsername,
-          username: mediumUsername,
-          name: item.creator || mediumUsername,
-          url: `https://medium.com/@${mediumUsername}`
-        },
-        tags: item.categories || [],
-        readingTime: Math.max(1, Math.ceil((item.contentSnippet || '').length / 1000)) // Rough estimate
-      }));
+      const posts = feed.items.map((item, index) => {
+        const content = item.contentSnippet || item.content || '';
+        // Clean HTML and get plain text for better word count
+        const plainText = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        // Calculate reading time: average 200 words per minute
+        const wordCount = plainText.split(' ').length;
+        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+        
+        // Extract first meaningful paragraph as excerpt
+        const sentences = plainText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+        const excerpt = sentences.length > 0 ? sentences[0].trim() + '...' : plainText.substring(0, 150) + '...';
+
+        return {
+          id: item.guid || `post-${index}`,
+          title: item.title || 'Untitled',
+          content: plainText,
+          excerpt: excerpt,
+          url: item.link || '',
+          publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
+          author: {
+            id: mediumUsername,
+            username: mediumUsername,
+            name: item.creator || mediumUsername,
+            url: `https://medium.com/@${mediumUsername}`
+          },
+          tags: item.categories || [],
+          readingTime: readingTime
+        };
+      });
 
       res.json({
         posts,
