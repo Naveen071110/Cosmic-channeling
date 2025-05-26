@@ -13,13 +13,30 @@ const MeditationTimer = () => {
   // Fetch meditation music from Pixabay
   const fetchMeditationMusic = async () => {
     try {
-      const response = await fetch(`https://pixabay.com/api/?key=${import.meta.env.VITE_PIXABAY_API_KEY || process.env.PIXABAY_API_KEY}&q=meditation+music&audio_type=music&min_duration=300&per_page=10`);
+      const apiKey = import.meta.env.VITE_PIXABAY_API_KEY;
+      if (!apiKey) {
+        console.error('Pixabay API key not found');
+        return;
+      }
+      
+      console.log('Fetching meditation music from Pixabay...');
+      const response = await fetch(`https://pixabay.com/api/?key=${apiKey}&q=meditation+music&audio_type=music&min_duration=300&per_page=10`);
+      
+      if (!response.ok) {
+        console.error('Pixabay API response not ok:', response.status);
+        return;
+      }
+      
       const data = await response.json();
+      console.log('Pixabay response:', data);
       
       if (data.hits && data.hits.length > 0) {
         // Get a random meditation track
         const randomTrack = data.hits[Math.floor(Math.random() * data.hits.length)];
+        console.log('Selected track:', randomTrack);
         setMeditationMusic(randomTrack.previewURL);
+      } else {
+        console.log('No audio tracks found in Pixabay response');
       }
     } catch (error) {
       console.error('Error fetching meditation music:', error);
@@ -35,7 +52,7 @@ const MeditationTimer = () => {
     toggle, 
     audioSource, 
     setAudioSource 
-  } = useAudio(meditationMusic || '');
+  } = useAudio(meditationMusic || 'https://www.soundjay.com/misc/sounds/meditation-bell.wav');
 
   useEffect(() => {
     if (isActive && time > 0) {

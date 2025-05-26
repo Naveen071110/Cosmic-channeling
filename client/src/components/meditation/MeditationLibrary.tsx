@@ -45,6 +45,14 @@ export default function MeditationLibrary() {
   // Fetch meditation videos from YouTube API
   const fetchMeditationVideos = async () => {
     try {
+      const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
+      if (!apiKey) {
+        console.error('YouTube API key not found');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Fetching videos from YouTube API...');
       const searches = [
         'guided meditation cosmic',
         'meditation relaxation music',
@@ -56,13 +64,20 @@ export default function MeditationLibrary() {
       const allVideos: Meditation[] = [];
       
       for (const query of searches) {
-        const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&key=${import.meta.env.VITE_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY}`
-        );
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&key=${apiKey}`;
+        console.log('Fetching:', query, url);
         
-        if (response.ok) {
-          const data = await response.json();
-          
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          console.error('YouTube API response not ok:', response.status, await response.text());
+          continue;
+        }
+        
+        const data = await response.json();
+        console.log('YouTube response for', query, ':', data);
+        
+        if (data.items && data.items.length > 0) {
           const videos = data.items.map((item: any, index: number) => {
             // Determine theme based on search query
             let theme: 'relaxation' | 'focus' | 'creativity' | 'cosmic' = 'relaxation';
