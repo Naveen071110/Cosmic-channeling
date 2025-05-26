@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Download, Star, ListFilter } from "lucide-react";
+import { Eye, Download, Share2, Star, ListFilter } from "lucide-react";
 
 // Cosmic image data types
 interface CosmicImage {
@@ -200,6 +200,47 @@ export default function CosmicImageGallery() {
     setSelectedCategory(value);
   };
 
+  // Download image function
+  const downloadImage = async (imageUrl: string, title: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
+
+  // Share image function
+  const shareImage = async (image: CosmicImage) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: image.title,
+          text: image.description,
+          url: window.location.href
+        });
+      } catch (error) {
+        console.error('Share failed:', error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      const shareText = `${image.title} - ${image.description}\n\nView more cosmic images at: ${window.location.href}`;
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert('Link copied to clipboard!');
+      }).catch(() => {
+        console.error('Copy to clipboard failed');
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 text-center">
@@ -266,14 +307,30 @@ export default function CosmicImageGallery() {
                   alt={image.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <Button 
                     variant="secondary" 
                     size="sm"
                     onClick={() => window.open(image.largeImageUrl, '_blank')}
                   >
                     <Eye className="w-4 h-4 mr-1" />
-                    View Full
+                    View
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => downloadImage(image.largeImageUrl, image.title)}
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    Download
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => shareImage(image)}
+                  >
+                    <Share2 className="w-4 h-4 mr-1" />
+                    Share
                   </Button>
                 </div>
               </div>
