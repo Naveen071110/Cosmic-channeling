@@ -30,27 +30,19 @@ const Blog = () => {
 
   const fetchMediumPosts = async () => {
     try {
-      // Check if Medium API token is available
-      const apiToken = import.meta.env.VITE_MEDIUM_ACCESS_TOKEN;
-      if (!apiToken) {
-        console.log('Medium API token not available');
-        setError('Medium API access token is required to fetch blog posts. Please provide your Medium API token.');
-        setLoading(false);
-        return;
-      }
-
-      // Fetch user's Medium posts
+      // Fetch posts from Medium RSS feed via our backend
       const response = await fetch('/api/medium-posts');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch Medium posts');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch Medium posts');
       }
 
       const data = await response.json();
       setPosts(data.posts || []);
     } catch (err) {
       console.error('Error fetching Medium posts:', err);
-      setError('Unable to load blog posts at the moment. Please try again later.');
+      setError(err.message || 'Unable to load blog posts at the moment. Please try again later.');
     } finally {
       setLoading(false);
     }
