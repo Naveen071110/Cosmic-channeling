@@ -441,16 +441,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Medium RSS feed endpoint to fetch blog posts
   app.get("/api/medium-posts", async (req, res) => {
     try {
-      // Medium username - this should be configured as an environment variable
-      const mediumUsername = process.env.MEDIUM_USERNAME || 'your-medium-username';
-      
-      if (!mediumUsername || mediumUsername === 'your-medium-username') {
-        return res.status(400).json({ 
-          error: "Medium username not configured",
-          message: "Please provide your Medium username to fetch blog posts",
-          posts: []
-        });
-      }
+      // Medium username - configured for Cosmic Channeling
+      const mediumUsername = process.env.MEDIUM_USERNAME || 'cosmicchanneling';
 
       // Fetch posts from Medium RSS feed
       const parser = new Parser({
