@@ -1,58 +1,67 @@
-import { Link } from 'wouter';
 
-const Footer = () => {
+import { Link } from "wouter";
+
+export default function Footer() {
   return (
-    <footer className="bg-[#1E293B] border-t border-[#334155] py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <div className="w-8 h-8 rounded-full bg-[#7E22CE] flex items-center justify-center">
-              <i className="ri-planet-line text-sm text-[#F8FAFC]"></i>
-            </div>
-            <span className="font-space font-bold">Cosmic Channeling</span>
+    <footer className="bg-black/40 backdrop-blur-sm border-t border-space-800/50 mt-auto">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-cosmic-purple">Cosmic Channeling</h3>
+            <p className="text-space-100/70 text-sm">
+              Connect with the universe through meditation, exploration, and spiritual growth.
+            </p>
           </div>
           
-          <div className="flex items-center space-x-6">
-            <a 
-              href="https://www.youtube.com/@CosmicChanneling001" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" 
-              aria-label="YouTube"
-            >
-              <i className="ri-youtube-line text-xl"></i>
-            </a>
-            <a 
-              href="https://x.com/cosmichanneling" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" 
-              aria-label="X"
-            >
-              <i className="ri-twitter-x-line text-xl"></i>
-            </a>
-            <a 
-              href="https://instagram.com" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors" 
-              aria-label="Instagram"
-            >
-              <i className="ri-instagram-line text-xl"></i>
-            </a>
+          <div className="space-y-4">
+            <h4 className="font-medium text-space-100">Explore</h4>
+            <div className="space-y-2 text-sm">
+              <Link href="/meditate" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Meditate
+              </Link>
+              <Link href="/explore" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Universe
+              </Link>
+              <Link href="/journal" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Journal
+              </Link>
+              <Link href="/tools" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Tools
+              </Link>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <h4 className="font-medium text-space-100">Learn</h4>
+            <div className="space-y-2 text-sm">
+              <Link href="/blog" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Blog
+              </Link>
+              <Link href="/religions" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Religions
+              </Link>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <h4 className="font-medium text-space-100">Legal</h4>
+            <div className="space-y-2 text-sm">
+              <Link href="/terms" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Terms of Service
+              </Link>
+              <Link href="/privacy" className="block text-space-100/70 hover:text-cosmic-pink transition-colors">
+                Privacy Policy
+              </Link>
+            </div>
           </div>
         </div>
         
-        <div className="border-t border-[#334155] pt-6 text-center">
-          <p className="text-[#64748B] text-sm">&copy; {new Date().getFullYear()} Cosmic Channeling. All cosmic rights reserved.</p>
-          <p className="text-[#64748B] text-xs mt-2">
-            <Link href="/privacy" className="hover:text-[#F1F5F9] transition-colors">Privacy Policy</Link> • 
-            <Link href="/terms" className="hover:text-[#F1F5F9] transition-colors ml-2">Terms of Service</Link>
+        <div className="border-t border-space-800/50 mt-8 pt-8 text-center">
+          <p className="text-space-100/50 text-sm">
+            © 2024 Cosmic Channeling. All rights reserved.
           </p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

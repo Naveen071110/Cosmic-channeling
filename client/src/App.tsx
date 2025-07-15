@@ -27,20 +27,22 @@ function AppRouter() {
   return (
     <>
       <Header />
-      <Switch>
-        <Route path="/auth" component={Auth} />
-        <Route path="/terms" component={TermsOfService} />
-        <Route path="/privacy" component={PrivacyPolicy} />
-        <Route path="/" component={Home} />
-        <Route path="/meditate" component={Meditate} />
-        <Route path="/explore" component={Explore} />
-        <Route path="/journal" component={Journal} />
-        <Route path="/tools" component={Tools} />
-        <Route path="/blog" component={Blog} />
-        <Route path="/religions" component={Religions} />
-        <Route path="/subscribe" component={Subscribe} />
-        <Route component={NotFound} />
-      </Switch>
+      <main className="flex-1">
+        <Switch>
+          <Route path="/auth" component={Auth} />
+          <Route path="/terms" component={TermsOfService} />
+          <Route path="/privacy" component={PrivacyPolicy} />
+          <Route path="/" component={Home} />
+          <Route path="/meditate" component={Meditate} />
+          <Route path="/explore" component={Explore} />
+          <Route path="/journal" component={Journal} />
+          <Route path="/tools" component={Tools} />
+          <Route path="/blog" component={Blog} />
+          <Route path="/religions" component={Religions} />
+          <Route path="/subscribe" component={Subscribe} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
       <Footer />
     </>
   );
@@ -51,7 +53,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <div className="min-h-screen text-[#F8FAFC] bg-[#0F172A]">
+          <div className="min-h-screen text-[#F8FAFC] bg-[#0F172A] flex flex-col">
             <StarBackground />
             <Toaster />
             <Router>

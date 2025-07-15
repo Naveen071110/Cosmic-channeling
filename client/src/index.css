@@ -56,6 +56,15 @@
 
   body {
     @apply font-sans antialiased bg-space-950 text-foreground;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
   h1, h2, h3, h4, h5, h6 {
