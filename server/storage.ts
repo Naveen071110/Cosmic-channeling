@@ -6,7 +6,8 @@ import {
   cosmicPatterns, type CosmicPattern, type InsertCosmicPattern,
   cosmicSounds, type CosmicSound, type InsertCosmicSound,
   quizQuestions, type QuizQuestion, type InsertQuizQuestion,
-  quizResults, type QuizResult, type InsertQuizResult
+  quizResults, type QuizResult, type InsertQuizResult,
+  traditions, type Tradition, type InsertTradition
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
@@ -59,6 +60,13 @@ export interface IStorage {
   getAllQuizResults(): Promise<QuizResult[]>;
   getQuizResult(id: number): Promise<QuizResult | undefined>;
   createQuizResult(result: InsertQuizResult): Promise<QuizResult>;
+  
+  // Tradition operations
+  getAllTraditions(): Promise<Tradition[]>;
+  getTradition(id: number): Promise<Tradition | undefined>;
+  getTraditionBySlug(slug: string): Promise<Tradition | undefined>;
+  getFeaturedTraditions(): Promise<Tradition[]>;
+  createTradition(tradition: InsertTradition): Promise<Tradition>;
 }
 
 // Memory storage implementation
@@ -71,6 +79,7 @@ export class MemStorage implements IStorage {
   private cosmicSounds: Map<number, CosmicSound>;
   private quizQuestions: Map<number, QuizQuestion>;
   private quizResults: Map<number, QuizResult>;
+  private traditions: Map<number, Tradition>;
   
   private currentUserIds: { [key: string]: number } = {
     users: 1,
@@ -80,7 +89,8 @@ export class MemStorage implements IStorage {
     cosmicPatterns: 1,
     cosmicSounds: 1,
     quizQuestions: 1,
-    quizResults: 1
+    quizResults: 1,
+    traditions: 1
   };
 
   constructor() {
@@ -92,6 +102,7 @@ export class MemStorage implements IStorage {
     this.cosmicSounds = new Map();
     this.quizQuestions = new Map();
     this.quizResults = new Map();
+    this.traditions = new Map();
     
     // Initialize with some sample data
     this.initializeData();
@@ -495,6 +506,33 @@ export class DatabaseStorage implements IStorage {
       .values(insertResult)
       .returning();
     return result;
+  }
+  
+  // Tradition methods
+  async getAllTraditions(): Promise<Tradition[]> {
+    return db.select().from(traditions);
+  }
+  
+  async getTradition(id: number): Promise<Tradition | undefined> {
+    const [tradition] = await db.select().from(traditions).where(eq(traditions.id, id));
+    return tradition;
+  }
+  
+  async getTraditionBySlug(slug: string): Promise<Tradition | undefined> {
+    const [tradition] = await db.select().from(traditions).where(eq(traditions.slug, slug));
+    return tradition;
+  }
+  
+  async getFeaturedTraditions(): Promise<Tradition[]> {
+    return db.select().from(traditions).where(eq(traditions.featured, true));
+  }
+  
+  async createTradition(insertTradition: InsertTradition): Promise<Tradition> {
+    const [tradition] = await db
+      .insert(traditions)
+      .values(insertTradition)
+      .returning();
+    return tradition;
   }
 }
 

@@ -508,6 +508,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Traditions API endpoints for the Religions Discussion section
+  app.get('/api/traditions', async (req, res) => {
+    try {
+      const traditions = await storage.getAllTraditions();
+      res.json(traditions);
+    } catch (error) {
+      console.error('Error fetching traditions:', error);
+      res.status(500).json({ error: 'Failed to fetch traditions' });
+    }
+  });
+
+  app.get('/api/traditions/featured', async (req, res) => {
+    try {
+      const traditions = await storage.getFeaturedTraditions();
+      res.json(traditions);
+    } catch (error) {
+      console.error('Error fetching featured traditions:', error);
+      res.status(500).json({ error: 'Failed to fetch featured traditions' });
+    }
+  });
+
+  app.get('/api/traditions/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const tradition = await storage.getTradition(id);
+      
+      if (!tradition) {
+        return res.status(404).json({ error: 'Tradition not found' });
+      }
+      
+      res.json(tradition);
+    } catch (error) {
+      console.error('Error fetching tradition:', error);
+      res.status(500).json({ error: 'Failed to fetch tradition' });
+    }
+  });
+
+  app.get('/api/traditions/slug/:slug', async (req, res) => {
+    try {
+      const tradition = await storage.getTraditionBySlug(req.params.slug);
+      
+      if (!tradition) {
+        return res.status(404).json({ error: 'Tradition not found' });
+      }
+      
+      res.json(tradition);
+    } catch (error) {
+      console.error('Error fetching tradition by slug:', error);
+      res.status(500).json({ error: 'Failed to fetch tradition' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

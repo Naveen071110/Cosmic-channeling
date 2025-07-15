@@ -80,6 +80,26 @@ export const quizResults = pgTable("quiz_results", {
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
+// Traditions table for religious and spiritual traditions
+export const traditions = pgTable("traditions", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  origin: varchar("origin", { length: 200 }),
+  foundedPeriod: varchar("founded_period", { length: 100 }),
+  description: text("description"),
+  coreBeliefs: text("core_beliefs"),
+  keyFigures: text("key_figures").array(),
+  sacredTexts: text("sacred_texts").array(),
+  modernRelevance: text("modern_relevance"),
+  symbolUrl: varchar("symbol_url", { length: 500 }),
+  colorTheme: varchar("color_theme", { length: 7 }),
+  featured: boolean("featured").default(false),
+  status: varchar("status", { length: 20 }).default("active"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -134,6 +154,22 @@ export const insertQuizResultSchema = createInsertSchema(quizResults).pick({
   archetype: true,
 });
 
+export const insertTraditionSchema = createInsertSchema(traditions).pick({
+  name: true,
+  slug: true,
+  origin: true,
+  foundedPeriod: true,
+  description: true,
+  coreBeliefs: true,
+  keyFigures: true,
+  sacredTexts: true,
+  modernRelevance: true,
+  symbolUrl: true,
+  colorTheme: true,
+  featured: true,
+  status: true,
+});
+
 // Define relations between tables
 export const usersRelations = relations(users, ({ many }) => ({
   journalEntries: many(journalEntries),
@@ -170,3 +206,6 @@ export type QuizQuestion = typeof quizQuestions.$inferSelect;
 
 export type InsertQuizResult = z.infer<typeof insertQuizResultSchema>;
 export type QuizResult = typeof quizResults.$inferSelect;
+
+export type InsertTradition = z.infer<typeof insertTraditionSchema>;
+export type Tradition = typeof traditions.$inferSelect;
