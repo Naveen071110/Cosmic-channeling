@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains a full-stack cosmic channeling web application that combines spirituality, astronomy, and mindfulness into an engaging user experience. The application provides daily cosmic insights, meditation tools, celestial exploration, and interactive journal features.
+This repository contains a full-stack cosmic channeling web application that combines spirituality, astronomy, and mindfulness into an engaging user experience. The application provides daily cosmic insights, meditation tools, celestial exploration, interactive journal features, and a comprehensive Religions section with spiritual traditions and wisdom quotes.
 
 ## User Preferences
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import MeditationTimer from '@/components/features/MeditationTimer';
+import GuidedMeditation from '@/components/features/GuidedMeditation';
 import CosmicImageGallery from '@/components/CosmicImageGallery';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,8 +23,9 @@ const Meditate = () => {
         </div>
         
         <Tabs defaultValue="timer" onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2 mb-8">
+          <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="timer">Meditation Timer</TabsTrigger>
+            <TabsTrigger value="guided">Guided Journeys</TabsTrigger>
             <TabsTrigger value="gallery">Cosmic Visions</TabsTrigger>
           </TabsList>
           
@@ -71,7 +73,9 @@ const Meditate = () => {
             </div>
           </TabsContent>
           
-
+          <TabsContent value="guided" className="focus:outline-none">
+            <GuidedMeditation />
+          </TabsContent>
           
           <TabsContent value="gallery" className="focus:outline-none">
             <CosmicImageGallery />
