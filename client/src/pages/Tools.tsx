@@ -10,7 +10,7 @@ export default function Tools() {
   return (
     <main className="container mx-auto px-4 py-8">
       <section className="max-w-6xl mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 font-space">
             <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
               Cosmic Tools
