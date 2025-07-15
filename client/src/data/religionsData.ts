@@ -244,6 +244,222 @@ export const spiritualTraditions: SpiritualTradition[] = [
         tradition: "Indigenous Spirituality"
       }
     ]
+  },
+  {
+    id: "stoicism",
+    name: "Stoicism",
+    slug: "stoicism",
+    origin: "Ancient Greece",
+    foundedPeriod: "3rd century BCE",
+    description: "A philosophical school emphasizing virtue, wisdom, and acceptance of fate. Stoics believed in living according to nature and developing emotional resilience through rational thinking.",
+    coreBeliefs: [
+      "Virtue is the only true good",
+      "Accept what you cannot control",
+      "Live according to nature and reason",
+      "Practice emotional resilience",
+      "Focus on personal character development"
+    ],
+    keyFigures: ["Zeno of Citium", "Marcus Aurelius", "Epictetus", "Seneca"],
+    sacredTexts: ["Meditations", "Enchiridion", "Letters from a Stoic", "Discourses"],
+    modernRelevance: "Stoic principles provide practical frameworks for managing stress, making decisions, and maintaining emotional balance in our complex modern world. Many therapeutic approaches draw from Stoic wisdom.",
+    colorTheme: "#8B5CF6",
+    featured: true,
+    quotes: [
+      {
+        id: "stoic1",
+        text: "You have power over your mind - not outside events. Realize this, and you will find strength.",
+        author: "Marcus Aurelius",
+        tradition: "Stoicism"
+      },
+      {
+        id: "stoic2",
+        text: "It's not what happens to you, but how you react to it that matters.",
+        author: "Epictetus",
+        tradition: "Stoicism"
+      },
+      {
+        id: "stoic3",
+        text: "Every new beginning comes from some other beginning's end.",
+        author: "Seneca",
+        tradition: "Stoicism"
+      }
+    ]
+  },
+  {
+    id: "norse",
+    name: "Norse Mythology",
+    slug: "norse",
+    origin: "Scandinavia",
+    foundedPeriod: "8th-11th century CE",
+    description: "The ancient spiritual and mythological beliefs of the Norse peoples, emphasizing honor, courage, and the cyclical nature of existence through concepts like Ragnarok and rebirth.",
+    coreBeliefs: [
+      "Honor and courage in all endeavors",
+      "The Nine Realms cosmology",
+      "Fate (Wyrd) and personal responsibility",
+      "Ancestor veneration",
+      "Cyclical time and renewal"
+    ],
+    keyFigures: ["Odin", "Thor", "Freyja", "Loki", "Snorri Sturluson"],
+    sacredTexts: ["Poetic Edda", "Prose Edda", "Hávamál", "Völuspá"],
+    modernRelevance: "Norse wisdom offers insights into resilience, personal honor, and finding meaning in struggle. Its emphasis on facing challenges with courage resonates with modern self-development.",
+    colorTheme: "#0EA5E9",
+    featured: false,
+    quotes: [
+      {
+        id: "norse1",
+        text: "Cattle die, kinsmen die, you yourself will also die, but the reputation never dies of one who has earned a good name.",
+        author: "Hávamál",
+        tradition: "Norse Mythology"
+      },
+      {
+        id: "norse2",
+        text: "Fear not death, for the hour of your doom is set and none may escape it.",
+        author: "Völsunga Saga",
+        tradition: "Norse Mythology"
+      }
+    ]
+  },
+  {
+    id: "celtic",
+    name: "Celtic Spirituality",
+    slug: "celtic",
+    origin: "Celtic Europe",
+    foundedPeriod: "6th century BCE - 4th century CE",
+    description: "Ancient Celtic spiritual traditions emphasizing the interconnectedness of all life, reverence for nature, and the thin veil between the physical and spiritual worlds.",
+    coreBeliefs: [
+      "Sacred connection to nature",
+      "Otherworld and spiritual realms",
+      "Seasonal cycles and festivals",
+      "Ancestor wisdom and guidance",
+      "Sacred groves and natural sites"
+    ],
+    keyFigures: ["Druids", "Brigid", "Lugh", "Cernunnos", "The Morrigan"],
+    sacredTexts: ["Mabinogion", "Book of Invasions", "Irish Mythology", "Welsh Mythology"],
+    modernRelevance: "Celtic spirituality offers deep ecological wisdom and practices for connecting with natural cycles. Its emphasis on the sacred in everyday life appeals to modern seekers of earth-based spirituality.",
+    colorTheme: "#10B981",
+    featured: false,
+    quotes: [
+      {
+        id: "celtic1",
+        text: "The whole world is but a point of light between the darkness and the darkness.",
+        author: "Celtic Proverb",
+        tradition: "Celtic Spirituality"
+      },
+      {
+        id: "celtic2",
+        text: "Three things that are never silent: the wave of the sea, the fire of the hearth, and the voice of the poet.",
+        author: "Celtic Triad",
+        tradition: "Celtic Spirituality"
+      }
+    ]
+  },
+  {
+    id: "roman",
+    name: "Roman Religion",
+    slug: "roman",
+    origin: "Ancient Rome",
+    foundedPeriod: "8th century BCE - 4th century CE",
+    description: "The traditional religious practices of ancient Rome, emphasizing civic duty, proper ritual observance, and maintaining good relations with the gods for the prosperity of the state.",
+    coreBeliefs: [
+      "Pietas (duty to gods, family, and state)",
+      "Proper ritual observance",
+      "Divine favor for the state",
+      "Ancestor veneration",
+      "Practical reciprocity with deities"
+    ],
+    keyFigures: ["Jupiter", "Mars", "Vesta", "Cicero", "Virgil"],
+    sacredTexts: ["Aeneid", "Fasti", "De Natura Deorum", "Annales"],
+    modernRelevance: "Roman religious concepts of civic duty, personal discipline, and community responsibility offer insights for modern citizenship and social engagement.",
+    colorTheme: "#DC2626",
+    featured: false,
+    quotes: [
+      {
+        id: "roman1",
+        text: "The fates guide those who will; those who won't, they drag.",
+        author: "Seneca",
+        tradition: "Roman Religion"
+      },
+      {
+        id: "roman2",
+        text: "Fortune favors the bold.",
+        author: "Virgil",
+        tradition: "Roman Religion"
+      }
+    ]
+  },
+  {
+    id: "greek",
+    name: "Greek Philosophy & Religion",
+    slug: "greek",
+    origin: "Ancient Greece",
+    foundedPeriod: "8th century BCE - 6th century CE",
+    description: "The philosophical and religious traditions of ancient Greece, combining mythological understanding with rational inquiry into the nature of existence, ethics, and the good life.",
+    coreBeliefs: [
+      "Pursuit of wisdom (sophia)",
+      "Harmony and balance in life",
+      "Excellence (arete) in character",
+      "The examined life",
+      "Cosmic order and natural law"
+    ],
+    keyFigures: ["Socrates", "Plato", "Aristotle", "Pythagoras", "Heraclitus"],
+    sacredTexts: ["Republic", "Nicomachean Ethics", "Metaphysics", "Theogony"],
+    modernRelevance: "Greek philosophical traditions form the foundation of Western thought, offering timeless wisdom about ethics, political life, and the pursuit of truth that remains relevant today.",
+    colorTheme: "#F59E0B",
+    featured: false,
+    quotes: [
+      {
+        id: "greek1",
+        text: "The unexamined life is not worth living.",
+        author: "Socrates",
+        tradition: "Greek Philosophy"
+      },
+      {
+        id: "greek2",
+        text: "Knowing yourself is the beginning of all wisdom.",
+        author: "Aristotle",
+        tradition: "Greek Philosophy"
+      },
+      {
+        id: "greek3",
+        text: "No man ever steps in the same river twice.",
+        author: "Heraclitus",
+        tradition: "Greek Philosophy"
+      }
+    ]
+  },
+  {
+    id: "mystery",
+    name: "Mystery Religions",
+    slug: "mystery",
+    origin: "Ancient Mediterranean",
+    foundedPeriod: "7th century BCE - 4th century CE",
+    description: "Ancient spiritual traditions offering secret initiation rites and esoteric knowledge, promising spiritual transformation and divine communion to their adherents.",
+    coreBeliefs: [
+      "Spiritual initiation and transformation",
+      "Sacred mysteries and secret knowledge",
+      "Death and rebirth symbolism",
+      "Divine communion",
+      "Personal salvation and enlightenment"
+    ],
+    keyFigures: ["Orpheus", "Dionysus", "Demeter", "Persephone", "Mithras"],
+    sacredTexts: ["Orphic Hymns", "Dionysian Mysteries", "Eleusinian Mysteries", "Mithraic Liturgy"],
+    modernRelevance: "Mystery traditions offer insights into spiritual transformation, the power of symbolic thinking, and the importance of community in spiritual practice, influencing modern esoteric and psychological approaches.",
+    colorTheme: "#7C3AED",
+    featured: false,
+    quotes: [
+      {
+        id: "mystery1",
+        text: "Death is not the opposite of life, but a part of it.",
+        author: "Orphic Tradition",
+        tradition: "Mystery Religions"
+      },
+      {
+        id: "mystery2",
+        text: "The soul that has seen truth will be protected from harm until the next cycle.",
+        author: "Eleusinian Mysteries",
+        tradition: "Mystery Religions"
+      }
+    ]
   }
 ];
 
