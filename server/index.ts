@@ -2,12 +2,12 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import passport from "passport";
 import { z } from "zod";
+import { registerRoutes } from "./routes.js";
+import { log, serveStatic } from "./vite.js";
 
 // Lazy load heavy dependencies
 const loadDB = () => import("./db.js").then(m => m.db);
 const loadAuth = () => import("./auth.js").then(m => m.setupAuth);
-const loadAuthRoutes = () => import("./routes/auth.js").then(m => m.authRoutes);
-const loadNewsletterRoutes = () => import("./routes/newsletter.js").then(m => m.newsletterRoutes);
 const loadVite = () => import("./vite.js").then(m => m.setupVite);
 
 const app = express();
@@ -35,21 +35,10 @@ let servicesInitialized = false;
 app.use(async (req, res, next) => {
   if (!servicesInitialized) {
     const setupAuth = await loadAuth();
-    setupAuth();
+    setupAuth(app);
     servicesInitialized = true;
   }
   next();
-});
-
-// Lazy load routes
-app.use("/api/auth", async (req, res, next) => {
-  const { authRoutes } = await loadAuthRoutes();
-  authRoutes(req, res, next);
-});
-
-app.use("/api", async (req, res, next) => {
-  const { newsletterRoutes } = await loadNewsletterRoutes();
-  newsletterRoutes(req, res, next);
 });
 
 app.use((req, res, next) => {

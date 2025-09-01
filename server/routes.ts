@@ -464,7 +464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let excerpt = '';
         if (plainText.length > 0) {
           // Take first sentence or first 200 characters
-          const sentences = plainText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+          const sentences = plainText.split(/[.!?]+/).filter((s: string) => s.trim().length > 20);
           if (sentences.length > 0) {
             excerpt = sentences[0].trim() + '...';
           } else {
