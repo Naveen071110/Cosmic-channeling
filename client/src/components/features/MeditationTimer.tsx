@@ -10,41 +10,21 @@ const MeditationTimer = () => {
   const [meditationMusic, setMeditationMusic] = useState<string | null>(null);
   const intervalRef = useRef<number | null>(null);
   
-  // Fetch meditation music from Pixabay
-  const fetchMeditationMusic = async () => {
-    try {
-      const apiKey = import.meta.env.VITE_PIXABAY_API_KEY;
-      if (!apiKey) {
-        console.error('Pixabay API key not found');
-        return;
-      }
-      
-      console.log('Fetching meditation music from Pixabay...');
-      const response = await fetch(`https://pixabay.com/api/?key=${apiKey}&q=meditation+music&audio_type=music&min_duration=300&per_page=10`);
-      
-      if (!response.ok) {
-        console.error('Pixabay API response not ok:', response.status);
-        return;
-      }
-      
-      const data = await response.json();
-      console.log('Pixabay response:', data);
-      
-      if (data.hits && data.hits.length > 0) {
-        // Get a random meditation track
-        const randomTrack = data.hits[Math.floor(Math.random() * data.hits.length)];
-        console.log('Selected track:', randomTrack);
-        setMeditationMusic(randomTrack.previewURL);
-      } else {
-        console.log('No audio tracks found in Pixabay response');
-      }
-    } catch (error) {
-      console.error('Error fetching meditation music:', error);
-    }
+  // Use local meditation music files
+  const loadMeditationMusic = () => {
+    const musicFiles = [
+      '/audio/cosmic-consciousness.mp3',
+      '/audio/cosmic-journey.mp3',
+      '/audio/starlight-healing.mp3'
+    ];
+    
+    // Select a random track
+    const randomTrack = musicFiles[Math.floor(Math.random() * musicFiles.length)];
+    setMeditationMusic(randomTrack);
   };
 
   useEffect(() => {
-    fetchMeditationMusic();
+    loadMeditationMusic();
   }, []);
   
   const { 
