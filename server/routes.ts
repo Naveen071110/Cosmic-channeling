@@ -14,13 +14,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   setupAuth(app);
   setupGoogleAuth(app);
-  
+
   // prefix all routes with /api
-  
+
   // Register newsletter and auth routes
   app.use('/api/newsletter', newsletterRoutes);
   app.use('/api/auth', authRoutes);
-  
+
   // Quote API endpoints
   app.get('/api/quotes', (req, res) => {
     res.json(quotes);
@@ -39,11 +39,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/celestial/:id', (req, res) => {
     const { id } = req.params;
     const object = celestialObjects.find(obj => obj.id === id);
-    
+
     if (!object) {
       return res.status(404).json({ message: 'Celestial object not found' });
     }
-    
+
     res.json(object);
   });
 
@@ -60,11 +60,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dream interpretation endpoint
   app.post('/api/interpret-dream', (req, res) => {
     const { dreamText } = req.body;
-    
+
     if (!dreamText || dreamText.trim() === '') {
       return res.status(400).json({ message: 'Dream text is required' });
     }
-    
+
     // Simple keyword-based interpretation
     const dreamLower = dreamText.toLowerCase();
     const cosmicKeywords = [
@@ -84,56 +84,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       { word: 'vast', tag: 'Expansion' },
       { word: 'connect', tag: 'Connection' }
     ];
-    
+
     let tags: string[] = [];
     let interpretation = '';
-    
+
     // Find matching keywords
     cosmicKeywords.forEach(({ word, tag }) => {
       if (dreamLower.includes(word) && !tags.includes(tag)) {
         tags.push(tag);
       }
     });
-    
+
     // Default tags if none found
     if (tags.length === 0) {
       tags = ['Self-Discovery', 'Inner Journey'];
     }
-    
+
     // Generate interpretation based on found tags
     if (tags.includes('Cosmic Connection')) {
       interpretation += 'Your dream suggests a deep connection to the cosmos. The celestial symbols represent your expanding consciousness and spiritual growth. ';
     }
-    
+
     if (tags.includes('Spiritual Growth')) {
       interpretation += 'The sensation of floating or flying indicates your spirit\'s natural tendency to transcend physical limitations. You may be going through a period of spiritual evolution. ';
     }
-    
+
     if (tags.includes('Expansion')) {
       interpretation += 'Your consciousness is expanding beyond conventional boundaries. This dream reflects your readiness to embrace a more expansive understanding of reality. ';
     }
-    
+
     if (tags.includes('Shadow Work')) {
       interpretation += 'The darkness in your dream may represent unexplored aspects of your psyche that contain valuable cosmic wisdom when integrated. ';
     }
-    
+
     if (tags.includes('Energy Work')) {
       interpretation += 'You\'re becoming more aware of the subtle energies that connect all beings in the universe. This dream is encouraging you to develop your sensitivity to these cosmic energies. ';
     }
-    
+
     if (tags.includes('Connection')) {
       interpretation += 'Your dream reflects a deep yearning for meaningful connection—not just with other humans, but with the entire cosmic web of existence. ';
     }
-    
+
     if (tags.includes('Awakening')) {
       interpretation += 'The presence of light symbolizes an awakening of higher consciousness and spiritual insight. You\'re beginning to see reality from a more enlightened perspective. ';
     }
-    
+
     // Default interpretation if nothing specific was generated
     if (interpretation === '') {
       interpretation = 'Your dream contains cosmic symbolism that suggests you\'re undergoing a period of spiritual expansion and growth. Pay attention to intuitive insights that arise during this time.';
     }
-    
+
     return res.json({
       interpretation,
       tags: tags.slice(0, 3) // Limit to 3 tags for display purposes
@@ -145,27 +145,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    
+
     const userId = parseInt(req.params.id);
-    
+
     // Check if the user is trying to update their own subscription
     if (req.user.id !== userId) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    
+
     const { isSubscribed } = req.body;
-    
+
     if (typeof isSubscribed !== 'boolean') {
       return res.status(400).json({ message: 'Invalid subscription status' });
     }
-    
+
     try {
       const updatedUser = await storage.updateUserSubscription(userId, isSubscribed);
-      
+
       if (!updatedUser) {
         return res.status(404).json({ message: 'User not found' });
       }
-      
+
       return res.json(updatedUser);
     } catch (error) {
       console.error('Error updating subscription:', error);
@@ -176,11 +176,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quiz results endpoint
   app.post('/api/quiz-results', (req, res) => {
     const { answers } = req.body;
-    
+
     if (!answers) {
       return res.status(400).json({ message: 'Quiz answers are required' });
     }
-    
+
     // Simple mapping of archetypes based on majority answer patterns
     // In a real implementation, this would be more sophisticated
     const archetypes = [
@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
       {
         title: "Quantum Explorer",
-        description: "You blend scientific curiosity with spiritual openness. You\'re fascinated by the quantum nature of reality and how consciousness interacts with the physical world.",
+        description: "You blend scientific curiosity with spiritual openness. You're fascinated by the quantum nature of reality and how consciousness interacts with the physical world.",
         archetype: "Explorer"
       },
       {
@@ -201,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
       {
         title: "Astral Voyager",
-        description: "You\'re a natural traveler of the mind and spirit. Your imagination allows you to journey beyond physical limitations and explore the frontiers of consciousness.",
+        description: "You're a natural traveler of the mind and spirit. Your imagination allows you to journey beyond physical limitations and explore the frontiers of consciousness.",
         archetype: "Voyager"
       },
       {
@@ -210,14 +210,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         archetype: "Weaver"
       }
     ];
-    
+
     // For simplicity, assign a result based on question 5 (what they seek most)
     let archetypeIndex = 0;
-    
+
     const finalQuestion = Object.keys(answers).find(key => parseInt(key) === 5);
     if (finalQuestion) {
       const answer = answers[finalQuestion];
-      
+
       if (answer.toLowerCase().includes('spiritual')) {
         archetypeIndex = 0; // Seeker
       } else if (answer.toLowerCase().includes('scientific')) {
@@ -230,19 +230,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         archetypeIndex = 2; // Sage (default)
       }
     }
-    
+
     return res.json(archetypes[archetypeIndex]);
   });
-  
+
   // PayPal API endpoints
   app.post('/api/paypal/create-order', async (req, res) => {
     try {
       const { amount, description } = req.body;
-      
+
       if (!amount || isNaN(parseFloat(amount))) {
         return res.status(400).json({ message: 'Valid amount is required' });
       }
-      
+
       const order = await createOrder(parseFloat(amount), description || 'Cosmic Channeling Purchase');
       res.json(order);
     } catch (error) {
@@ -250,15 +250,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Error creating PayPal order' });
     }
   });
-  
+
   app.post('/api/paypal/capture-order', async (req, res) => {
     try {
       const { orderId } = req.body;
-      
+
       if (!orderId) {
         return res.status(400).json({ message: 'Order ID is required' });
       }
-      
+
       const captureData = await captureOrder(orderId);
       res.json(captureData);
     } catch (error) {
@@ -266,7 +266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Error capturing PayPal order' });
     }
   });
-  
+
   app.get('/api/paypal/order/:orderId', async (req, res) => {
     try {
       const { orderId } = req.params;
@@ -277,12 +277,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Error getting PayPal order details' });
     }
   });
-  
+
   app.post('/api/paypal/create-subscription', async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    
+
     try {
       const subscription = await createSubscription();
       res.json(subscription);
@@ -291,14 +291,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Error creating PayPal subscription' });
     }
   });
-  
+
   // Webhook for PayPal subscription events
   app.post('/api/paypal/webhook', async (req, res) => {
     // In a production app, this would validate the webhook signature
     // and process subscription events
-    
+
     const { event_type, resource } = req.body;
-    
+
     if (event_type === 'PAYMENT.CAPTURE.COMPLETED') {
       // Handle successful payment
       try {
@@ -310,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error processing PayPal webhook:', error);
       }
     }
-    
+
     // Acknowledge receipt of the event
     res.status(200).end();
   });
@@ -319,13 +319,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/space-news', async (req, res) => {
     try {
       const parser = new Parser();
-      
+
       // NASA Breaking News RSS feed
       const nasaFeed = await parser.parseURL('https://www.nasa.gov/feed/');
-      
+
       // Space.com RSS feed
       const spaceComFeed = await parser.parseURL('https://www.space.com/feeds/all');
-      
+
       // Additional space facts
       const additionalSpaceFacts = [
         {
@@ -364,7 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA00271-Venus-Computer-Simulated-Global-View-of-the-Northern-Hemisphere-scaled.jpg"
         }
       ];
-      
+
       // Process NASA feed items
       const nasaItems = nasaFeed.items.slice(0, 5).map(item => ({
         title: item.title,
@@ -375,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         source: "NASA",
         image: item.enclosure?.url || "https://www.nasa.gov/wp-content/uploads/2023/03/nasa-logo-web-rgb.png"
       }));
-      
+
       // Process Space.com feed items
       const spaceComItems = spaceComFeed.items.slice(0, 5).map(item => ({
         title: item.title,
@@ -386,11 +386,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         source: "Space.com",
         image: item.enclosure?.url || "https://cdn.mos.cms.futurecdn.net/6Ud2GEwbAa3UV4UWLKYR8K-970-80.jpg"
       }));
-      
+
       // Combine all items and shuffle
       const allItems = [...nasaItems, ...spaceComItems, ...additionalSpaceFacts];
       const shuffled = allItems.sort(() => 0.5 - Math.random());
-      
+
       res.json(shuffled);
     } catch (error) {
       console.error('Error fetching space news:', error);
@@ -450,16 +450,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           item: ['creator', 'pubDate', 'guid', 'description']
         }
       });
-      
+
       const feed = await parser.parseURL(`https://medium.com/feed/@${mediumUsername}`);
-      
+
       const posts = feed.items.map((item, index) => {
         // Try multiple sources for content
         const content = item.contentSnippet || item.content || item.description || item.summary || '';
-        
+
         // Clean HTML and get plain text
         const plainText = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-        
+
         // Create a meaningful excerpt
         let excerpt = '';
         if (plainText.length > 0) {
@@ -533,11 +533,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const tradition = await storage.getTradition(id);
-      
+
       if (!tradition) {
         return res.status(404).json({ error: 'Tradition not found' });
       }
-      
+
       res.json(tradition);
     } catch (error) {
       console.error('Error fetching tradition:', error);
@@ -548,11 +548,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/traditions/slug/:slug', async (req, res) => {
     try {
       const tradition = await storage.getTraditionBySlug(req.params.slug);
-      
+
       if (!tradition) {
         return res.status(404).json({ error: 'Tradition not found' });
       }
-      
+
       res.json(tradition);
     } catch (error) {
       console.error('Error fetching tradition by slug:', error);
