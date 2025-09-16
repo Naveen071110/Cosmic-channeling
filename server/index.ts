@@ -2,17 +2,95 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import passport from "passport";
 import { z } from "zod";
+import compression from "compression";
 import { registerRoutes } from "./routes.js";
 import { log, serveStatic } from "./vite.js";
+// @ts-ignore - JS config file
+import { applyEnvironmentConfig } from "../config/environment.js";
+// @ts-ignore - JS monitoring script  
+import ResourceMonitor from "../scripts/resource-monitor.js";
+
+// Apply environment configuration at startup
+applyEnvironmentConfig();
+
+// Initialize resource monitor for production
+const resourceMonitor = new ResourceMonitor();
+if (process.env.NODE_ENV === 'production' || process.env.ENABLE_RESOURCE_MONITORING === 'true') {
+  resourceMonitor.start();
+}
 
 // Lazy load heavy dependencies
 const loadDB = () => import("./db.js").then(m => m.db);
 const loadAuth = () => import("./auth.js").then(m => m.setupAuth);
 const loadVite = () => import("./vite.js").then(m => m.setupVite);
 
+// Apply deployment optimizations for production
+if (process.env.NODE_ENV === 'production') {
+  // Set resource limits and monitoring
+  process.env.MAX_CONCURRENT_REQUESTS = process.env.MAX_CONCURRENT_REQUESTS || '15';
+  process.env.IDLE_TIMEOUT_SECONDS = process.env.IDLE_TIMEOUT_SECONDS || '120';
+  process.env.ENABLE_COMPRESSION = process.env.ENABLE_COMPRESSION || 'true';
+  
+  console.log('🔧 Production optimizations enabled');
+}
+
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Enable compression middleware in production
+if (process.env.NODE_ENV === 'production' && process.env.ENABLE_COMPRESSION === 'true') {
+  app.use(compression({ level: parseInt(process.env.COMPRESSION_LEVEL || '6') }));
+  console.log('📦 Compression enabled');
+}
+
+// HTTP keep-alive configuration for production
+if (process.env.NODE_ENV === 'production' && process.env.ENABLE_KEEP_ALIVE === 'true') {
+  app.use((req, res, next) => {
+    res.set('Connection', 'keep-alive');
+    res.set('Keep-Alive', 'timeout=5, max=1000');
+    next();
+  });
+  console.log('🔗 HTTP Keep-Alive enabled');
+}
+
+// Resource optimization middleware for production
+if (process.env.NODE_ENV === 'production') {
+  // Limit concurrent requests per instance
+  const maxConcurrent = parseInt(process.env.MAX_CONCURRENT_REQUESTS || '15');
+  let activeConnections = 0;
+  
+  app.use((req, res, next) => {
+    if (activeConnections >= maxConcurrent) {
+      return res.status(503).json({ error: 'Server busy, please try again' });
+    }
+    
+    activeConnections++;
+    
+    // Handle both 'finish' and 'close' events to properly decrement counter
+    let connectionDecremented = false;
+    const decrementConnection = () => {
+      if (connectionDecremented) return;
+      connectionDecremented = true;
+      activeConnections = Math.max(0, activeConnections - 1);
+    };
+    res.once('finish', decrementConnection);
+    res.once('close', decrementConnection);
+    
+    next();
+  });
+  
+  // Set timeout for idle connections
+  const idleTimeout = parseInt(process.env.IDLE_TIMEOUT_SECONDS || '120') * 1000;
+  app.use((req, res, next) => {
+    req.setTimeout(idleTimeout);
+    res.setTimeout(idleTimeout);
+    next();
+  });
+  
+  console.log(`🚀 Resource limits: ${maxConcurrent} concurrent, ${idleTimeout}ms timeout`);
+}
+
+app.use(express.json({ limit: '1mb' })); // Limit payload size
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
 // Session configuration
 app.use(session({

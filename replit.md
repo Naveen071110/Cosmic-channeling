@@ -107,6 +107,15 @@ Preferred communication style: Simple, everyday language.
 - Database hosted on Neon with connection pooling
 - Session store can use PostgreSQL or in-memory for simplicity
 
+### Deployment Optimizations (Compute Unit Minimization)
+- **Resource Limits**: CPU: 0.25 vCPU, Memory: 512MB (configurable)
+- **Autoscale Configuration**: Min replicas: 0 (scale-to-zero), Max replicas: 2
+- **Concurrency**: 15 concurrent requests per instance for optimal resource usage
+- **Timeouts**: 120-second idle timeout, aggressive scale-down (30s delay)
+- **Scale-to-Zero**: 2-minute inactivity timeout to minimize compute costs
+- **Resource Monitoring**: Built-in memory and CPU monitoring with alerts
+- **Connection Limits**: Request limiting middleware prevents resource exhaustion
+
 ### Environment Configuration
 Required environment variables:
 - `DATABASE_URL`: PostgreSQL connection string
@@ -115,11 +124,40 @@ Required environment variables:
 - `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET_KEY`: Payment processing
 - `SENDGRID_API_KEY`: Email service
 
+Optimal deployment environment variables:
+- `MAX_CONCURRENT_REQUESTS`: 15 (modest concurrency per instance)
+- `IDLE_TIMEOUT_SECONDS`: 120 (connection timeout)
+- `COMPUTE_BUDGET_ALERT_THRESHOLD`: 80 (budget monitoring)
+- `ENABLE_COMPRESSION`: true (reduce bandwidth)
+- `ENABLE_RESOURCE_MONITORING`: true (track usage)
+
 ### Scaling Considerations
 - Stateless backend design allows horizontal scaling
 - Database connection pooling via Neon
 - Static assets can be served via CDN
-- Session store can be moved to Redis for multi-instance deployments
+- Session store can use PostgreSQL or in-memory for simplicity
+- **Compute Unit Optimization**: Configured for minimal resource usage while maintaining performance
+- **Cost-Effective Scaling**: Prioritizes scale-to-zero over persistent instances
+
+## Deployment Configuration Files
+
+### Resource Optimization Files
+- `config/environment.js`: Environment-specific optimization settings (applied at startup)
+- `scripts/resource-monitor.js`: Runtime resource monitoring and alerts (imported in server/index.ts)
+- `server/optimized-start.js`: Production startup script with memory optimization and GC flags
+
+**Note**: Replit autoscale settings must be configured manually in the Deployment UI:
+- Min replicas: 0 (enable scale-to-zero)
+- Max replicas: 2
+- Target concurrency: 15-20 requests per instance
+
+### Key Optimizations Implemented
+1. **Memory Management**: Automatic garbage collection and memory limit enforcement
+2. **Request Limiting**: Concurrent request limits prevent resource exhaustion
+3. **Connection Timeouts**: Aggressive timeout settings reduce idle resource usage
+4. **Scale-to-Zero**: Automatic shutdown during inactivity periods
+5. **Resource Monitoring**: Real-time tracking of memory, CPU, and request metrics
+6. **Environment Optimization**: Production-specific configurations for minimal usage
 
 ## Notable Architectural Decisions
 
