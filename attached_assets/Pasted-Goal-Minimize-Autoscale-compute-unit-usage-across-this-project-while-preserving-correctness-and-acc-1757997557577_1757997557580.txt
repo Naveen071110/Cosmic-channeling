@@ -1,0 +1,150 @@
+Goal
+Minimize Autoscale compute unit usage across this project while preserving correctness and acceptable performance. Apply safe, reversible changes with clear commits and a short validation checklist.
+
+Scope
+
+Deployment settings (instances, concurrency, CPU/RAM, scale-to-zero)
+
+Routing: static vs dynamic
+
+Build output: static assets, caching
+
+Backend hot paths: timeouts, retries, batching, streaming
+
+Caching and background jobs
+
+Observability and budgets
+
+Tasks
+
+Right-size deployment
+
+Reduce CPU/RAM for the deployment to the smallest configuration that passes load tests (start low; increase only if needed).
+
+Set max instances to 1–2 initially; enable scale-to-zero and aggressive idle scale-down.
+
+Set concurrency per instance to a modest value (e.g., 10–20) to prevent thrash.
+
+Add a spending/budget threshold and alerts so usage spikes are visible early.
+
+Split static from compute
+
+Move static pages (marketing, blog, docs) to static hosting so they don’t spin up instances.
+
+Ensure static assets (images, fonts, CSS, JS) are served as static files and cached with long max-age and immutable hashes.
+
+For frameworks (e.g., Next.js), use SSG/ISR for pages where possible. Avoid SSR unless absolutely necessary.
+
+Pre-render /blog and /blog/[slug] at build time or with ISR; never parse MD/MDX at request time.
+
+Cache everything reasonable
+
+Add server-side caching for:
+
+Frequently requested API responses (short TTLs like 60–300s).
+
+Expensive computations (LLM responses, export files) with content-based cache keys.
+
+Use in-memory cache for single-instance deployments and consider a lightweight external cache if multi-instance.
+
+Implement ETag/Last-Modified/Cache-Control for idempotent GET endpoints.
+
+Optimize request lifecycle
+
+Add strict timeouts on all outbound calls (LLM, storage, web fetches) and circuit-breakers for repeated failures.
+
+Batch or debounce repeated operations within short windows (e.g., queue identical prompts for a few seconds to coalesce work).
+
+Stream responses (where applicable) to avoid buffering large payloads in memory and to shorten active CPU windows.
+
+Limit maximum output sizes (truncate or summarize when needed).
+
+Use connection keep-alive and HTTP/2 where the platform supports it.
+
+Offload long work
+
+Move long-running or CPU-heavy tasks (e.g., DOCX/PDF generation, large file transforms, multi-step LLM chains) to:
+
+Background jobs with a queue (and status polling from the client), or
+
+On-demand worker endpoint that you call only when users actually download.
+
+Persist intermediate artifacts (e.g., generated files) and serve them directly on subsequent requests rather than regenerating.
+
+Reduce cold start and memory
+
+Lazy-load heavy modules (e.g., DOCX/PDF libraries) only in the routes that need them.
+
+Remove unused dependencies and large transitive imports.
+
+Precompute small lookup tables at build-time instead of runtime.
+
+Avoid global initialization work in the main server entrypoint; defer until the first relevant request.
+
+Control traffic and abuse
+
+Add rate limits per IP/session and per endpoint class (e.g., generation vs read-only).
+
+Require minimal auth or friction for heavy endpoints to deter automated abuse.
+
+Add basic bot checks for public write or compute-heavy routes.
+
+Logging, metrics, and guards
+
+Log per-request duration, instance count (if observable), and token/byte counts for the heavy endpoints.
+
+Add a simple cost estimator (compute units per request) to quickly identify offenders.
+
+Fail fast on invalid inputs; validate payload size and content type early to avoid wasted CPU.
+
+Commit plan and validation
+
+Commit 1: Deployment config (smaller CPU/RAM, max instances, scale-to-zero, concurrency).
+
+Commit 2: Static separation (static hosting, SSG/ISR, asset caching).
+
+Commit 3: Caching layer (server-side cache, cache headers).
+
+Commit 4: Timeouts/retries/batching/streaming in API handlers.
+
+Commit 5: Background job pattern for long tasks.
+
+Commit 6: Lazy-load heavy deps; prune unused packages.
+
+Commit 7: Rate limits and input validation.
+
+After each commit, build and test:
+
+Typical user flow (home → generator → download).
+
+Measure cold-start time, p95 latency on heavy endpoints, and verify no functional regressions.
+
+Provide a short report
+
+List the exact deployment settings chosen (CPU, RAM, instances, concurrency, scale-to-zero).
+
+Summarize caching keys, TTLs, and which endpoints/files are cached.
+
+Note any endpoints converted to SSG/ISR, and any background jobs added.
+
+Include “next steps” suggestions if further cost reduction is possible (e.g., moving a specific route to batch mode).
+
+Guardrails
+
+Do not change business logic or user-visible copy unless necessary for optimization.
+
+Prefer additive, opt-in caching and toggles so changes are reversible.
+
+Keep an environment variable to disable caches quickly for debugging (e.g., DISABLE_CACHE=true).
+
+Acceptance criteria
+
+Static pages and assets no longer trigger compute instance spin-ups.
+
+Heavy endpoints show reduced average duration and fewer timeouts.
+
+Under normal traffic, instances stay at 0 when idle and do not exceed the configured max during peaks.
+
+Observed Autoscale compute units decrease measurably after deployment while functionality remains intact.
+
+If any project-specific constraints prevent a step (e.g., framework limitations), document the alternative implemented.
