@@ -3,6 +3,7 @@ import session from "express-session";
 import passport from "passport";
 import { z } from "zod";
 import compression from "compression";
+import path from "path";
 import { registerRoutes } from "./routes.js";
 import { log, serveStatic } from "./vite.js";
 // @ts-ignore - JS config file
@@ -149,6 +150,94 @@ app.use((req, res, next) => {
   next();
 });
 
+// Static content optimization middleware - must be before Vite setup
+if (app.get("env") === "production") {
+  // Enhanced static asset serving with aggressive caching
+  app.use('/assets', express.static(path.resolve(import.meta.dirname, 'dist/public/assets'), {
+    maxAge: '1y', // 1 year cache
+    etag: true,
+    lastModified: true,
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      
+      // Security headers
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      
+      // Aggressive caching for hashed assets
+      if (['.js', '.css'].includes(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico'].includes(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, must-revalidate');
+      } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('Accept-Ranges', 'bytes');
+      }
+      
+      // Compression hints
+      if (['.js', '.css', '.html', '.json', '.xml', '.svg'].includes(ext)) {
+        res.setHeader('Vary', 'Accept-Encoding');
+      }
+    }
+  }));
+
+  // Audio files with range request support
+  app.use('/audio', express.static(path.resolve(import.meta.dirname, 'dist/public/audio'), {
+    maxAge: '1y',
+    etag: true,
+    setHeaders: (res, filePath) => {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    }
+  }));
+
+  // Images with long cache
+  app.use('/images', express.static(path.resolve(import.meta.dirname, 'dist/public/images'), {
+    maxAge: '1y',
+    etag: true,
+    setHeaders: (res, filePath) => {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, must-revalidate');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    }
+  }));
+}
+
+// Static page routes for pre-rendered HTML (production only)
+if (app.get("env") === "production") {
+  const staticPagesDir = path.resolve(import.meta.dirname, 'dist/public');
+  
+  // Static page route handlers with proper caching
+  const serveStaticPage = (filename: string) => (req: Request, res: Response, next: NextFunction) => {
+    const filePath = path.join(staticPagesDir, filename);
+    
+    // Set static page headers
+    res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('X-Static-Page', 'true');
+    
+    // Serve the static HTML file
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error(`Failed to serve static page ${filename}:`, err);
+        next(); // Fall through to Vite handler
+      }
+    });
+  };
+  
+  // Define static routes for pre-rendered pages
+  app.get('/', serveStaticPage('index.html'));
+  app.get('/pricing', serveStaticPage('pricing.html'));
+  app.get('/privacy-policy', serveStaticPage('privacy-policy.html'));
+  app.get('/terms-of-service', serveStaticPage('terms-of-service.html'));
+  app.get('/404', serveStaticPage('404.html'));
+  
+  console.log('🗂️  Static page routes configured for production');
+}
+
+
 (async () => {
   const server = await registerRoutes(app);
 
@@ -167,7 +256,37 @@ app.use((req, res, next) => {
     const setupVite = await loadVite();
     await setupVite(app, server);
   } else {
+    // Production static serving with enhanced 404 handling
     serveStatic(app);
+    
+    // Enhanced 404 middleware for production (before SPA fallback)
+    app.use('*', (req: Request, res: Response, next: NextFunction) => {
+      const url = req.originalUrl;
+      
+      // Skip API routes
+      if (url.startsWith('/api')) {
+        return next();
+      }
+      
+      // Try to serve 404.html for unknown routes
+      const staticPagesDir = path.resolve(import.meta.dirname, 'dist/public');
+      const notFoundPath = path.join(staticPagesDir, '404.html');
+      
+      try {
+        if (fs.existsSync(notFoundPath)) {
+          res.status(404);
+          res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+          res.setHeader('X-Static-Page', 'true');
+          res.setHeader('X-Route-Type', '404-static');
+          return res.sendFile(notFoundPath);
+        }
+      } catch (error) {
+        console.warn('Failed to serve static 404 page:', error.message);
+      }
+      
+      // Fallback to SPA handling (already handled by serveStatic)
+      next();
+    });
   }
 
   // ALWAYS serve the app on port 5000
