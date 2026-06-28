@@ -9,6 +9,7 @@ import authRoutes from './routes/auth';
 import { setupAuth } from './auth';
 import { setupGoogleAuth } from './google-auth';
 import { createOrder, captureOrder, getOrderDetails, createSubscription } from './paypal';
+import { cache, TTL } from './cache';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -21,18 +22,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/newsletter', newsletterRoutes);
   app.use('/api/auth', authRoutes);
 
-  // Quote API endpoints
+  // Pre-compute ETags for static in-process data (computed once at startup)
+  const quotesETag = `"quotes-${quotes.length}"`;
+  const celestialETag = `"celestial-${celestialObjects.length}"`;
+  const patternsETag = `"patterns-${cosmicPatterns.length}"`;
+
+  // Quote API endpoints — static in-process data, 24-hour cache
   app.get('/api/quotes', (req, res) => {
+    if (req.headers['if-none-match'] === quotesETag) {
+      return res.status(304).end();
+    }
+    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+    res.set('ETag', quotesETag);
     res.json(quotes);
   });
 
   app.get('/api/quotes/random', (req, res) => {
+    res.set('Cache-Control', 'no-store');
     const randomIndex = Math.floor(Math.random() * quotes.length);
     res.json(quotes[randomIndex]);
   });
 
-  // Celestial objects API endpoints
+  // Celestial objects API endpoints — static in-process data, 24-hour cache
   app.get('/api/celestial', (req, res) => {
+    if (req.headers['if-none-match'] === celestialETag) {
+      return res.status(304).end();
+    }
+    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+    res.set('ETag', celestialETag);
     res.json(celestialObjects);
   });
 
@@ -44,15 +61,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: 'Celestial object not found' });
     }
 
+    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
     res.json(object);
   });
 
-  // Cosmic patterns API endpoints
+  // Cosmic patterns API endpoints — static in-process data, 24-hour cache
   app.get('/api/cosmic-patterns', (req, res) => {
+    if (req.headers['if-none-match'] === patternsETag) {
+      return res.status(304).end();
+    }
+    res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+    res.set('ETag', patternsETag);
     res.json(cosmicPatterns);
   });
 
   app.get('/api/cosmic-patterns/random', (req, res) => {
+    res.set('Cache-Control', 'no-store');
     const randomIndex = Math.floor(Math.random() * cosmicPatterns.length);
     res.json(cosmicPatterns[randomIndex]);
   });
@@ -315,8 +339,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).end();
   });
 
-  // Space News API endpoint
+  // Space News API endpoint — cached 30 minutes to avoid hammering NASA/Space.com RSS
   app.get('/api/space-news', async (req, res) => {
+    const CACHE_KEY = 'space-news';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) {
+      res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
+      res.set('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
     try {
       const parser = new Parser();
 
@@ -391,6 +423,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allItems = [...nasaItems, ...spaceComItems, ...additionalSpaceFacts];
       const shuffled = allItems.sort(() => 0.5 - Math.random());
 
+      cache.set(CACHE_KEY, shuffled, TTL.RSS_FEED);
+      res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
+      res.set('X-Cache', 'MISS');
       res.json(shuffled);
     } catch (error) {
       console.error('Error fetching space news:', error);
@@ -438,8 +473,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Medium RSS feed endpoint to fetch blog posts
+  // Medium RSS feed endpoint — cached 30 minutes
   app.get("/api/medium-posts", async (req, res) => {
+    const CACHE_KEY = 'medium-posts';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) {
+      res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
+      res.set('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
     try {
       // Medium username - configured for Cosmic Channeling
       const mediumUsername = process.env.MEDIUM_USERNAME || 'cosmicchanneling';
@@ -492,11 +535,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       });
 
-      res.json({
-        posts,
-        total: posts.length,
-        source: 'Medium RSS'
-      });
+      const result = { posts, total: posts.length, source: 'Medium RSS' };
+      cache.set(CACHE_KEY, result, TTL.RSS_FEED);
+      res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
+      res.set('X-Cache', 'MISS');
+      res.json(result);
 
     } catch (error) {
       console.error('Medium RSS error:', error);
@@ -508,10 +551,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Traditions API endpoints for the Religions Discussion section
+  // Traditions API endpoints — cached 1 hour to reduce DB load
   app.get('/api/traditions', async (req, res) => {
+    const CACHE_KEY = 'traditions-all';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) {
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
+      return res.json(cached);
+    }
     try {
       const traditions = await storage.getAllTraditions();
+      cache.set(CACHE_KEY, traditions, TTL.DB_LIST);
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
       res.json(traditions);
     } catch (error) {
       console.error('Error fetching traditions:', error);
@@ -520,8 +571,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/traditions/featured', async (req, res) => {
+    const CACHE_KEY = 'traditions-featured';
+    const cached = cache.get(CACHE_KEY);
+    if (cached) {
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
+      return res.json(cached);
+    }
     try {
       const traditions = await storage.getFeaturedTraditions();
+      cache.set(CACHE_KEY, traditions, TTL.DB_LIST);
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
       res.json(traditions);
     } catch (error) {
       console.error('Error fetching featured traditions:', error);
@@ -530,14 +589,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/traditions/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const CACHE_KEY = `tradition-${id}`;
+    const cached = cache.get(CACHE_KEY);
+    if (cached) {
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
+      return res.json(cached);
+    }
     try {
-      const id = parseInt(req.params.id);
       const tradition = await storage.getTradition(id);
-
       if (!tradition) {
         return res.status(404).json({ error: 'Tradition not found' });
       }
-
+      cache.set(CACHE_KEY, tradition, TTL.DB_ITEM);
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
       res.json(tradition);
     } catch (error) {
       console.error('Error fetching tradition:', error);
@@ -546,13 +611,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/traditions/slug/:slug', async (req, res) => {
+    const { slug } = req.params;
+    const CACHE_KEY = `tradition-slug-${slug}`;
+    const cached = cache.get(CACHE_KEY);
+    if (cached) {
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
+      return res.json(cached);
+    }
     try {
-      const tradition = await storage.getTraditionBySlug(req.params.slug);
-
+      const tradition = await storage.getTraditionBySlug(slug);
       if (!tradition) {
         return res.status(404).json({ error: 'Tradition not found' });
       }
-
+      cache.set(CACHE_KEY, tradition, TTL.DB_ITEM);
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=300');
       res.json(tradition);
     } catch (error) {
       console.error('Error fetching tradition by slug:', error);
