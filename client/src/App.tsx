@@ -22,6 +22,7 @@ const Subscribe = lazy(() => import("./pages/Subscribe"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Downloads = lazy(() => import("./pages/Downloads"));
 
 
 function AppRouter() {
@@ -42,6 +43,7 @@ function AppRouter() {
             <Route path="/blog" component={Blog} />
             <Route path="/religions" component={Religions} />
             <Route path="/subscribe" component={Subscribe} />
+            <Route path="/downloads" component={Downloads} />
             <Route component={NotFound} />
           </Switch>
         </Suspense>

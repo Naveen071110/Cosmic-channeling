@@ -289,10 +289,8 @@ if (app.get("env") === "production") {
     });
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const PORT = 5000;
+  // Serve the app — port from env or default to 3000
+  const PORT = parseInt(process.env.PORT || '3000', 10);
 
   // Global error handlers to prevent crashes
   process.on('uncaughtException', (error) => {
@@ -313,8 +311,7 @@ if (app.get("env") === "production") {
 
   server.listen({
     port: PORT,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: "127.0.0.1",
   }, () => {
     log(`serving on port ${PORT}`);
   });
