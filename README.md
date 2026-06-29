@@ -1,14 +1,10 @@
-# Cosmic Channeling — Website Source
-
-> Source code for the Cosmic Channeling web app
-> Location: `C:\Users\singh\OneDrive\Documents\Claude Brain\Brain\Projects\Cosmic Channeling\Website`
+# Cosmic Channeling — Website
 
 ## Tech Stack
 - **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
 - **Backend:** Express.js REST API
 - **Storage:** In-memory (local) / PostgreSQL (production via Neon)
 - **Auth:** Passport.js (local username/password + Google OAuth)
-- **Payments:** PayPal SDK
 
 ## Quick Start
 ```bash
