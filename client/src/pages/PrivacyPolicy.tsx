@@ -36,7 +36,7 @@ const PrivacyPolicy = () => {
             <ul className="list-disc pl-6 text-[#F1F5F9] space-y-1">
               <li>Name</li>
               <li>Email address</li>
-              <li>Payment details (processed securely via third parties like PayPal/Stripe)</li>
+              <li>Payment details (processed securely via third parties like Stripe)</li>
             </ul>
             
             <p className="text-[#F1F5F9] font-medium mt-4">Non-Personal Data:</p>
@@ -63,7 +63,7 @@ const PrivacyPolicy = () => {
           <section className="space-y-2">
             <h3 className="text-xl font-medium text-[#F1F5F9]">3. Third-Party Services</h3>
             <ul className="list-disc pl-6 text-[#F1F5F9] space-y-1">
-              <li>Payment processors (Stripe, PayPal) handle transactions securely.</li>
+              <li>Payment processors (Stripe) handle transactions securely.</li>
               <li>Email services (Mailchimp, ConvertKit) manage newsletters.</li>
             </ul>
             <p className="text-[#F1F5F9]">

@@ -1,0 +1,19 @@
+{
+  "name": "cosmic-channeling",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2025-04-01",
+  "assets": {
+    "directory": "dist/public",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "NEWSLETTER_KV",
+      "id": "4b7e249f42b54e408b7e987a30ea70bc"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "development",
+    "MAX_CONCURRENT_REQUESTS": "50"
+  }
+}
