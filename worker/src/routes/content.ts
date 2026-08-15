@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { cache, MemoryCache } from "../cache";
+import { enforceRateLimit } from "../rate-limiter";
 import {
   quotes,
   celestialObjects,
@@ -85,103 +86,111 @@ router.get("/cosmic-patterns/random", (c) => {
 });
 
 /**
- * GET /api/space-news — Space news from NASA + Space.com RSS feeds (cached 30 min).
+ * GET /api/space-news — Space news from Spaceflight News API (SNAPI v4) + RSS feeds (cached 1 hour).
  */
 router.get("/space-news", async (c) => {
-  const CACHE_KEY = "space-news";
-  const cached = cache.get(CACHE_KEY);
+  if (!enforceRateLimit(c, { limit: 30, windowSec: 60, keyPrefix: "space-news" })) {
+    return c.json({ message: "Rate limit exceeded for space news." }, 429);
+  }
+
+  const CACHE_KEY = "space-news-snapi";
+  const cached = cache.get<any[]>(CACHE_KEY);
   if (cached) {
-    c.header("Cache-Control", "public, max-age=1800, stale-while-revalidate=300");
+    c.header("Cache-Control", "public, max-age=3600, stale-while-revalidate=300");
     c.header("X-Cache", "HIT");
     return c.json(cached);
   }
 
+  const items: any[] = [];
+
+  // 1. Primary Source: Spaceflight News API (v4 REST API)
   try {
-    // Fetch RSS feeds
-    const [nasaRes, spaceRes] = await Promise.allSettled([
-      fetch("https://www.nasa.gov/feed/"),
-      fetch("https://www.space.com/feeds/all"),
-    ]);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    const items: any[] = [];
+    const snapiRes = await fetch("https://api.spaceflightnewsapi.net/v4/articles/?limit=10", {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
-    // Parse NASA feed
-    if (nasaRes.status === "fulfilled" && nasaRes.value.ok) {
-      const text = await nasaRes.value.text();
-      const nasaItems = parseRssItems(text, "NASA");
-      items.push(...nasaItems.slice(0, 5));
+    if (snapiRes.ok) {
+      const snapiData: any = await snapiRes.json();
+      if (snapiData && Array.isArray(snapiData.results)) {
+        snapiData.results.forEach((art: any) => {
+          items.push({
+            title: art.title,
+            content: art.summary,
+            pubDate: art.published_at,
+            url: art.url,
+            type: "news",
+            source: art.news_site || "Spaceflight News",
+            image: art.image_url || "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=1000&q=80",
+          });
+        });
+      }
     }
-
-    // Parse Space.com feed
-    if (spaceRes.status === "fulfilled" && spaceRes.value.ok) {
-      const text = await spaceRes.value.text();
-      const spaceItems = parseRssItems(text, "Space.com");
-      items.push(...spaceItems.slice(0, 5));
-    }
-
-    // Add static space facts
-    const additionalFacts = [
-      {
-        title: "Jupiter's Great Red Spot",
-        content: "Jupiter's Great Red Spot is a giant, spinning storm that has been observed for more than 350 years. The storm is so large that about three Earths could fit inside it.",
-        url: "https://science.nasa.gov/jupiter/",
-        type: "fact",
-        image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA24237_800.jpg",
-      },
-      {
-        title: "Saturn's Rings",
-        content: "Saturn's magnificent rings are made up of billions of particles of ice and rock, ranging in size from tiny dust grains to objects as large as mountains.",
-        url: "https://science.nasa.gov/saturn/",
-        type: "fact",
-        image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA03545-scaled.jpg",
-      },
-      {
-        title: "Black Hole at the Center of the Milky Way",
-        content: "At the center of our Milky Way galaxy lies a supermassive black hole named Sagittarius A*, which has a mass of about 4 million times that of our Sun.",
-        url: "https://www.nasa.gov/image-article/our-black-hole/",
-        type: "fact",
-        image: "https://www.nasa.gov/wp-content/uploads/2023/03/blackhole-milkyway.jpg",
-      },
-      {
-        title: "Voyager Missions",
-        content: "NASA's Voyager 1 and 2 spacecraft are the only human-made objects to have entered interstellar space. Launched in 1977, they continue to send back data from beyond our solar system.",
-        url: "https://voyager.jpl.nasa.gov/",
-        type: "fact",
-        image: "https://voyager.jpl.nasa.gov/assets/images/gallery/voyager-spacecraft.jpg",
-      },
-      {
-        title: "Venus: Earth's Evil Twin",
-        content: "Venus is often called Earth's 'evil twin' because while similar in size and composition to Earth, its thick atmosphere traps heat in a runaway greenhouse effect, making it the hottest planet in our solar system with surface temperatures hot enough to melt lead.",
-        url: "https://science.nasa.gov/venus/",
-        type: "fact",
-        image: "https://science.nasa.gov/wp-content/uploads/2023/09/PIA00271-Venus-Computer-Simulated-Global-View-of-the-Northern-Hemisphere-scaled.jpg",
-      },
-    ];
-
-    const allItems = [...items, ...additionalFacts].sort(() => 0.5 - Math.random());
-
-    cache.set(CACHE_KEY, allItems, MemoryCache.TTL.RSS_FEED);
-    c.header("Cache-Control", "public, max-age=1800, stale-while-revalidate=300");
-    c.header("X-Cache", "MISS");
-    return c.json(allItems);
-  } catch (error) {
-    console.error("Error fetching space news:", error);
-    return c.json(
-      {
-        message: "Error fetching space news",
-        fallbackData: true,
-        data: [
-          {
-            title: "Jupiter's Great Red Spot",
-            content: "Jupiter's Great Red Spot is a giant, spinning storm that has been observed for more than 350 years.",
-            type: "fact",
-            url: "https://science.nasa.gov/jupiter/",
-          },
-        ],
-      },
-      500,
-    );
+  } catch (err) {
+    console.warn("SNAPI fetch failed, falling back to RSS feeds:", err);
   }
+
+  // 2. Secondary Source: Fallback to RSS Feeds if SNAPI didn't return enough items
+  if (items.length < 5) {
+    try {
+      const [nasaRes, spaceRes] = await Promise.allSettled([
+        fetch("https://www.nasa.gov/feed/"),
+        fetch("https://www.space.com/feeds/all"),
+      ]);
+
+      if (nasaRes.status === "fulfilled" && nasaRes.value.ok) {
+        const text = await nasaRes.value.text();
+        const nasaItems = parseRssItems(text, "NASA");
+        items.push(...nasaItems.slice(0, 4));
+      }
+
+      if (spaceRes.status === "fulfilled" && spaceRes.value.ok) {
+        const text = await spaceRes.value.text();
+        const spaceItems = parseRssItems(text, "Space.com");
+        items.push(...spaceItems.slice(0, 4));
+      }
+    } catch (e) {
+      console.warn("RSS feed parsing error:", e);
+    }
+  }
+
+  // 3. Static Educational Cosmic Facts
+  const additionalFacts = [
+    {
+      title: "James Webb Discovers Most Distant Known Galaxies",
+      content: "JWST observations have detected galaxies shining when the universe was only 300 million years old, challenging existing cosmological models of early cosmic structure.",
+      url: "https://webbtelescope.org/news",
+      type: "fact",
+      source: "JWST Science",
+      image: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+      title: "Jupiter's Great Red Spot & Storm Dynamics",
+      content: "Jupiter's Great Red Spot is a giant, spinning storm that has been observed for over 350 years. The storm is so vast that Earth could fit entirely inside it.",
+      url: "https://science.nasa.gov/jupiter/",
+      type: "fact",
+      source: "NASA Planetary",
+      image: "https://images.unsplash.com/photo-1614642264762-d0a3b8bf3700?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+      title: "Black Hole at the Center of the Milky Way",
+      content: "At the center of our Milky Way lies Sagittarius A*, a supermassive black hole with a mass 4.3 million times that of our Sun, warping space-time itself.",
+      url: "https://www.nasa.gov/image-article/our-black-hole/",
+      type: "fact",
+      source: "Astrophysics",
+      image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1000&q=80",
+    },
+  ];
+
+  const allItems = [...items, ...additionalFacts];
+
+  cache.set(CACHE_KEY, allItems, MemoryCache.TTL.SPACE_NEWS);
+  c.header("Cache-Control", "public, max-age=3600, stale-while-revalidate=300");
+  c.header("X-Cache", "MISS");
+  return c.json(allItems);
 });
 
 /**
@@ -249,7 +258,7 @@ function parseRssItems(xml: string, source: string): any[] {
         url: link,
         type: "news",
         source,
-        image,
+        image: image || "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=1000&q=80",
       });
     }
   }
@@ -272,7 +281,6 @@ function parseMediumRss(xml: string, username: string): any[] {
     const guid = extractTag(itemXml, "guid");
     const creator = extractTag(itemXml, "dc:creator") || username;
 
-    // Extract categories
     const categories: string[] = [];
     const catRegex = /<category[^>]*>([^<]+)<\/category>/gi;
     let catMatch: RegExpExecArray | null;

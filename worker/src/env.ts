@@ -17,6 +17,16 @@ export interface Env {
 
   // Medium
   MEDIUM_USERNAME?: string;
+
+  // NASA Open API
+  NASA_API_KEY?: string;
+
+  // Cloudflare KV
+  NEWSLETTER_KV?: KVNamespace;
+
+  // Runtime environment vars
+  ENVIRONMENT?: string;
+  MAX_CONCURRENT_REQUESTS?: string;
 }
 
 export interface JwtUserPayload {

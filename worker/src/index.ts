@@ -5,6 +5,7 @@ import type { Env } from "./env";
 import { authMiddleware } from "./auth-middleware";
 import { authRoutes } from "./routes/auth";
 import { contentRoutes } from "./routes/content";
+import { cosmicApiRoutes } from "./routes/cosmic-api";
 import { toolsRoutes } from "./routes/tools";
 import { newsletterRoutes } from "./routes/newsletter";
 import { traditionsRoutes } from "./routes/traditions";
@@ -36,7 +37,6 @@ app.use("*", async (c, next) => {
     c.set("storage", new DatabaseStorage(db));
   } else {
     c.set("storage", new MemStorage());
-    console.warn("DATABASE_URL not set — using in-memory storage (data lost on restart)");
   }
   await next();
 });
@@ -48,6 +48,7 @@ app.use("*", authMiddleware);
 
 app.route("/api", authRoutes);
 app.route("/api", contentRoutes);
+app.route("/api", cosmicApiRoutes);
 app.route("/api", toolsRoutes);
 app.route("/api/newsletter", newsletterRoutes);
 app.route("/api", traditionsRoutes);

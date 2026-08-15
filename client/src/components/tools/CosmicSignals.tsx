@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,8 +11,8 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import StargazingWidget from '@/components/features/StargazingWidget';
 import { 
-  Stars, 
   Sparkles, 
   Star, 
   Moon, 
@@ -19,7 +20,9 @@ import {
   RefreshCw,
   Calendar,
   LightbulbIcon,
-  MapPin
+  Compass,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 
 // Types for cosmic signals
@@ -42,390 +45,330 @@ type CelestialEvent = {
   recommendations: string[];
 };
 
-// Sample cosmic signals
-const sampleSignals: Signal[] = [
+const initialSignals: Signal[] = [
   {
     id: '1',
     type: 'synchronicity',
-    title: 'Repeated Numbers',
-    description: 'You\'ve been seeing the number sequence 1111 repeatedly throughout the day.',
-    significance: 'The universe is highlighting alignment and opportunities opening up in your path.',
+    title: 'Repeated Numbers Alignment (11:11)',
+    description: 'You are noticing synchronistic number sequences throughout your daily path.',
+    significance: 'The universe is highlighting alignment, open portals of consciousness, and focused manifestation.',
     date: new Date(),
-    strength: 4
+    strength: 5,
   },
   {
     id: '2',
     type: 'celestial',
-    title: 'Full Moon Influence',
-    description: 'The upcoming full moon in Pisces is amplifying your intuitive abilities.',
-    significance: 'This is an ideal time for meditation, dream work, and connecting with your higher self.',
-    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days in future
-    strength: 5
+    title: 'Lunar Illumination & Meditation Window',
+    description: 'The current lunar phase is actively amplifying intuitive faculties and dream recall.',
+    significance: 'Optimal timing for deep evening meditation, stillness, and connecting with higher awareness.',
+    date: new Date(),
+    strength: 4,
   },
   {
     id: '3',
     type: 'energy',
-    title: 'Crown Chakra Activation',
-    description: 'You may notice tingling or pressure at the top of your head, indicating crown chakra activity.',
-    significance: 'Your spiritual connection is strengthening, allowing for greater cosmic awareness and insight.',
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    strength: 3
+    title: 'Crown & Third Eye Energy Activation',
+    description: 'Subtle energy sensations at the forehead and crown indicating heightened receptor clarity.',
+    significance: 'Your spiritual perception is attuning to cosmic background frequencies.',
+    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    strength: 4,
   },
   {
     id: '4',
     type: 'intuition',
-    title: 'Gut Feeling',
-    description: 'You\'ve been experiencing strong gut feelings about an upcoming decision.',
-    significance: 'Your higher self is communicating through intuition to guide you toward the optimal path.',
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    strength: 4
-  }
+    title: 'Strong Intuitive Impulse',
+    description: 'A clear internal compass guiding you toward creative and spiritual ventures.',
+    significance: 'Trust inner discernment; your consciousness is processing subtle signals faster than analytical thought.',
+    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    strength: 4,
+  },
 ];
 
-// Sample celestial events
 const celestialEvents: CelestialEvent[] = [
   {
     id: '1',
-    name: 'Mercury Retrograde',
-    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days in future
-    description: 'Mercury appears to move backward in its orbit, affecting communication and technology.',
-    significance: 'A period for reflection, revision, and reassessment rather than starting new projects.',
+    name: 'Perseid & Meteor Radiants',
+    date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+    description: 'Earth traverses debris streams of ancient comets, producing luminous atmospheric streaks across the night sky.',
+    significance: 'Symbolizes shedding old baggage and burning through karmic residue with cosmic light.',
     recommendations: [
-      'Back up important data',
-      'Double-check communications before sending',
-      'Be patient with travel plans and technology',
-      'Use this time for reviewing and refining existing projects'
-    ]
+      'Stargaze between midnight and pre-dawn astronomical twilight',
+      'Choose a dark location away from direct city glow',
+      'Hold a clear intention for every shooting star observed',
+    ],
   },
   {
     id: '2',
-    name: 'Pleiades Alignment',
-    date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days in future
-    description: 'The sun aligns with the Pleiades star cluster, creating a powerful cosmic portal.',
-    significance: 'An opportunity for spiritual growth, enhanced intuition, and connection with higher consciousness.',
+    name: 'Planetary Conjunction Window',
+    date: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000),
+    description: 'Planetary bodies align in visual proximity from Earth’s orbital vantage point.',
+    significance: 'Synergistic blending of archetype energies fostering mental clarity and collective cohesion.',
     recommendations: [
-      'Meditate during dawn or dusk',
-      'Work with crystals, especially clear quartz',
-      'Journal any insights or messages received',
-      'Perform rituals or ceremonies to honor ancestral wisdom'
-    ]
+      'Meditate during dawn or dusk golden hour',
+      'Journal insights on personal equilibrium',
+      'Focus intentions on harmonic relationships',
+    ],
   },
   {
     id: '3',
-    name: 'New Moon in Leo',
-    date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days in future
-    description: 'A new lunar cycle begins in the sign of Leo, emphasizing creativity and self-expression.',
-    significance: 'Perfect timing for setting intentions related to confidence, leadership, and creative projects.',
+    name: 'Solar Equinox & Harmonic Pivot',
+    date: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000),
+    description: 'Equal day and night across the globe marking pivotal cosmic balance.',
+    significance: 'Universal reset point for evaluating personal equilibrium and setting new seasonal anchors.',
     recommendations: [
-      'Create a vision board for your aspirations',
-      'Start a new creative project',
-      'Practice heart-opening meditations',
-      'Set clear intentions for the lunar cycle ahead'
-    ]
-  }
+      'Perform a gratitude ritual for past achievements',
+      'Declutter physical and mental spaces',
+      'Establish balanced daily grounding practices',
+    ],
+  },
 ];
 
 export default function CosmicSignals() {
-  const [signals, setSignals] = useState<Signal[]>(sampleSignals);
-  const [events, setEvents] = useState<CelestialEvent[]>(celestialEvents);
+  const [signals, setSignals] = useState<Signal[]>(initialSignals);
+  const [events] = useState<CelestialEvent[]>(celestialEvents);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeSignalTab, setActiveSignalTab] = useState<string>('all');
-  
-  // Function to filter signals by type
+
+  // Query live solar & lunar cycles
+  const { data: solarData } = useQuery({
+    queryKey: ['/api/solar-cycles?lat=28.61&lng=77.2'],
+    staleTime: 1000 * 60 * 60 * 6,
+  });
+
+  // Dynamically update the lunar signal when real solarData arrives
+  useEffect(() => {
+    if (solarData?.lunar) {
+      const lunar = solarData.lunar;
+      setSignals((prev) => [
+        {
+          id: 'lunar-live',
+          type: 'celestial',
+          title: `${lunar.emoji} ${lunar.phaseName} Active Alignment`,
+          description: `Current moon phase is ${lunar.illuminationPercent}% illuminated (Age: ${lunar.ageDays} days).`,
+          significance: lunar.theme || 'Heightened spiritual clarity and intuitive receptivity.',
+          date: new Date(),
+          strength: 5,
+        },
+        ...prev.filter((s) => s.id !== 'lunar-live' && s.id !== '2'),
+      ]);
+    }
+  }, [solarData]);
+
   const getFilteredSignals = () => {
     if (activeSignalTab === 'all') return signals;
-    return signals.filter(signal => signal.type === activeSignalTab);
+    return signals.filter((signal) => signal.type === activeSignalTab);
   };
-  
-  // Function to simulate refreshing signals
+
   const refreshSignals = () => {
     setIsRefreshing(true);
-    
-    // Simulate API call with timeout
     setTimeout(() => {
-      // Generate a new "synchronicity" signal
+      const synchronicities = [
+        {
+          title: '333 Frequency Resonance',
+          desc: 'Spiritual teachers and cosmic guides are aligning with your current trajectory.',
+          sig: 'Validation that your current choices are in harmony with your higher purpose.',
+        },
+        {
+          title: 'Unusual Serendipitous Encounter',
+          desc: 'An unexpected connection or message will present a key unlock.',
+          sig: 'Open your awareness to chance conversations and unusual synchronicities today.',
+        },
+        {
+          title: 'Solar Plexus Power Alignment',
+          desc: 'Warmth and renewed confidence surging through your vital energy center.',
+          sig: 'Take courageous action on ideas you have been contemplating.',
+        },
+      ];
+
+      const chosen = synchronicities[Math.floor(Math.random() * synchronicities.length)];
       const newSignal: Signal = {
         id: Date.now().toString(),
         type: 'synchronicity',
-        title: 'Meaningful Coincidence',
-        description: 'You encountered the same symbol three times in different contexts today.',
-        significance: 'This repetition suggests you should pay attention to the meaning of this symbol in your life.',
+        title: chosen.title,
+        description: chosen.desc,
+        significance: chosen.sig,
         date: new Date(),
-        strength: Math.floor(Math.random() * 3) + 3 // Random strength between 3-5
+        strength: Math.floor(Math.random() * 2) + 4,
       };
-      
-      setSignals([newSignal, ...signals]);
+
+      setSignals((prev) => [newSignal, ...prev]);
       setIsRefreshing(false);
-    }, 1500);
+    }, 800);
   };
-  
-  // Function to format date relative to today
-  const formatRelativeDate = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (date.getTime() === today.getTime()) return 'Today';
-    if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
-    if (date.getTime() === yesterday.getTime()) return 'Yesterday';
-    
-    // Check if it's within a week
-    const diffTime = Math.abs(date.getTime() - today.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 7) {
-      if (date > today) return `In ${diffDays} days`;
-      return `${diffDays} days ago`;
-    }
-    
-    // Otherwise return the date
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-  
-  // Function to get signal type icon
+
   const getSignalTypeIcon = (type: string) => {
     switch (type) {
       case 'synchronicity':
-        return <RefreshCw className="h-4 w-4" />;
+        return <RefreshCw className="h-4 w-4 text-pink-400" />;
       case 'celestial':
-        return <Moon className="h-4 w-4" />;
+        return <Moon className="h-4 w-4 text-sky-400" />;
       case 'energy':
-        return <Sparkles className="h-4 w-4" />;
+        return <Sparkles className="h-4 w-4 text-yellow-400" />;
       case 'intuition':
-        return <LightbulbIcon className="h-4 w-4" />;
+        return <LightbulbIcon className="h-4 w-4 text-purple-400" />;
       default:
-        return <Star className="h-4 w-4" />;
+        return <Star className="h-4 w-4 text-purple-400" />;
     }
   };
-  
-  // Function to get strength stars
+
   const getStrengthStars = (strength: number) => {
-    return Array(5).fill(0).map((_, index) => (
-      <Star 
-        key={index}
-        className={`h-3 w-3 ${index < strength ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`}
-      />
-    ));
+    return Array(5)
+      .fill(0)
+      .map((_, index) => (
+        <Star
+          key={index}
+          className={`h-3 w-3 ${index < strength ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600'}`}
+        />
+      ));
   };
-  
+
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 space-y-8">
+      {/* Live Stargazing & Alignment Widget */}
+      <StargazingWidget />
+
       <Tabs defaultValue="signals" className="w-full">
-        <TabsList className="grid grid-cols-2 mb-8">
-          <TabsTrigger value="signals" className="flex items-center">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Cosmic Signals
+        <TabsList className="grid grid-cols-2 mb-8 bg-[#1E293B] border border-white/10 p-1">
+          <TabsTrigger value="signals" className="flex items-center text-sm">
+            <Sparkles className="mr-2 h-4 w-4 text-purple-400" />
+            Cosmic Signals & Synchronicities
           </TabsTrigger>
-          <TabsTrigger value="events" className="flex items-center">
-            <Calendar className="mr-2 h-4 w-4" />
-            Celestial Events
+          <TabsTrigger value="events" className="flex items-center text-sm">
+            <Calendar className="mr-2 h-4 w-4 text-sky-400" />
+            Upcoming Celestial Alignments
           </TabsTrigger>
         </TabsList>
-        
+
+        {/* Signals Tab */}
         <TabsContent value="signals" className="space-y-4">
-          <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-            <CardHeader>
-              <div className="flex justify-between items-center">
+          <Card className="bg-[#0F172A]/90 border-[#334155] shadow-lg">
+            <CardHeader className="border-b border-white/5 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-xl text-white">Your Cosmic Signals</CardTitle>
-                  <CardDescription>
-                    Messages and signs from the universe aligned with your cosmic journey
+                  <CardTitle className="text-xl font-space text-white">
+                    Your Real-Time Cosmic Signals
+                  </CardTitle>
+                  <CardDescription className="text-xs text-gray-400">
+                    Live synchronicities, energy activations, and lunar phase influences
                   </CardDescription>
                 </div>
-                <Button 
-                  onClick={refreshSignals} 
+                <Button
+                  onClick={refreshSignals}
                   disabled={isRefreshing}
                   size="sm"
-                  className="bg-purple-700 hover:bg-purple-800"
+                  className="bg-purple-700 hover:bg-purple-800 text-white"
                 >
-                  {isRefreshing ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Refresh Signals
-                    </>
-                  )}
+                  <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Channel New Signal
                 </Button>
               </div>
-              
-              <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
-                <Badge 
-                  variant="outline"
-                  className={`cursor-pointer ${activeSignalTab === 'all' 
-                    ? 'bg-purple-900/50 text-purple-300 border-purple-500/50' 
-                    : 'bg-black/40 hover:bg-gray-900 text-gray-400 hover:text-gray-300'}`}
-                  onClick={() => setActiveSignalTab('all')}
-                >
-                  All Signals
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className={`cursor-pointer ${activeSignalTab === 'synchronicity' 
-                    ? 'bg-purple-900/50 text-purple-300 border-purple-500/50' 
-                    : 'bg-black/40 hover:bg-gray-900 text-gray-400 hover:text-gray-300'}`}
-                  onClick={() => setActiveSignalTab('synchronicity')}
-                >
-                  <RefreshCw className="mr-1 h-3 w-3" />
-                  Synchronicities
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className={`cursor-pointer ${activeSignalTab === 'celestial' 
-                    ? 'bg-purple-900/50 text-purple-300 border-purple-500/50' 
-                    : 'bg-black/40 hover:bg-gray-900 text-gray-400 hover:text-gray-300'}`}
-                  onClick={() => setActiveSignalTab('celestial')}
-                >
-                  <Moon className="mr-1 h-3 w-3" />
-                  Celestial
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className={`cursor-pointer ${activeSignalTab === 'energy' 
-                    ? 'bg-purple-900/50 text-purple-300 border-purple-500/50' 
-                    : 'bg-black/40 hover:bg-gray-900 text-gray-400 hover:text-gray-300'}`}
-                  onClick={() => setActiveSignalTab('energy')}
-                >
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  Energy
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className={`cursor-pointer ${activeSignalTab === 'intuition' 
-                    ? 'bg-purple-900/50 text-purple-300 border-purple-500/50' 
-                    : 'bg-black/40 hover:bg-gray-900 text-gray-400 hover:text-gray-300'}`}
-                  onClick={() => setActiveSignalTab('intuition')}
-                >
-                  <LightbulbIcon className="mr-1 h-3 w-3" />
-                  Intuition
-                </Badge>
+
+              {/* Filter Tabs */}
+              <div className="flex flex-wrap gap-2 pt-4">
+                {['all', 'synchronicity', 'celestial', 'energy', 'intuition'].map((type) => (
+                  <Button
+                    key={type}
+                    variant={activeSignalTab === type ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveSignalTab(type)}
+                    className={`text-xs h-7 capitalize ${
+                      activeSignalTab === type
+                        ? 'bg-purple-700 text-white'
+                        : 'border-white/10 text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    {type}
+                  </Button>
+                ))}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {getFilteredSignals().length === 0 ? (
-                <div className="text-center py-10">
-                  <Stars className="mx-auto h-12 w-12 text-gray-600 mb-4" />
-                  <h3 className="text-lg font-medium text-white">No Signals Detected</h3>
-                  <p className="text-gray-400 max-w-md mx-auto mt-2">
-                    The cosmos is quiet right now. Check back later or try refreshing to receive new signals aligned with your journey.
-                  </p>
-                </div>
-              ) : (
-                getFilteredSignals().map(signal => (
-                  <Card key={signal.id} className="bg-black/40 border-purple-500/20">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center">
-                          <div className={`p-2 rounded-full mr-3 
-                            ${signal.type === 'synchronicity' ? 'bg-green-900/20 text-green-400' : ''}
-                            ${signal.type === 'celestial' ? 'bg-blue-900/20 text-blue-400' : ''}
-                            ${signal.type === 'energy' ? 'bg-purple-900/20 text-purple-400' : ''}
-                            ${signal.type === 'intuition' ? 'bg-yellow-900/20 text-yellow-400' : ''}
-                          `}>
+
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {getFilteredSignals().map((signal) => (
+                  <Card
+                    key={signal.id}
+                    className="bg-[#1E293B]/70 border-[#334155] hover:border-purple-500/50 transition-all p-5 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-md bg-purple-900/30 border border-purple-500/20">
                             {getSignalTypeIcon(signal.type)}
                           </div>
-                          <div>
-                            <h3 className="font-medium text-white">{signal.title}</h3>
-                            <div className="flex items-center text-xs text-gray-400">
-                              <span className="capitalize">{signal.type}</span>
-                              <span className="mx-2">•</span>
-                              <span>{formatRelativeDate(signal.date)}</span>
-                            </div>
-                          </div>
+                          <Badge variant="outline" className="text-[11px] capitalize text-purple-300 border-purple-500/30">
+                            {signal.type}
+                          </Badge>
                         </div>
-                        <div className="flex">
-                          {getStrengthStars(signal.strength)}
-                        </div>
+                        <div className="flex items-center gap-0.5">{getStrengthStars(signal.strength)}</div>
                       </div>
-                      <p className="mt-3 text-gray-300">{signal.description}</p>
-                      <div className="mt-3 p-3 rounded bg-purple-900/10 border border-purple-500/10">
-                        <h4 className="text-sm font-medium text-purple-300 mb-1">Cosmic Significance:</h4>
-                        <p className="text-gray-300 text-sm">{signal.significance}</p>
-                      </div>
-                    </CardContent>
+
+                      <h4 className="text-base font-semibold font-space text-white mb-2">
+                        {signal.title}
+                      </h4>
+                      <p className="text-xs text-gray-300 mb-3 leading-relaxed">
+                        {signal.description}
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded bg-purple-950/20 border border-purple-500/10 mt-2">
+                      <span className="text-[10px] font-semibold text-purple-300 uppercase tracking-wider block mb-0.5">
+                        Cosmic Significance
+                      </span>
+                      <p className="text-xs text-gray-300 italic">{signal.significance}</p>
+                    </div>
                   </Card>
-                ))
-              )}
+                ))}
+              </div>
             </CardContent>
-            <CardFooter className="border-t border-gray-800 pt-4">
-              <p className="text-sm text-gray-400">
-                Cosmic signals are personalized insights based on cosmic patterns, synchronicities, and energetic shifts aligned with your unique journey.
-              </p>
-            </CardFooter>
           </Card>
         </TabsContent>
-        
+
+        {/* Celestial Events Tab */}
         <TabsContent value="events" className="space-y-4">
-          <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-            <CardHeader>
-              <CardTitle className="text-xl text-white">Upcoming Celestial Events</CardTitle>
-              <CardDescription>
-                Astronomical and energetic events that can influence your cosmic experience
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {events.length === 0 ? (
-                <div className="text-center py-10">
-                  <Calendar className="mx-auto h-12 w-12 text-gray-600 mb-4" />
-                  <h3 className="text-lg font-medium text-white">No Upcoming Events</h3>
-                  <p className="text-gray-400 max-w-md mx-auto mt-2">
-                    There are no significant celestial events in the near future. Check back later for updates.
-                  </p>
-                </div>
-              ) : (
-                events.map(event => (
-                  <div key={event.id} className="border border-purple-500/20 rounded-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-medium text-white text-lg">{event.name}</h3>
-                        <Badge variant="outline" className="bg-blue-900/40 text-blue-300 border-blue-500/30">
-                          {event.date.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </Badge>
-                      </div>
-                      <p className="mt-2 text-gray-300">{event.description}</p>
-                    </div>
-                    <div className="p-4">
-                      <h4 className="text-sm font-medium text-purple-300 mb-2">Cosmic Significance:</h4>
-                      <p className="text-gray-300 mb-4">{event.significance}</p>
-                      
-                      <h4 className="text-sm font-medium text-purple-300 mb-2">Recommendations:</h4>
-                      <ul className="space-y-2">
-                        {event.recommendations.map((rec, index) => (
-                          <li key={index} className="flex items-start gap-2 text-gray-300">
-                            <span className="bg-purple-900/30 rounded-full p-1 mt-0.5">
-                              <Star className="h-3 w-3 text-purple-400" />
-                            </span>
-                            <span>{rec}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <Card
+                key={event.id}
+                className="bg-[#0F172A]/90 border-[#334155] hover:border-sky-500/50 transition-all p-6 flex flex-col justify-between shadow-lg"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge className="bg-sky-950 text-sky-300 border border-sky-500/30 text-xs">
+                      Upcoming Alignment
+                    </Badge>
+                    <span className="text-xs text-gray-400">
+                      {event.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
                   </div>
-                ))
-              )}
-            </CardContent>
-            <CardFooter className="border-t border-gray-800 pt-4">
-              <div className="flex items-center text-sm text-gray-400">
-                <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                <span>Events are calculated based on your current location and universal cosmic patterns.</span>
-              </div>
-            </CardFooter>
-          </Card>
+
+                  <h3 className="text-lg font-bold font-space text-white mb-2">{event.name}</h3>
+                  <p className="text-xs text-gray-300 mb-4 leading-relaxed">{event.description}</p>
+
+                  <div className="p-3 rounded-lg bg-sky-950/20 border border-sky-500/20 mb-4">
+                    <span className="text-[10px] font-semibold text-sky-300 uppercase tracking-wider block mb-1">
+                      Spiritual Impact
+                    </span>
+                    <p className="text-xs text-gray-300 italic">{event.significance}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-semibold text-gray-400 block mb-2">
+                    Recommended Practices:
+                  </span>
+                  <ul className="space-y-1.5 text-xs text-gray-300">
+                    {event.recommendations.map((rec, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-sky-400 flex-shrink-0 mt-0.5" />
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
