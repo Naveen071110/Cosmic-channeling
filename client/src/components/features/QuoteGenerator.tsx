@@ -39,7 +39,7 @@ export default function QuoteGenerator() {
     try {
       const res = await fetch('/api/quotes/random');
       if (res.ok) {
-        const quote = await res.json();
+        const quote = (await res.json()) as CosmicQuote;
         setManualQuote(quote);
       }
     } catch (e) {

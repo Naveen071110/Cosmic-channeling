@@ -40,7 +40,7 @@ export async function verifyToken(
     if (
       typeof payload.id !== "number" ||
       typeof payload.username !== "string" ||
-      typeof payload.email !== "string"
+      (payload.email !== null && typeof payload.email !== "string" && typeof payload.email !== "undefined")
     ) {
       return null;
     }
@@ -48,7 +48,7 @@ export async function verifyToken(
     return {
       id: payload.id,
       username: payload.username,
-      email: payload.email,
+      email: (payload.email as string) || null,
       isSubscribed: payload.isSubscribed === true,
     };
   } catch {

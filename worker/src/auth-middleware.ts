@@ -13,11 +13,11 @@ declare module "hono" {
  * Auth middleware — reads JWT from cookie, verifies it, and sets c.var.user.
  * Does NOT block unauthenticated requests (public endpoints work without auth).
  */
-export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) {
+export async function authMiddleware(c: Context<any>, next: Next) {
   const secret = c.env.JWT_SECRET;
 
   if (secret) {
-    const cookieHeader = c.req.header("Cookie");
+    const cookieHeader = c.req.header("Cookie") || null;
     const token = extractTokenFromCookie(cookieHeader);
 
     if (token) {
@@ -41,7 +41,7 @@ export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) 
  * Require auth middleware — returns 401 if no valid user is set.
  * Use this after authMiddleware on routes that need authentication.
  */
-export async function requireAuth(c: Context<{ Bindings: Env }>, next: Next) {
+export async function requireAuth(c: Context<any>, next: Next) {
   const user = c.get("user");
   if (!user) {
     return c.json({ message: "Unauthorized" }, 401);
@@ -52,6 +52,6 @@ export async function requireAuth(c: Context<{ Bindings: Env }>, next: Next) {
 /**
  * Helper to get the authenticated user from context.
  */
-export function getUser(c: Context<{ Bindings: Env }>): JwtUserPayload | null {
+export function getUser(c: Context<any>): JwtUserPayload | null {
   return c.get("user") ?? null;
 }

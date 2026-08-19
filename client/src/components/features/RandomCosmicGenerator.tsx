@@ -11,7 +11,7 @@ interface CosmicPattern {
 const RandomCosmicGenerator = () => {
   const [currentPattern, setCurrentPattern] = useState<CosmicPattern | null>(null);
   
-  const { data: cosmicData, isLoading } = useQuery({
+  const { data: cosmicData, isLoading } = useQuery<CosmicPattern[]>({
     queryKey: ['/api/cosmic-patterns'],
   });
 

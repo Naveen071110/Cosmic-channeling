@@ -21,8 +21,8 @@ export function useSubscription() {
       );
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to update subscription");
+        const errorData: any = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update subscription");
       }
 
       return await res.json();

@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { SpaceAudio } from '@/data/spaceAudio';
 import { formatTime } from '@/lib/utils';
+
+export interface SpaceAudio {
+  id?: string;
+  name?: string;
+  title?: string;
+  url: string;
+  duration?: number;
+}
 
 interface AudioPlayerProps {
   audio: SpaceAudio;

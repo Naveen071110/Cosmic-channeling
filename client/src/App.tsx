@@ -30,7 +30,17 @@ function AppRouter() {
     <>
       <Header />
       <main className="flex-1">
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={
+          <div className="min-h-[70vh] flex flex-col items-center justify-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin"></div>
+              <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-sky-400/20 border-b-sky-400 animate-spin [animation-direction:reverse]"></div>
+            </div>
+            <p className="text-xs font-mono text-purple-300/80 tracking-widest uppercase animate-pulse">
+              Aligning Cosmic Frequencies...
+            </p>
+          </div>
+        }>
           <Switch>
             <Route path="/auth" component={Auth} />
             <Route path="/terms" component={TermsOfService} />

@@ -6,7 +6,7 @@ import { requireAuth, getUser } from "../auth-middleware";
 import type { IStorage } from "../storage";
 import { authMiddleware } from "../auth-middleware";
 
-const router = new Hono<{ Bindings: Env; Variables: { user: ReturnType<typeof getUser> } }>();
+const router = new Hono<{ Bindings: Env }>();
 router.use("*", authMiddleware);
 
 /**
@@ -140,7 +140,8 @@ router.post("/quiz-results", async (c) => {
  * POST /api/users/:id/subscription — Update user subscription (requires auth).
  */
 router.post("/users/:id/subscription", requireAuth, async (c) => {
-  const userId = parseInt(c.req.param("id"), 10);
+  const paramId = c.req.param("id");
+  const userId = parseInt(paramId || "0", 10);
   const currentUser = getUser(c);
   const storage: IStorage = c.get("storage");
 

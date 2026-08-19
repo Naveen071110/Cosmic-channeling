@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,265 +16,232 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Clock, Star, ListFilter } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Play, Clock, Star, ListFilter, Sparkles, Moon, Sun } from "lucide-react";
 
-// Cosmic image data types
-interface CosmicImage {
+interface MeditationItem {
   id: string;
   title: string;
+  channelTitle: string;
   description: string;
-  imageUrl: string;
-  largeImageUrl: string;
-  category: 'galaxies' | 'nebulae' | 'planets' | 'stars' | 'space';
+  duration: number; // in minutes
+  theme: "relaxation" | "focus" | "creativity" | "cosmic";
+  level: "beginner" | "intermediate" | "advanced";
+  thumbnail: string;
+  videoId: string;
   tags: string[];
-  photographer: string;
-  views?: number;
 }
 
-export default function CosmicGallery() {
-  const [images, setImages] = useState<CosmicImage[]>([]);
-  const [filteredImages, setFilteredImages] = useState<CosmicImage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+const STATIC_MEDITATIONS: MeditationItem[] = [
+  {
+    id: "1",
+    title: "Deep Space Astral Journey & Universal Harmony",
+    channelTitle: "Cosmic Channeling",
+    description: "Immerse yourself in deep theta frequencies and ambient cosmic soundscapes to expand consciousness.",
+    duration: 15,
+    theme: "cosmic",
+    level: "beginner",
+    thumbnail: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=600&auto=format&fit=crop&q=80",
+    videoId: "w0gBwZ77j9M",
+    tags: ["Cosmic", "Astral", "Theta Wave", "Deep Peace"],
+  },
+  {
+    id: "2",
+    title: "Full Moon Cellular Healing & Intention Setting",
+    channelTitle: "Lunar Wisdom",
+    description: "Align your internal biological rhythms with lunar illumination to release tension and revitalize spiritual energy.",
+    duration: 20,
+    theme: "relaxation",
+    level: "intermediate",
+    thumbnail: "https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=600&auto=format&fit=crop&q=80",
+    videoId: "dQw4w9WgXcQ",
+    tags: ["Moon", "Healing", "Restoration", "Release"],
+  },
+  {
+    id: "3",
+    title: "Solar Flare Vitality & Crown Chakra Expansion",
+    channelTitle: "Solar Frequencies",
+    description: "Activate your solar plexus and third eye centers through guided solar breathwork and golden light visualization.",
+    duration: 10,
+    theme: "focus",
+    level: "beginner",
+    thumbnail: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80",
+    videoId: "M576WGiDBdQ",
+    tags: ["Solar", "Focus", "Prana", "Clarity"],
+  },
+  {
+    id: "4",
+    title: "Quantum Consciousness & Star-Seed Meditation",
+    channelTitle: "Universal Mind",
+    description: "Journey beyond the linear matrix into the timeless realm of quantum possibilities and star constellations.",
+    duration: 25,
+    theme: "creativity",
+    level: "advanced",
+    thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80",
+    videoId: "hHW1oYw642k",
+    tags: ["Quantum", "Creativity", "Transcendence", "Constellations"],
+  },
+];
+
+export default function MeditationLibrary() {
+  const [selectedTheme, setSelectedTheme] = useState<string>("all");
+  const [selectedDuration, setSelectedDuration] = useState<string>("all");
+  const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("all");
 
-  // Load static cosmic images for meditation backgrounds
-  const loadCosmicImages = () => {
-    const staticImages: CosmicImage[] = [
-      {
-        id: "1",
-        title: "Spiral Galaxy",
-        description: "A beautiful spiral galaxy captured in deep space",
-        imageUrl: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400",
-        largeImageUrl: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=1200",
-        category: "galaxies",
-        tags: ["galaxy", "spiral", "space", "stars"],
-        photographer: "NASA",
-        views: 15000
-      },
-      {
-        id: "2", 
-        title: "Colorful Nebula",
-        description: "A vibrant nebula showcasing cosmic colors",
-        imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400",
-        largeImageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1200",
-        category: "nebulae",
-        tags: ["nebula", "colors", "cosmic", "space"],
-        photographer: "Hubble",
-        views: 22000
-      },
-      {
-        id: "3",
-        title: "Earth from Space",
-        description: "Our beautiful blue planet as seen from orbit",
-        imageUrl: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=400", 
-        largeImageUrl: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=1200",
-        category: "planets",
-        tags: ["earth", "planet", "blue", "atmosphere"],
-        photographer: "ISS",
-        views: 18500
-      },
-      {
-        id: "4",
-        title: "Starry Night Sky",
-        description: "Countless stars illuminating the cosmic darkness",
-        imageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=400",
-        largeImageUrl: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=1200",
-        category: "stars",
-        tags: ["stars", "night", "sky", "astronomy"],
-        photographer: "ESO",
-        views: 12000
-      }
-    ];
-    
-    setImages(staticImages);
-    setFilteredImages(staticImages);
-    setLoading(false);
-  };
+  const filteredMeditations = useMemo(() => {
+    return STATIC_MEDITATIONS.filter((item) => {
+      // Theme filter
+      if (selectedTheme !== "all" && item.theme !== selectedTheme) return false;
+      // Duration filter
+      if (selectedDuration === "short" && item.duration > 10) return false;
+      if (selectedDuration === "medium" && (item.duration <= 10 || item.duration > 20)) return false;
+      if (selectedDuration === "long" && item.duration <= 20) return false;
+      // Level filter
+      if (selectedLevel !== "all" && item.level !== selectedLevel) return false;
+      // Tab filter
+      if (activeTab === "popular" && item.duration < 15) return false;
+      if (activeTab === "cosmic" && item.theme !== "cosmic") return false;
 
-  useEffect(() => {
-    loadCosmicImages();
-  }, []);
-
-  // Filter images when filters change
-  useEffect(() => {
-    let result = [...images];
-    
-    // Filter by category
-    if (selectedCategory !== "all") {
-      result = result.filter(item => item.category === selectedCategory);
-    }
-    
-    // Special tabs
-    if (activeTab === "popular") {
-      result = result.sort((a, b) => (b.views || 0) - (a.views || 0));
-    } else if (activeTab === "newest") {
-      result = result.reverse();
-    } else if (activeTab === "galaxies") {
-      result = result.filter(item => item.category === "galaxies");
-    } else if (activeTab === "nebulae") {
-      result = result.filter(item => item.category === "nebulae");
-    }
-    
-    setFilteredImages(result);
-  }, [selectedCategory, activeTab, images]);
-
-  // Handle category selection
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-  };
-
-  // Format duration display
-  const formatDuration = (minutes: number) => {
-    return `${minutes} min`;
-  };
+      return true;
+    });
+  }, [selectedTheme, selectedDuration, selectedLevel, activeTab]);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
+        <h2 className="text-3xl font-bold mb-2 font-space bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">
           Cosmic Meditation Library
         </h2>
-        <p className="text-gray-300 max-w-2xl mx-auto">
-          Explore our collection of guided meditations to connect with cosmic energies and enhance your spiritual journey.
+        <p className="text-gray-300 max-w-2xl mx-auto text-sm">
+          Explore curated guided journeys and frequency meditations to connect with universal consciousness.
         </p>
       </div>
-      
+
       {/* Tabs and Filters */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
           <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full md:w-auto">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="popular">Popular</TabsTrigger>
-              <TabsTrigger value="newest">Newest</TabsTrigger>
-              <TabsTrigger value="cosmic">Cosmic</TabsTrigger>
+            <TabsList className="grid grid-cols-3 w-full md:w-auto bg-[#1E293B] border border-white/10">
+              <TabsTrigger value="all">All Journeys</TabsTrigger>
+              <TabsTrigger value="popular">Deep Immersion</TabsTrigger>
+              <TabsTrigger value="cosmic">Cosmic Only</TabsTrigger>
             </TabsList>
           </Tabs>
-          
+
           <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            <div className="flex items-center">
-              <Select onValueChange={handleThemeChange} defaultValue="all">
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Theme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Themes</SelectItem>
-                  <SelectItem value="relaxation">Relaxation</SelectItem>
-                  <SelectItem value="focus">Focus</SelectItem>
-                  <SelectItem value="creativity">Creativity</SelectItem>
-                  <SelectItem value="cosmic">Cosmic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center">
-              <Select onValueChange={handleDurationChange} defaultValue="all">
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Durations</SelectItem>
-                  <SelectItem value="short">Short (&lt;=10 min)</SelectItem>
-                  <SelectItem value="medium">Medium (11-20 min)</SelectItem>
-                  <SelectItem value="long">Long (&gt;20 min)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center">
-              <Select onValueChange={handleLevelChange} defaultValue="all">
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select onValueChange={setSelectedTheme} value={selectedTheme}>
+              <SelectTrigger className="w-[130px] bg-[#1E293B] border-white/10 text-white text-xs">
+                <SelectValue placeholder="Theme" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1E293B] border-white/10 text-white">
+                <SelectItem value="all">All Themes</SelectItem>
+                <SelectItem value="relaxation">Relaxation</SelectItem>
+                <SelectItem value="focus">Focus</SelectItem>
+                <SelectItem value="creativity">Creativity</SelectItem>
+                <SelectItem value="cosmic">Cosmic</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select onValueChange={setSelectedDuration} value={selectedDuration}>
+              <SelectTrigger className="w-[130px] bg-[#1E293B] border-white/10 text-white text-xs">
+                <SelectValue placeholder="Duration" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1E293B] border-white/10 text-white">
+                <SelectItem value="all">All Durations</SelectItem>
+                <SelectItem value="short">Short (≤10 min)</SelectItem>
+                <SelectItem value="medium">Medium (11-20 min)</SelectItem>
+                <SelectItem value="long">Long (&gt;20 min)</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select onValueChange={setSelectedLevel} value={selectedLevel}>
+              <SelectTrigger className="w-[130px] bg-[#1E293B] border-white/10 text-white text-xs">
+                <SelectValue placeholder="Level" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1E293B] border-white/10 text-white">
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
-      
+
       {/* Meditation Cards Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, index) => (
-            <Card key={index} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 animate-pulse">
-              <div className="aspect-video bg-gray-700 rounded-t-lg"></div>
-              <CardHeader className="pb-3">
-                <div className="h-6 bg-gray-700 rounded mb-2"></div>
-                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMeditations.map((meditation) => (
-            <Card key={meditation.id} className="overflow-hidden bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all">
-              <div className="aspect-video relative">
-                <img 
-                  src={meditation.thumbnail} 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        {filteredMeditations.map((meditation) => (
+          <Card
+            key={meditation.id}
+            className="overflow-hidden bg-[#0F172A]/90 border-[#334155] hover:border-purple-500/50 transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="h-52 relative overflow-hidden bg-black/60">
+                <img
+                  src={meditation.thumbnail}
                   alt={meditation.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                  <Play className="w-12 h-12 text-white" />
-                </div>
+                <Badge className="absolute top-3 right-3 bg-purple-900/90 text-purple-200 border border-purple-400/30 text-xs">
+                  {meditation.theme.toUpperCase()}
+                </Badge>
               </div>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg text-white line-clamp-2">{meditation.title}</CardTitle>
-                    <CardDescription className="text-gray-300">
-                      {meditation.channelTitle} • {meditation.theme.charAt(0).toUpperCase() + meditation.theme.slice(1)}
-                    </CardDescription>
-                  </div>
-                </div>
+
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-space text-white leading-snug">
+                  {meditation.title}
+                </CardTitle>
+                <CardDescription className="text-xs text-gray-400">
+                  {meditation.channelTitle} • Level: {meditation.level}
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-300 mb-4 line-clamp-2">{meditation.description}</p>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {meditation.tags.slice(0, 3).map((tag, index) => (
-                    <span key={index} className="text-xs bg-purple-900/50 text-purple-200 rounded-full px-2 py-1">
+
+              <CardContent className="pb-3">
+                <p className="text-xs text-gray-300 mb-3 line-clamp-2 leading-relaxed">
+                  {meditation.description}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {meditation.tags.map((tag, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="text-[10px] bg-purple-950/40 text-purple-300 border-purple-500/20"
+                    >
                       {tag}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between pt-2">
-                <div className="flex items-center text-gray-400">
-                  <Clock className="w-4 h-4 mr-1" />
-                  <span className="text-sm">{formatDuration(meditation.duration)}</span>
-                </div>
-                <Button 
-                  size="sm" 
-                  className="bg-purple-600 hover:bg-purple-700"
-                  onClick={() => window.open(`https://www.youtube.com/watch?v=${meditation.videoId}`, '_blank')}
-                >
-                  <Play className="w-4 h-4 mr-1" />
-                  Watch
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
-      
+            </div>
+
+            <CardFooter className="flex justify-between items-center pt-3 border-t border-white/5">
+              <div className="flex items-center text-xs text-gray-400">
+                <Clock className="w-3.5 h-3.5 mr-1 text-sky-400" />
+                <span>{meditation.duration} minutes</span>
+              </div>
+              <Button
+                size="sm"
+                className="bg-purple-700 hover:bg-purple-800 text-white text-xs h-8"
+                onClick={() =>
+                  window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(meditation.title)}`, "_blank")
+                }
+              >
+                <Play className="w-3.5 h-3.5 mr-1" />
+                Begin Session
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
       {filteredMeditations.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-gray-400">No meditations match your filters. Try adjusting your selection.</p>
-          <Button 
-            variant="outline" 
-            className="mt-4"
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-sm">No meditations match your filters. Try adjusting your selection.</p>
+          <Button
+            variant="outline"
+            className="mt-4 border-white/10 text-white hover:bg-white/5"
             onClick={() => {
               setSelectedTheme("all");
               setSelectedDuration("all");

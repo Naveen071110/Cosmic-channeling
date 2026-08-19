@@ -30,7 +30,7 @@ const DreamInterpreter = () => {
       
       // Try to get interpretation from API
       const response = await apiRequest('POST', '/api/interpret-dream', { dreamText });
-      const data = await response.json();
+      const data = (await response.json()) as DreamInterpretation;
       setInterpretation(data);
       
     } catch (error) {

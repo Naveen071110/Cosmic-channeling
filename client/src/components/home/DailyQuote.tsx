@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -12,17 +11,10 @@ interface Quote {
 const DailyQuote = () => {
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
 
-  const { data: quotes, isLoading, isError } = useQuery({
+  const { data: quotes, isLoading, isError } = useQuery<Quote[]>({
     queryKey: ['/api/quotes'],
     enabled: true,
   });
-
-  useEffect(() => {
-    if (quotes && quotes.length > 0) {
-      // Get a random quote on initial load
-      getRandomQuote();
-    }
-  }, [quotes]);
 
   const getRandomQuote = () => {
     if (quotes && quotes.length > 0) {
@@ -30,6 +22,12 @@ const DailyQuote = () => {
       setCurrentQuote(quotes[randomIndex]);
     }
   };
+
+  useEffect(() => {
+    if (quotes && quotes.length > 0) {
+      getRandomQuote();
+    }
+  }, [quotes]);
 
   // If the API fails, use a fallback quote
   useEffect(() => {

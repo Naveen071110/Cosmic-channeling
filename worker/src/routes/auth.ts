@@ -8,7 +8,7 @@ import { authMiddleware, requireAuth, getUser } from "../auth-middleware";
 import { getGoogleAuthUrl, handleGoogleCallback, authenticateWithGoogle } from "../google-auth";
 import type { IStorage } from "../storage";
 
-const router = new Hono<{ Bindings: Env; Variables: { user: ReturnType<typeof getUser> } }>();
+const router = new Hono<{ Bindings: Env }>();
 
 // Apply auth middleware to all auth routes
 router.use("*", authMiddleware);
@@ -147,7 +147,11 @@ router.get("/user", async (c) => {
  * POST /api/user/subscription — Update subscription status.
  */
 router.post("/user/subscription", requireAuth, async (c) => {
-  const user = getUser(c)!;
+  const user = getUser(c);
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
   const storage: IStorage = c.get("storage");
   const body = await c.req.json();
 

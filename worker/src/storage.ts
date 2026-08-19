@@ -99,12 +99,14 @@ export class MemStorage implements IStorage {
     const id = this.ids.users++;
     const createdAt = new Date();
     const user: User = {
-      ...insertUser,
       id,
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email ?? null,
       createdAt,
-      isSubscribed: false,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
+      isSubscribed: insertUser.isSubscribed ?? false,
+      stripeCustomerId: insertUser.stripeCustomerId ?? null,
+      stripeSubscriptionId: insertUser.stripeSubscriptionId ?? null,
     };
     this.users.set(id, user);
     return user;
@@ -127,7 +129,13 @@ export class MemStorage implements IStorage {
   async createQuote(insert: InsertQuote) {
     const id = this.ids.quotes++;
     const createdAt = new Date();
-    const item: Quote = { ...insert, id, createdAt };
+    const item: Quote = {
+      id,
+      text: insert.text,
+      author: insert.author,
+      tags: insert.tags ?? null,
+      createdAt,
+    };
     this.quotes.set(id, item);
     return item;
   }
@@ -142,14 +150,25 @@ export class MemStorage implements IStorage {
   async createJournalEntry(insert: InsertJournalEntry) {
     const id = this.ids.journalEntries++;
     const createdAt = new Date();
-    const entry: JournalEntry = { ...insert, id, createdAt };
+    const entry: JournalEntry = {
+      id,
+      text: insert.text,
+      userId: insert.userId ?? null,
+      tags: insert.tags ?? null,
+      createdAt,
+    };
     this.journalEntries.set(id, entry);
     return entry;
   }
   async updateJournalEntry(id: number, update: Partial<InsertJournalEntry>) {
     const entry = this.journalEntries.get(id);
     if (!entry) return undefined;
-    const updated = { ...entry, ...update };
+    const updated: JournalEntry = {
+      ...entry,
+      ...update,
+      userId: update.userId !== undefined ? (update.userId ?? null) : entry.userId,
+      tags: update.tags !== undefined ? (update.tags ?? null) : entry.tags,
+    };
     this.journalEntries.set(id, updated);
     return updated;
   }
@@ -164,7 +183,15 @@ export class MemStorage implements IStorage {
   async createCelestialObject(insert: InsertCelestialObject) {
     const id = this.ids.celestialObjects++;
     const createdAt = new Date();
-    const item: CelestialObject = { ...insert, id, createdAt };
+    const item: CelestialObject = {
+      id,
+      name: insert.name,
+      type: insert.type as "planet" | "galaxy" | "nebula" | "exoplanet",
+      image: insert.image,
+      description: insert.description,
+      scientificData: insert.scientificData ?? null,
+      createdAt,
+    };
     this.celestialObjects.set(id, item);
     return item;
   }
@@ -190,7 +217,14 @@ export class MemStorage implements IStorage {
   async createCosmicSound(insert: InsertCosmicSound) {
     const id = this.ids.cosmicSounds++;
     const createdAt = new Date();
-    const item: CosmicSound = { ...insert, id, createdAt };
+    const item: CosmicSound = {
+      id,
+      title: insert.title,
+      description: insert.description,
+      audioUrl: insert.audioUrl,
+      duration: insert.duration ?? null,
+      createdAt,
+    };
     this.cosmicSounds.set(id, item);
     return item;
   }
@@ -229,7 +263,24 @@ export class MemStorage implements IStorage {
   async createTradition(insert: InsertTradition) {
     const id = this.ids.traditions++;
     const createdAt = new Date();
-    const item: Tradition = { ...insert, id, createdAt, updatedAt: createdAt };
+    const item: Tradition = {
+      id,
+      name: insert.name,
+      slug: insert.slug,
+      origin: insert.origin ?? null,
+      foundedPeriod: insert.foundedPeriod ?? null,
+      description: insert.description ?? null,
+      coreBeliefs: insert.coreBeliefs ?? null,
+      keyFigures: insert.keyFigures ?? null,
+      sacredTexts: insert.sacredTexts ?? null,
+      modernRelevance: insert.modernRelevance ?? null,
+      symbolUrl: insert.symbolUrl ?? null,
+      colorTheme: insert.colorTheme ?? null,
+      featured: insert.featured ?? false,
+      status: insert.status ?? "active",
+      createdAt,
+      updatedAt: createdAt,
+    };
     this.traditions.set(id, item);
     return item;
   }
@@ -313,7 +364,7 @@ export class DatabaseStorage implements IStorage {
     return r;
   }
   async createCelestialObject(insert: InsertCelestialObject) {
-    const [r] = await this.db.insert(celestialObjects).values(insert).returning();
+    const [r] = await this.db.insert(celestialObjects).values(insert as any).returning();
     return r;
   }
 

@@ -32,6 +32,6 @@ export interface Env {
 export interface JwtUserPayload {
   id: number;
   username: string;
-  email: string;
+  email: string | null;
   isSubscribed: boolean;
 }

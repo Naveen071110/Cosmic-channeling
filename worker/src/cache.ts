@@ -57,11 +57,11 @@ export class MemoryCache {
 
   private cleanup(now: number) {
     this.lastCleanup = now;
-    for (const [key, entry] of this.store.entries()) {
+    this.store.forEach((entry, key) => {
       if (now > entry.expiresAt) {
         this.store.delete(key);
       }
-    }
+    });
   }
 }
 

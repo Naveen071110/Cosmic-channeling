@@ -125,7 +125,7 @@ const SpiritualSpaceQuiz = () => {
     try {
       // Try to get results from API
       const response = await apiRequest('POST', '/api/quiz-results', { answers: finalAnswers });
-      const data = await response.json();
+      const data = (await response.json()) as QuizResult;
       setQuizResult(data);
     } catch (error) {
       console.error('Error getting quiz results:', error);

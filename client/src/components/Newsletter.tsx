@@ -28,7 +28,7 @@ export default function Newsletter() {
         { email }
       );
       
-      const data = await response.json();
+      const data: any = await response.json().catch(() => ({}));
       
       if (data.success) {
         toast({

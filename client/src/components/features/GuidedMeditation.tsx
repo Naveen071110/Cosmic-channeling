@@ -218,7 +218,7 @@ const GuidedMeditation = () => {
   };
 
   const previousStep = () => {
-    if (currentStep > 0) {
+    if (selectedSession && currentStep > 0) {
       const prevStepIndex = currentStep - 1;
       setCurrentStep(prevStepIndex);
       speakText(selectedSession.script[prevStepIndex]);

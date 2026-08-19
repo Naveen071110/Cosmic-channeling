@@ -102,7 +102,7 @@ const Explore = () => {
   }, [celestialObjects, selectedCategory]);
 
   // Fallback data if API fails
-  const fallbackData = {
+  const fallbackData: Record<string, CelestialObject[]> = {
     planets: [
       {
         id: 'saturn',

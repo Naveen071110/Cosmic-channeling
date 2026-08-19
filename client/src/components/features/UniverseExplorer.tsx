@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 
 interface CelestialObject {
@@ -14,13 +13,13 @@ const UniverseExplorer = () => {
   const [selectedType, setSelectedType] = useState<string>('planets');
   const [selectedObject, setSelectedObject] = useState<CelestialObject | null>(null);
 
-  const { data: celestialObjects, isLoading } = useQuery({
+  const { data: celestialObjects = [], isLoading } = useQuery<CelestialObject[]>({
     queryKey: ['/api/celestial'],
   });
 
   useEffect(() => {
     if (celestialObjects && celestialObjects.length > 0) {
-      const filtered = celestialObjects.filter((obj: CelestialObject) => 
+      const filtered = celestialObjects.filter((obj) => 
         obj.type.toLowerCase() === selectedType.toLowerCase().slice(0, -1)
       );
       
@@ -36,12 +35,12 @@ const UniverseExplorer = () => {
 
   // Fallback data if API fails
   useEffect(() => {
-    if (!celestialObjects && !isLoading) {
+    if (!celestialObjects.length && !isLoading) {
       setSelectedObject({
         id: "saturn",
         name: "Saturn",
         type: "planet",
-        image: "https://images.unsplash.com/photo-1614642264762-d0a3b8bf3700?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+        image: "https://images.unsplash.com/photo-1614642264762-d0a3b8bf3700?auto=format&fit=crop&w=1000&q=80",
         description: "Saturn is the sixth planet from the Sun and the second-largest in the Solar System, after Jupiter. It is a gas giant with an average radius of about nine and a half times that of Earth."
       });
     }
@@ -52,7 +51,7 @@ const UniverseExplorer = () => {
       <div className="p-6">
         <div className="flex items-center mb-4">
           <i className="ri-planet-line text-2xl text-[#0EA5E9] mr-3"></i>
-          <h3 className="text-xl font-medium">Explore Universe</h3>
+          <h3 className="text-xl font-medium text-white">Explore Universe</h3>
         </div>
         
         <div className="relative h-40 mb-4 overflow-hidden rounded-md">
@@ -60,54 +59,40 @@ const UniverseExplorer = () => {
             <div className="w-full h-full flex items-center justify-center bg-[#0F172A]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0EA5E9]"></div>
             </div>
-          ) : (
+          ) : selectedObject ? (
             <>
               <img 
-                src={selectedObject?.image || "https://images.unsplash.com/photo-1614642264762-d0a3b8bf3700"} 
-                alt={selectedObject?.name || "Celestial object"} 
+                src={selectedObject.image} 
+                alt={selectedObject.name} 
                 className="w-full h-full object-cover transition-transform hover:scale-105 duration-500" 
                 loading="lazy"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0F172A] to-transparent p-3">
-                <span className="font-medium text-sm">{selectedObject?.name}</span>
+                <span className="font-medium text-sm text-white">{selectedObject.name}</span>
               </div>
             </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[#0F172A] text-gray-400 text-sm">
+              No celestial object selected
+            </div>
           )}
         </div>
         
         <div className="flex overflow-x-auto pb-2 gap-2 mb-4 no-scrollbar">
-          <button 
-            onClick={() => handleFilterClick('planets')}
-            className={`flex-shrink-0 ${selectedType === 'planets' ? 'bg-[#0EA5E9]' : 'bg-[#334155] hover:bg-[#475569]'} px-3 py-1.5 rounded-full text-xs transition-colors`}
-          >
-            Planets
-          </button>
-          <button 
-            onClick={() => handleFilterClick('galaxies')}
-            className={`flex-shrink-0 ${selectedType === 'galaxies' ? 'bg-[#0EA5E9]' : 'bg-[#334155] hover:bg-[#475569]'} px-3 py-1.5 rounded-full text-xs transition-colors`}
-          >
-            Galaxies
-          </button>
-          <button 
-            onClick={() => handleFilterClick('nebulae')}
-            className={`flex-shrink-0 ${selectedType === 'nebulae' ? 'bg-[#0EA5E9]' : 'bg-[#334155] hover:bg-[#475569]'} px-3 py-1.5 rounded-full text-xs transition-colors`}
-          >
-            Nebulae
-          </button>
-          <button 
-            onClick={() => handleFilterClick('exoplanets')}
-            className={`flex-shrink-0 ${selectedType === 'exoplanets' ? 'bg-[#0EA5E9]' : 'bg-[#334155] hover:bg-[#475569]'} px-3 py-1.5 rounded-full text-xs transition-colors`}
-          >
-            Exoplanets
-          </button>
+          {['planets', 'galaxies', 'nebulae', 'exoplanets'].map((filter) => (
+            <button 
+              key={filter}
+              onClick={() => handleFilterClick(filter)} 
+              className={`flex-shrink-0 capitalize ${selectedType === filter ? 'bg-[#0EA5E9] text-white' : 'bg-[#334155] hover:bg-[#475569] text-gray-300'} px-3 py-1.5 rounded-full text-xs transition-colors`}
+            >
+              {filter}
+            </button>
+          ))}
         </div>
         
-        <Button 
-          onClick={() => {/* Implement detailed view */}}
-          className="w-full bg-[#334155] hover:bg-[#475569] text-[#F8FAFC] py-2 rounded-md transition-colors flex items-center justify-center"
-        >
-          <i className="ri-rocket-line mr-2"></i> Start Exploring
-        </Button>
+        <p className="text-xs text-gray-300 line-clamp-3 mb-4">
+          {selectedObject?.description || "Explore planets, distant galaxies, glowing nebulae, and extrasolar worlds across deep cosmic space."}
+        </p>
       </div>
     </div>
   );

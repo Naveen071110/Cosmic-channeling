@@ -130,7 +130,7 @@ export default function CosmicSignals() {
   const [activeSignalTab, setActiveSignalTab] = useState<string>('all');
 
   // Query live solar & lunar cycles
-  const { data: solarData } = useQuery({
+  const { data: solarData } = useQuery<any>({
     queryKey: ['/api/solar-cycles?lat=28.61&lng=77.2'],
     staleTime: 1000 * 60 * 60 * 6,
   });

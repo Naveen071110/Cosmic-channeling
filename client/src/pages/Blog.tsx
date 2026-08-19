@@ -35,15 +35,15 @@ const Blog = () => {
       const response = await fetch('/api/medium-posts');
       
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData: any = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch Medium posts');
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       setPosts(data.posts || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching Medium posts:', err);
-      setError(err.message || 'Unable to load blog posts at the moment. Please try again later.');
+      setError(err?.message || 'Unable to load blog posts at the moment. Please try again later.');
     } finally {
       setLoading(false);
     }

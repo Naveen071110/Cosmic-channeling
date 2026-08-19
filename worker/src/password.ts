@@ -11,7 +11,12 @@ const PBKDF2_HASH = "SHA-256";
 const SALT_LENGTH = 16; // 128 bits
 
 function base64url(buf: ArrayBuffer): string {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary)
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
@@ -20,7 +25,12 @@ function base64url(buf: ArrayBuffer): string {
 function fromBase64url(str: string): Uint8Array {
   const raw = str.replace(/-/g, "+").replace(/_/g, "/");
   const padded = raw + "=".repeat((4 - (raw.length % 4)) % 4);
-  return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 /**
@@ -88,8 +98,6 @@ export async function verifyPassword(
         hash: PBKDF2_HASH,
       },
       keyMaterial,
-      // derive the same key length from the stored algorithm
-      // decode the expected hash to get the key length
       fromBase64url(expectedHash).length * 8,
     );
 
