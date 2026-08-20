@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import type { Env } from "../env";
 import { cache, MemoryCache } from "../cache";
 import { enforceRateLimit } from "../rate-limiter";
+import { requireAuth, getUser } from "../auth-middleware";
+import type { IStorage } from "../storage";
 import {
   quotes,
   celestialObjects,
@@ -336,5 +338,92 @@ function decodeHtml(text: string): string {
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/");
 }
+
+/**
+ * GET /api/journal-entries — Get all journal entries for the authenticated user.
+ */
+router.get("/journal-entries", requireAuth, async (c) => {
+  const user = getUser(c);
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
+  const storage: IStorage = c.get("storage");
+  const entries = await storage.getJournalEntriesByUserId(user.id);
+  return c.json(entries);
+});
+
+/**
+ * POST /api/journal-entries — Create a journal entry for the authenticated user.
+ */
+router.post("/journal-entries", requireAuth, async (c) => {
+  const user = getUser(c);
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
+  const body = await c.req.json();
+  if (!body.text || typeof body.text !== "string") {
+    return c.json({ message: "Journal text is required" }, 400);
+  }
+
+  const storage: IStorage = c.get("storage");
+  const entry = await storage.createJournalEntry({
+    userId: user.id,
+    text: body.text,
+    tags: Array.isArray(body.tags) ? body.tags : null,
+  });
+
+  return c.json(entry, 201);
+});
+
+/**
+ * PUT /api/journal-entries/:id — Update a journal entry.
+ */
+router.put("/journal-entries/:id", requireAuth, async (c) => {
+  const user = getUser(c);
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
+  const paramId = c.req.param("id");
+  const id = parseInt(paramId || "0", 10);
+  const storage: IStorage = c.get("storage");
+  const existing = await storage.getJournalEntry(id);
+
+  if (!existing || existing.userId !== user.id) {
+    return c.json({ message: "Entry not found or forbidden" }, 404);
+  }
+
+  const body = await c.req.json();
+  const updated = await storage.updateJournalEntry(id, {
+    text: body.text ?? existing.text,
+    tags: Array.isArray(body.tags) ? body.tags : existing.tags,
+  });
+
+  return c.json(updated);
+});
+
+/**
+ * DELETE /api/journal-entries/:id — Delete a journal entry.
+ */
+router.delete("/journal-entries/:id", requireAuth, async (c) => {
+  const user = getUser(c);
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+
+  const paramId = c.req.param("id");
+  const id = parseInt(paramId || "0", 10);
+  const storage: IStorage = c.get("storage");
+  const existing = await storage.getJournalEntry(id);
+
+  if (!existing || existing.userId !== user.id) {
+    return c.json({ message: "Entry not found or forbidden" }, 404);
+  }
+
+  const deleted = await storage.deleteJournalEntry(id);
+  return c.json({ success: deleted });
+});
 
 export { router as contentRoutes };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,19 +15,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
@@ -41,10 +28,14 @@ import {
   Download, 
   FileText, 
   Sparkles,
-  Lightbulb,
-  Lock
+  Lock,
+  LogIn,
+  CheckCircle2,
+  Trash2
 } from "lucide-react";
 import LoginDialog from "@/components/ui/LoginDialog";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 // Type definitions for journal-related data
 interface JournalEntry {
@@ -99,67 +90,104 @@ const samplePrompts: JournalPrompt[] = [
   }
 ];
 
-// We'll load journal entries from the server when the user is logged in
-const emptyJournalEntries: JournalEntry[] = [];
-
 export default function EnhancedJournal() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [showLoginDialog, setShowLoginDialog] = useState<boolean>(false);
-  const [loginDialogContext, setLoginDialogContext] = useState<string>('entries');
-  
+  const [loginDialogContext, setLoginDialogContext] = useState<'entries' | 'view' | 'save'>('entries');
   const [activeTab, setActiveTab] = useState<string>("write");
-  
-  // Handle tab changes and check for authentication
-  const handleTabChange = (value: string) => {
-    // If user is trying to view entries or insights but not logged in
-    if ((value === 'entries' || value === 'insights') && !user) {
-      setLoginDialogContext('view');
-      setShowLoginDialog(true);
-      return;
-    }
-    
-    setActiveTab(value);
-  };
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(emptyJournalEntries);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [journalContent, setJournalContent] = useState<string>("");
   const [currentTags, setCurrentTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState<string>("");
   const [selectedPrompt, setSelectedPrompt] = useState<JournalPrompt | null>(null);
-  
-  // Get available journal entries for the selected date
-  const getEntriesForDate = (date: Date | undefined) => {
-    if (!date) return [];
-    
-    return journalEntries.filter(entry => 
-      entry.date.getDate() === date.getDate() &&
-      entry.date.getMonth() === date.getMonth() &&
-      entry.date.getFullYear() === date.getFullYear()
-    );
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load journal entries when user is logged in
+  useEffect(() => {
+    if (user) {
+      const fetchEntries = async () => {
+        try {
+          const res = await apiRequest("GET", "/api/journal-entries");
+          if (res.ok) {
+            const rawEntries: any = await res.json();
+            const formatted: JournalEntry[] = (Array.isArray(rawEntries) ? rawEntries : []).map((e: any) => ({
+              id: String(e.id),
+              date: new Date(e.createdAt || Date.now()),
+              content: e.text || "",
+              tags: e.tags || [],
+              sentiment: 0.5,
+              wordCount: (e.text || "").split(/\s+/).filter(Boolean).length,
+              themes: ["Cosmic Reflection", "Mindfulness"],
+            }));
+            setJournalEntries(formatted);
+            return;
+          }
+        } catch (err) {
+          console.warn("Failed to fetch server journal entries, reading local storage:", err);
+        }
+
+        // Local storage fallback for this user
+        const local = localStorage.getItem(`cosmic_journal_${user.id}`);
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            setJournalEntries(parsed.map((e: any) => ({ ...e, date: new Date(e.date) })));
+          } catch (e) {
+            // ignore
+          }
+        }
+      };
+
+      fetchEntries();
+    } else {
+      setJournalEntries([]);
+    }
+  }, [user]);
+
+  // Handle tab changes and enforce login protection
+  const handleTabChange = (value: string) => {
+    if ((value === 'entries' || value === 'insights') && !user) {
+      setLoginDialogContext('view');
+      setShowLoginDialog(true);
+      return;
+    }
+    setActiveTab(value);
   };
-  
+
+  // Get available journal entries for the selected date
+  const entriesForSelectedDate = useMemo(() => {
+    if (!selectedDate) return [];
+    return journalEntries.filter(entry => 
+      entry.date.getDate() === selectedDate.getDate() &&
+      entry.date.getMonth() === selectedDate.getMonth() &&
+      entry.date.getFullYear() === selectedDate.getFullYear()
+    );
+  }, [journalEntries, selectedDate]);
+
   // Handle date selection
   useEffect(() => {
-    const entriesForDate = getEntriesForDate(selectedDate);
-    if (entriesForDate.length > 0) {
-      setSelectedEntry(entriesForDate[0]);
-      setJournalContent(entriesForDate[0].content);
-      setCurrentTags(entriesForDate[0].tags);
+    if (entriesForSelectedDate.length > 0) {
+      setSelectedEntry(entriesForSelectedDate[0]);
+      setJournalContent(entriesForSelectedDate[0].content);
+      setCurrentTags(entriesForSelectedDate[0].tags);
     } else {
       setSelectedEntry(null);
       setJournalContent("");
       setCurrentTags([]);
     }
-  }, [selectedDate]);
-  
+  }, [selectedDate, entriesForSelectedDate]);
+
   // Handle journal entry selection
   const handleEntrySelect = (entry: JournalEntry) => {
     setSelectedEntry(entry);
     setJournalContent(entry.content);
     setCurrentTags(entry.tags);
+    setActiveTab("write");
   };
-  
+
   // Handle adding a new tag
   const handleAddTag = () => {
     if (newTagInput.trim() && !currentTags.includes(newTagInput.trim())) {
@@ -167,57 +195,86 @@ export default function EnhancedJournal() {
       setNewTagInput("");
     }
   };
-  
+
   // Handle removing a tag
   const handleRemoveTag = (tag: string) => {
     setCurrentTags(currentTags.filter(t => t !== tag));
   };
-  
+
   // Handle saving the journal entry
-  const handleSaveEntry = () => {
-    // If user is not logged in, show login dialog
+  const handleSaveEntry = async () => {
     if (!user) {
       setLoginDialogContext('save');
       setShowLoginDialog(true);
       return;
     }
-    
-    if (!journalContent.trim()) return;
-    
-    // Calculate word count
-    const wordCount = journalContent.trim().split(/\s+/).length;
-    
-    // Simulate sentiment analysis and theme extraction (would be done by an API in production)
+
+    if (!journalContent.trim()) {
+      toast({
+        title: "Empty Reflection",
+        description: "Please write some cosmic reflections before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    const wordCount = journalContent.trim().split(/\s+/).filter(Boolean).length;
     const sentiment = Math.random() * 2 - 1; // Between -1 and 1
-    const possibleThemes = ["cosmic connection", "meditation", "self-discovery", "existential questions", "purpose", "perspective", "synchronicity", "celestial influence", "connections"];
-    const themes = Array.from({length: Math.floor(Math.random() * 3) + 1}, () => 
+    const possibleThemes = ["cosmic connection", "meditation", "self-discovery", "existential questions", "purpose", "perspective", "synchronicity", "celestial influence"];
+    const themes = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => 
       possibleThemes[Math.floor(Math.random() * possibleThemes.length)]
     );
-    
+
     const newEntry: JournalEntry = {
-      id: selectedEntry?.id || Date.now().toString(),
+      id: selectedEntry?.id || String(Date.now()),
       date: selectedDate || new Date(),
       content: journalContent,
       tags: currentTags,
       prompt: selectedPrompt?.text,
       sentiment,
       wordCount,
-      themes
+      themes,
     };
-    
-    if (selectedEntry) {
-      // Update existing entry
-      setJournalEntries(journalEntries.map(entry => 
-        entry.id === selectedEntry.id ? newEntry : entry
-      ));
-    } else {
-      // Create new entry
-      setJournalEntries([...journalEntries, newEntry]);
+
+    try {
+      // Save to backend API
+      await apiRequest("POST", "/api/journal-entries", {
+        text: journalContent,
+        tags: currentTags,
+      });
+
+      // Update state
+      const updatedList = selectedEntry
+        ? journalEntries.map(e => (e.id === selectedEntry.id ? newEntry : e))
+        : [newEntry, ...journalEntries];
+
+      setJournalEntries(updatedList);
+      setSelectedEntry(newEntry);
+
+      // Persist to local storage
+      localStorage.setItem(`cosmic_journal_${user.id}`, JSON.stringify(updatedList));
+
+      toast({
+        title: "Reflection Saved",
+        description: "Your journal entry has been safely recorded in the cosmic archives.",
+      });
+    } catch (error) {
+      console.error("Error saving journal entry:", error);
+      // Still persist locally
+      const updatedList = [newEntry, ...journalEntries];
+      setJournalEntries(updatedList);
+      localStorage.setItem(`cosmic_journal_${user.id}`, JSON.stringify(updatedList));
+      
+      toast({
+        title: "Saved Locally",
+        description: "Your entry is saved on this device.",
+      });
+    } finally {
+      setIsSaving(false);
     }
-    
-    setSelectedEntry(newEntry);
   };
-  
+
   // Handle creating a new entry
   const handleNewEntry = () => {
     setSelectedEntry(null);
@@ -225,184 +282,239 @@ export default function EnhancedJournal() {
     setCurrentTags([]);
     setSelectedPrompt(null);
   };
-  
+
   // Handle prompt selection
   const handlePromptSelect = (promptId: string) => {
     const prompt = samplePrompts.find(p => p.id === promptId);
     if (prompt) {
       setSelectedPrompt(prompt);
-      setJournalContent(journalContent ? journalContent : prompt.text + "\n\n");
+      setJournalContent(journalContent ? `${journalContent}\n\n${prompt.text}\n` : `${prompt.text}\n\n`);
     }
   };
-  
-  // Calculate the sentiment color
-  const getSentimentColor = (sentiment: number) => {
-    if (sentiment > 0.5) return "text-green-500";
-    if (sentiment > 0) return "text-blue-500";
-    if (sentiment > -0.5) return "text-yellow-500";
-    return "text-red-500";
+
+  // Export journal entries to Markdown file
+  const handleExportJournal = () => {
+    if (journalEntries.length === 0) {
+      toast({
+        title: "No Entries to Export",
+        description: "You haven't recorded any journal entries yet.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const mdContent = `# Cosmic Journal Reflections\n\nAuthor: ${user?.username || 'Cosmic Traveler'}\nExported: ${new Date().toLocaleDateString()}\n\n---\n\n` +
+      journalEntries.map(e => (
+        `### ${e.date.toLocaleDateString()}\n\n${e.prompt ? `*Prompt: ${e.prompt}*\n\n` : ''}${e.content}\n\nTags: ${e.tags.map(t => `#${t}`).join(' ')}\n\n---\n`
+      )).join('\n');
+
+    const blob = new Blob([mdContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cosmic-journal-${new Date().toISOString().slice(0, 10)}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Journal Exported",
+      description: "Downloaded your reflections as Markdown document.",
+    });
   };
-  
-  // Function to handle login dialog close
-  const handleCloseLoginDialog = () => {
-    setShowLoginDialog(false);
-  };
-  
+
   return (
     <div className="container max-w-6xl mx-auto px-4">
+      {/* Auth Banner Prompt for Unauthenticated Users */}
+      {!user && (
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-950/60 via-[#1E1B4B]/80 to-sky-950/60 border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-full bg-purple-900/60 border border-purple-500/40 flex items-center justify-center text-purple-300 shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">Private Cosmic Reflections</p>
+              <p className="text-xs text-gray-300">Sign in to save your reflections and access your personal history across devices.</p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => { setLoginDialogContext('save'); setShowLoginDialog(true); }}
+            className="bg-gradient-to-r from-[#7E22CE] to-[#EC4899] text-white text-xs h-8 px-4 shrink-0"
+          >
+            <LogIn className="w-3.5 h-3.5 mr-1.5" />
+            Sign In / Register
+          </Button>
+        </div>
+      )}
+
       {/* Login Dialog */}
       <LoginDialog 
         isOpen={showLoginDialog} 
-        onClose={handleCloseLoginDialog}
+        onClose={() => setShowLoginDialog(false)}
         title={loginDialogContext === 'save' 
-          ? "Sign in to save your journal" 
-          : loginDialogContext === 'view' 
-            ? "Sign in to view your entries" 
-            : "Sign in to access"
+          ? "Sign in to save your reflection" 
+          : "Sign in to view your journal" 
         }
         description={loginDialogContext === 'save' 
-          ? "Create an account or sign in to save your cosmic journal entries" 
-          : loginDialogContext === 'view' 
-            ? "Sign in to view your personal journey through the cosmos" 
-            : "Please sign in to continue"
+          ? "Create a free cosmic account or sign in to save and sync your reflections securely." 
+          : "Sign in to access your private entries and emotional insights." 
         }
       />
       
-      <Tabs defaultValue="write" onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="grid grid-cols-3 mb-8 bg-[#1E293B] border border-white/10">
           <TabsTrigger value="write">
             <FileText className="w-4 h-4 mr-2" />
-            Write
+            Write Reflection
           </TabsTrigger>
           <TabsTrigger value="entries">
             <Book className="w-4 h-4 mr-2" />
-            Entries
+            Past Entries {!user && <Lock className="w-3 h-3 ml-1.5 text-gray-400" />}
           </TabsTrigger>
           <TabsTrigger value="insights">
             <Sparkles className="w-4 h-4 mr-2" />
-            Insights
+            Insights {!user && <Lock className="w-3 h-3 ml-1.5 text-gray-400" />}
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="write" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-                <CardHeader className="flex flex-row items-center justify-between">
+        {/* Write Tab */}
+        <TabsContent value="write" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Main Writing Area */}
+            <div className="md:col-span-2 space-y-4">
+              <Card className="bg-[#0F172A]/90 border-[#334155] shadow-lg">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between border-b border-white/5">
                   <div>
-                    <CardTitle className="text-xl text-white">
-                      {selectedEntry ? "Edit Entry" : "New Journal Entry"}
+                    <CardTitle className="text-xl font-space text-white">
+                      {selectedEntry ? "Edit Cosmic Reflection" : "New Cosmic Reflection"}
                     </CardTitle>
-                    <CardDescription>
-                      {selectedDate?.toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
+                    <CardDescription className="text-xs text-gray-400">
+                      {selectedDate?.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {selectedEntry && (
-                      <Button variant="outline" size="sm" onClick={handleNewEntry}>
-                        <Plus className="w-4 h-4 mr-1" />
-                        New
-                      </Button>
-                    )}
-                    <Button onClick={handleSaveEntry}>
-                      <Save className="w-4 h-4 mr-1" />
-                      Save
+                  {selectedEntry && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleNewEntry}
+                      className="text-xs border-white/10 hover:bg-white/5"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      New Entry
                     </Button>
-                  </div>
+                  )}
                 </CardHeader>
-                <CardContent className="space-y-4">
+                
+                <CardContent className="space-y-4 pt-4">
                   {selectedPrompt && (
-                    <div className="bg-purple-900/30 border-l-4 border-purple-500 p-3 rounded">
-                      <p className="text-purple-200 italic">
-                        <Lightbulb className="w-4 h-4 inline mr-2 text-purple-300" />
-                        {selectedPrompt.text}
+                    <div className="bg-purple-950/40 border border-purple-500/30 rounded-lg p-3 text-xs text-purple-200">
+                      <p className="font-semibold mb-1 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                        Prompt:
                       </p>
+                      <p>{selectedPrompt.text}</p>
                     </div>
                   )}
-                  <Textarea
-                    placeholder="Record your cosmic journey today..."
-                    className="min-h-[300px] bg-black/20 border-gray-700 focus:border-purple-500 text-gray-100"
+                  
+                  <Textarea 
+                    placeholder="Channel your cosmic thoughts, dreams, synchronicities, or quiet realizations..."
                     value={journalContent}
                     onChange={(e) => setJournalContent(e.target.value)}
+                    className="min-h-[260px] bg-[#020617]/70 border-[#334155] text-gray-100 placeholder:text-gray-500 focus:border-purple-500 leading-relaxed text-sm"
                   />
-                  <div className="flex flex-wrap items-center gap-2">
-                    {currentTags.map((tag, index) => (
-                      <Badge 
-                        key={index}
-                        variant="outline"
-                        className="bg-purple-900/30 hover:bg-purple-900/50 text-gray-200 cursor-pointer"
-                        onClick={() => handleRemoveTag(tag)}
-                      >
-                        {tag}
-                        <span className="ml-1 text-gray-400">×</span>
-                      </Badge>
-                    ))}
-                    <div className="flex">
-                      <input
+                  
+                  {/* Tags */}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+                      {currentTags.map((tag) => (
+                        <Badge 
+                          key={tag} 
+                          variant="secondary"
+                          className="bg-purple-900/40 hover:bg-purple-900/60 text-purple-200 border border-purple-500/30 text-xs cursor-pointer"
+                          onClick={() => handleRemoveTag(tag)}
+                        >
+                          #{tag} &times;
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <input 
                         type="text"
-                        placeholder="Add tag..."
-                        className="w-24 h-6 bg-black/20 border-gray-700 rounded-l-md text-sm px-2 focus:outline-none focus:border-purple-500 text-gray-200"
+                        placeholder="Add a cosmic tag (e.g. #lucid-dream)..."
                         value={newTagInput}
                         onChange={(e) => setNewTagInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
+                        className="text-xs bg-[#020617]/70 border border-[#334155] rounded-md px-3 py-1.5 text-gray-200 placeholder:text-gray-500 flex-1 focus:outline-none focus:border-purple-500"
                       />
-                      <button
-                        className="h-6 px-2 rounded-r-md bg-purple-900 text-gray-200 text-sm focus:outline-none hover:bg-purple-800"
+                      <Button 
+                        type="button" 
+                        size="sm" 
+                        variant="outline" 
                         onClick={handleAddTag}
+                        className="text-xs border-white/10 text-gray-300 hover:bg-white/5"
                       >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                        <Tag className="w-3 h-3 mr-1" />
+                        Add Tag
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
+                
+                <CardFooter className="flex justify-between border-t border-white/5 pt-4">
+                  <div className="text-xs text-gray-400">
+                    {journalContent.trim().split(/\s+/).filter(Boolean).length} words
+                  </div>
+                  
+                  <Button 
+                    onClick={handleSaveEntry}
+                    disabled={isSaving}
+                    className="bg-gradient-to-r from-[#7E22CE] to-[#EC4899] hover:opacity-90 text-white text-xs h-9 px-5"
+                  >
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {isSaving ? "Archiving..." : user ? "Save Reflection" : "Sign In & Save"}
+                  </Button>
+                </CardFooter>
               </Card>
             </div>
             
-            <div className="space-y-6">
-              <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Select Date</CardTitle>
+            {/* Sidebar: Calendar & Inspiration */}
+            <div className="space-y-4">
+              <Card className="bg-[#0F172A]/90 border-[#334155]">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-space text-white flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-sky-400" />
+                    Cosmic Date
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0 flex justify-center">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    className="border border-gray-700 rounded-md"
+                    className="rounded-md border border-white/5 text-white"
                   />
                 </CardContent>
               </Card>
               
-              <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Journal Prompts</CardTitle>
-                  <CardDescription>Choose a prompt for inspiration</CardDescription>
+              <Card className="bg-[#0F172A]/90 border-[#334155]">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-space text-white flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    Contemplation Prompts
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 pt-0">
                   {samplePrompts.map((prompt) => (
-                    <div 
+                    <button
                       key={prompt.id}
-                      className="p-3 rounded-md border border-gray-700 hover:border-purple-500 cursor-pointer transition-colors"
                       onClick={() => handlePromptSelect(prompt.id)}
+                      className="w-full text-left text-xs p-2.5 rounded-lg bg-white/5 hover:bg-purple-900/30 text-gray-300 hover:text-white transition-all border border-transparent hover:border-purple-500/30"
                     >
-                      <p className="text-gray-200">{prompt.text}</p>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {prompt.tags.map((tag, idx) => (
-                          <Badge 
-                            key={idx}
-                            variant="outline"
-                            className="bg-purple-900/20 text-gray-300 text-xs"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+                      {prompt.text}
+                    </button>
                   ))}
                 </CardContent>
               </Card>
@@ -410,108 +522,113 @@ export default function EnhancedJournal() {
           </div>
         </TabsContent>
         
-        <TabsContent value="entries" className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            {journalEntries.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-gray-400">No journal entries yet. Start writing your cosmic journey!</p>
-                <Button 
-                  onClick={() => setActiveTab("write")}
-                  className="mt-4"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create First Entry
-                </Button>
-              </div>
-            ) : (
-              journalEntries.sort((a, b) => b.date.getTime() - a.date.getTime()).map((entry) => (
-                <Card 
-                  key={entry.id}
-                  className="bg-black/40 backdrop-blur-sm border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer"
-                  onClick={() => {
-                    handleEntrySelect(entry);
-                    setSelectedDate(entry.date);
-                    setActiveTab("write");
-                  }}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg text-white">{entry.date.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}</CardTitle>
-                      <div className="flex items-center space-x-1">
-                        <span className={`flex items-center ${getSentimentColor(entry.sentiment)}`}>
-                          <Star className="w-4 h-4 fill-current" />
-                        </span>
-                        <span className="text-sm text-gray-400">{entry.wordCount} words</span>
-                      </div>
-                    </div>
-                    {entry.prompt && (
-                      <CardDescription className="italic text-gray-400">
-                        Prompt: {entry.prompt}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-300 line-clamp-3">{entry.content}</p>
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {entry.tags.map((tag, idx) => (
-                        <Badge 
-                          key={idx}
-                          variant="outline"
-                          className="bg-purple-900/20 text-gray-300 text-xs"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="insights" className="space-y-6">
-          <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-            <CardHeader>
-              <CardTitle className="text-xl text-white">Journal Insights</CardTitle>
-              <CardDescription>
-                Patterns and themes detected in your cosmic journaling
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        {/* Past Entries Tab */}
+        <TabsContent value="entries" className="space-y-6">
+          <Card className="bg-[#0F172A]/90 border-[#334155]">
+            <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <h3 className="text-lg font-medium text-white mb-3">Common Themes</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {Array.from(new Set(journalEntries.flatMap(entry => entry.themes))).map((theme, idx) => (
-                    <div key={idx} className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 text-center">
-                      <p className="text-purple-200">{theme}</p>
+                <CardTitle className="text-xl font-space text-white">Your Cosmic Journal Archive</CardTitle>
+                <CardDescription className="text-xs text-gray-400">
+                  {journalEntries.length} recorded cosmic reflections
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExportJournal}
+                className="text-xs border-white/10 text-gray-300 hover:bg-white/5"
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                Export Journal
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {journalEntries.length === 0 ? (
+                <div className="text-center py-12">
+                  <Book className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                  <p className="text-gray-300 text-sm mb-1">No reflections recorded yet</p>
+                  <p className="text-xs text-gray-500 mb-4">Start recording your thoughts, dreams, and cosmic insights.</p>
+                  <Button 
+                    size="sm" 
+                    onClick={() => setActiveTab("write")}
+                    className="bg-purple-600 hover:bg-purple-700 text-xs"
+                  >
+                    Write First Reflection
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {journalEntries.map((entry) => (
+                    <div 
+                      key={entry.id}
+                      onClick={() => handleEntrySelect(entry)}
+                      className="p-4 rounded-xl bg-[#1E293B]/80 hover:bg-[#1E293B] border border-white/5 hover:border-purple-500/40 transition-all cursor-pointer space-y-2"
+                    >
+                      <div className="flex justify-between items-center text-xs text-gray-400">
+                        <span className="font-mono text-purple-300">
+                          {entry.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                        <span>{entry.wordCount} words</span>
+                      </div>
+                      <p className="text-xs text-gray-200 line-clamp-3 leading-relaxed">
+                        {entry.content}
+                      </p>
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {entry.tags.map((t, idx) => (
+                          <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-purple-950/60 text-purple-300 border border-purple-500/20">
+                            #{t}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium text-white mb-3">Emotional Journey</h3>
-                <div className="h-40 bg-black/30 rounded-lg p-4 flex items-center justify-center">
-                  <p className="text-gray-400 italic">Visualization of your emotional patterns would appear here</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Insights Tab */}
+        <TabsContent value="insights" className="space-y-6">
+          <Card className="bg-[#0F172A]/90 border-[#334155]">
+            <CardHeader>
+              <CardTitle className="text-xl font-space text-white">Journal Insights & Patterns</CardTitle>
+              <CardDescription className="text-xs text-gray-400">
+                Consciousness metrics and themes detected in your cosmic writing
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-purple-950/40 border border-purple-500/30 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-space font-bold text-white mb-1">{journalEntries.length}</p>
+                  <p className="text-xs text-purple-300 uppercase tracking-wider">Reflections Recorded</p>
+                </div>
+                <div className="bg-sky-950/40 border border-sky-500/30 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-space font-bold text-white mb-1">
+                    {journalEntries.reduce((acc, curr) => acc + curr.wordCount, 0)}
+                  </p>
+                  <p className="text-xs text-sky-300 uppercase tracking-wider">Total Words Channeled</p>
+                </div>
+                <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-space font-bold text-white mb-1">
+                    {new Set(journalEntries.flatMap(e => e.tags)).size}
+                  </p>
+                  <p className="text-xs text-emerald-300 uppercase tracking-wider">Unique Themes</p>
                 </div>
               </div>
-              
+
               <div>
-                <h3 className="text-lg font-medium text-white mb-3">Journaling Streak</h3>
-                <div className="flex items-center justify-between bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                  <div>
-                    <p className="text-lg font-medium text-white">{journalEntries.length} Entries</p>
-                    <p className="text-sm text-gray-400">Keep writing to build your streak!</p>
-                  </div>
-                  <Button>
-                    <Download className="w-4 h-4 mr-2" />
-                    Export Journal
-                  </Button>
+                <h3 className="text-sm font-space font-medium text-white mb-3">Recurring Consciousness Themes</h3>
+                <div className="flex flex-wrap gap-2">
+                  {Array.from(new Set(journalEntries.flatMap(e => e.tags))).length > 0 ? (
+                    Array.from(new Set(journalEntries.flatMap(e => e.tags))).map((theme, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs bg-purple-950/40 text-purple-200 border-purple-500/30 px-3 py-1">
+                        #{theme}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-500 italic">Write and tag reflections to generate themes.</p>
+                  )}
                 </div>
               </div>
             </CardContent>
