@@ -15,6 +15,9 @@ export interface Env {
   GOOGLE_CLIENT_SECRET?: string;
   GOOGLE_CALLBACK_URL?: string;
 
+  // Firebase Auth
+  FIREBASE_PROJECT_ID?: string;
+
   // Medium
   MEDIUM_USERNAME?: string;
 

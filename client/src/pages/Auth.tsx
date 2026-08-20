@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../hooks/use-auth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -8,212 +8,103 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import StarBackground from "@/components/ui/StarBackground";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Lock, Star, Book } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Lock, Sparkles, Compass, Moon, BookOpen } from "lucide-react";
 
 export default function AuthPage() {
-  const [location, setLocation] = useLocation();
-  const { user, loginMutation, registerMutation } = useAuth();
-  const { toast } = useToast();
-  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  const [, setLocation] = useLocation();
+  const { user, googleLoginMutation } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>("login");
 
-  const [referringPath, setReferringPath] = useState<string | null>(null);
-  
-  useEffect(() => {
-    // Check for query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Check if user was redirected from a protected route
-    if (urlParams.has('from')) {
-      setReferringPath(urlParams.get('from'));
-    }
-    
-    // Check for OAuth callback success
-    if (urlParams.has('auth') && urlParams.get('auth') === 'success') {
-      // Refresh the user data from the server
-      apiRequest('GET', '/api/user')
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error('Failed to get user data');
-        })
-        .then(userData => {
-          toast({
-            title: "Login Successful",
-            description: "You've logged in with Google!",
-          });
-        })
-        .catch(error => {
-          console.error('Error refreshing user data after OAuth:', error);
-          toast({
-            title: "Authentication Error",
-            description: "Something went wrong with the authentication process",
-            variant: "destructive"
-          });
-        });
-      
-      // Clean up the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
-    // Check for error parameters
-    if (urlParams.has('error')) {
-      const error = urlParams.get('error');
-      let errorMessage = "Authentication failed";
-      
-      if (error === 'auth_error') {
-        errorMessage = "Google authentication error. Please try again.";
-      } else if (error === 'auth_failed') {
-        errorMessage = "Google authentication failed. Please try another method.";
-      } else if (error === 'login_error') {
-        errorMessage = "Error logging in. Please try again.";
-      }
-      
-      toast({
-        title: "Authentication Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      
-      // Clean up the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [toast]);
-  
   // Redirect to home if already logged in
   if (user) {
     setLocation("/");
     return null;
   }
 
-  const handleGoogleLogin = () => {
-    // Show processing state
-    setIsProcessingOAuth(true);
-    toast({
-      title: "Google Sign-In",
-      description: "Opening Google authentication...",
-    });
-    
-    // Open Google sign-in in a new browser window to avoid the disallowed_useragent issue
-    const googleAuthUrl = '/api/auth/google';
-    const width = 500;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2.5;
-    const features = `width=${width},height=${height},left=${left},top=${top},status=yes,scrollbars=yes`;
-    
-    // Open the Google Auth popup
-    const authWindow = window.open(googleAuthUrl, 'googleAuthPopup', features);
-    
-    if (!authWindow) {
-      setIsProcessingOAuth(false);
-      toast({
-        title: "Error",
-        description: "Popup was blocked. Please allow popups for this site.",
-        variant: "destructive"
-      });
-      return;
+  const handleGoogleLogin = async () => {
+    try {
+      await googleLoginMutation.mutateAsync();
+      setLocation("/");
+    } catch {
+      // Handled in hook
     }
-    
-    // Handle the auth window close event
-    const checkPopup = setInterval(() => {
-      if (!authWindow || authWindow.closed) {
-        clearInterval(checkPopup);
-        setIsProcessingOAuth(false);
-        
-        // The popup was closed, check if authentication succeeded
-        apiRequest('GET', '/api/user')
-          .then(response => {
-            if (response.ok) {
-              // User is logged in, refresh the page
-              toast({
-                title: "Success",
-                description: "You've been successfully authenticated!",
-              });
-              queryClient.invalidateQueries({ queryKey: ["/api/user"] })
-                .then(() => {
-                  setLocation('/');
-                });
-            } else {
-              // Not logged in after popup closed
-              toast({
-                title: "Authentication Failed",
-                description: "Google sign-in was not completed. Please try again.",
-                variant: "destructive"
-              });
-            }
-          })
-          .catch(err => {
-            console.error('Error checking auth status:', err);
-            toast({
-              title: "Error",
-              description: "Failed to verify authentication status.",
-              variant: "destructive"
-            });
-          });
-      }
-    }, 1000);
   };
-  
+
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#020617] text-white">
       {/* Form column */}
       <div className="w-full md:w-1/2 px-4 py-12 flex flex-col justify-center items-center relative">
         <StarBackground />
-        <Card className="w-full max-w-md bg-black/50 backdrop-blur-md border-purple-600/30">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Cosmic Channeling</CardTitle>
-            <CardDescription className="text-center">
-              Enter your sacred space to explore the cosmos
+        
+        <Card className="w-full max-w-md bg-[#0F172A]/90 backdrop-blur-xl border-purple-500/30 shadow-2xl z-10">
+          <CardHeader className="space-y-1 text-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-purple-900/50">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <CardTitle className="text-2xl font-space font-bold bg-gradient-to-r from-purple-300 via-pink-300 to-sky-300 bg-clip-text text-transparent">
+              Cosmic Channeling
+            </CardTitle>
+            <CardDescription className="text-xs text-gray-400">
+              Access your sacred journey through the universe
             </CardDescription>
-            
-            {referringPath && (
-              <Alert className="mx-4 mt-2 bg-purple-900/20 border-purple-500/30">
-                <Lock className="h-4 w-4 text-purple-400" />
-                <AlertTitle>Protected Feature</AlertTitle>
-                <AlertDescription>
-                  {referringPath === '/journal' ? (
-                    <>You need to sign in to access your personal Cosmic Journal.</>
-                  ) : referringPath === '/tools' ? (
-                    <>You need to sign in to access your Dream Interpreter and save your interpretations.</>
-                  ) : (
-                    <>You need to sign in to access this feature.</>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
           </CardHeader>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="px-6">
+              <TabsList className="grid w-full grid-cols-2 bg-purple-950/40 border border-purple-500/20">
+                <TabsTrigger value="login" className="data-[state=active]:bg-purple-900/60 data-[state=active]:text-white text-xs">
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger value="register" className="data-[state=active]:bg-purple-900/60 data-[state=active]:text-white text-xs">
+                  Create Account
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
             <TabsContent value="login">
-              <LoginForm handleGoogleLogin={handleGoogleLogin} isProcessingOAuth={isProcessingOAuth} />
+              <LoginForm 
+                handleGoogleLogin={handleGoogleLogin} 
+                isProcessingOAuth={googleLoginMutation.isPending}
+                onForgotPassword={() => setActiveTab("forgot")}
+              />
             </TabsContent>
+
             <TabsContent value="register">
-              <RegisterForm handleGoogleLogin={handleGoogleLogin} isProcessingOAuth={isProcessingOAuth} />
+              <RegisterForm 
+                handleGoogleLogin={handleGoogleLogin} 
+                isProcessingOAuth={googleLoginMutation.isPending} 
+              />
+            </TabsContent>
+
+            <TabsContent value="forgot">
+              <ForgotPasswordForm onBack={() => setActiveTab("login")} />
             </TabsContent>
           </Tabs>
         </Card>
       </div>
       
       {/* Hero column */}
-      <div className="w-full md:w-1/2 bg-purple-900 p-12 flex flex-col justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/cosmos.jpg')] bg-cover bg-center opacity-20"></div>
-        <div className="relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Begin Your Cosmic Journey</h1>
-          <p className="text-xl mb-8">
-            Unlock the secrets of the universe, explore your spiritual essence, and discover cosmic wisdom.
+      <div className="w-full md:w-1/2 bg-gradient-to-br from-[#1E1B4B] via-[#0F172A] to-[#020617] p-8 md:p-16 flex flex-col justify-center relative overflow-hidden border-l border-white/5">
+        <div className="relative z-10 max-w-lg mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-mono mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Universal Consciousness Portal</span>
+          </div>
+          
+          <h1 className="text-3xl md:text-5xl font-space font-bold leading-tight mb-6 bg-gradient-to-r from-white via-purple-100 to-purple-300 bg-clip-text text-transparent">
+            Align with the Living Cosmos
+          </h1>
+          
+          <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-8">
+            Connect meditation frequencies, solar-lunar cycles, dream symbolism, and your private astro-journal in one harmonious space.
           </p>
-          <div className="space-y-4">
-            <FeatureItem title="Cosmic Exploration" description="Explore celestial bodies and their spiritual significance" />
-            <FeatureItem title="Dream Interpretation" description="Understand the cosmic messages in your dreams" />
-            <FeatureItem title="Meditation Tools" description="Connect with universal energy through guided practices" />
-            <FeatureItem title="Spiritual Insights" description="Receive daily cosmic wisdom tailored to your journey" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FeatureItem icon={BookOpen} title="Private Astro-Journal" description="Record thoughts, dreams, and synchronicities securely synced." />
+            <FeatureItem icon={Compass} title="Celestial Explorer" description="Interactive astronomical database powered by NASA APOD & Spaceflight News." />
+            <FeatureItem icon={Moon} title="Solar & Lunar Signals" description="Real-time twilight calculators and cosmic rhythms." />
+            <FeatureItem icon={Sparkles} title="Harmonic Meditations" description="Curated audio frequencies for deep contemplative states." />
           </div>
         </div>
       </div>
@@ -221,8 +112,16 @@ export default function AuthPage() {
   );
 }
 
-function LoginForm({ handleGoogleLogin, isProcessingOAuth }: { handleGoogleLogin: () => void, isProcessingOAuth: boolean }) {
-  const [username, setUsername] = useState("");
+function LoginForm({ 
+  handleGoogleLogin, 
+  isProcessingOAuth,
+  onForgotPassword 
+}: { 
+  handleGoogleLogin: () => void; 
+  isProcessingOAuth: boolean;
+  onForgotPassword: () => void;
+}) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { loginMutation } = useAuth();
   const { toast } = useToast();
@@ -230,87 +129,94 @@ function LoginForm({ handleGoogleLogin, isProcessingOAuth }: { handleGoogleLogin
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!username || !password) {
+    if (!email || !password) {
       toast({
-        title: "Error",
-        description: "Please enter both username and password",
+        title: "Missing Information",
+        description: "Please enter your email and password.",
         variant: "destructive"
       });
       return;
     }
     
     try {
-      await loginMutation.mutateAsync({ username, password });
+      await loginMutation.mutateAsync({ email, password });
       setLocation("/");
-    } catch (error: any) {
-      console.error("Login error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Login failed";
-      toast({
-        title: "Login Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+    } catch {
+      // Handled in hook
     }
   };
   
   return (
     <form onSubmit={handleSubmit}>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="login-username">Username</Label>
+      <CardContent className="space-y-4 pt-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="login-email" className="text-xs text-gray-300">Email Address</Label>
           <Input 
-            id="login-username" 
-            placeholder="cosmicexplorer" 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="login-email" 
+            type="email"
+            placeholder="traveler@cosmos.org" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="login-password">Password</Label>
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center">
+            <Label htmlFor="login-password" className="text-xs text-gray-300">Password</Label>
+            <button 
+              type="button" 
+              onClick={onForgotPassword} 
+              className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              Forgot password?
+            </button>
+          </div>
           <Input 
             id="login-password" 
             type="password" 
+            placeholder="••••••••" 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
             required
           />
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
+
+      <CardFooter className="flex flex-col space-y-4 pt-2">
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full bg-gradient-to-r from-[#7E22CE] to-[#EC4899] hover:opacity-90 text-white text-xs h-9" 
           disabled={loginMutation.isPending}
         >
-          {loginMutation.isPending ? "Authenticating..." : "Login"}
+          {loginMutation.isPending ? "Connecting..." : "Sign In"}
         </Button>
         
-        <div className="relative">
+        <div className="relative w-full">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-400" />
+            <span className="w-full border-t border-white/10" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black px-2 text-gray-400">Or continue with</span>
+          <div className="relative flex justify-center text-[10px] uppercase">
+            <span className="bg-[#0F172A] px-2 text-gray-400 font-mono">Or continue with</span>
           </div>
         </div>
         
         <Button 
           type="button" 
           variant="outline" 
-          className="w-full"
+          className="w-full border-white/10 hover:bg-white/5 text-white text-xs h-9"
           onClick={handleGoogleLogin}
           disabled={isProcessingOAuth}
         >
           {isProcessingOAuth ? (
             <>
-              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent border-current"></span>
-              Authenticating with Google...
+              <span className="mr-2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-b-transparent border-current" />
+              Connecting with Google...
             </>
           ) : (
             <>
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -325,7 +231,13 @@ function LoginForm({ handleGoogleLogin, isProcessingOAuth }: { handleGoogleLogin
   );
 }
 
-function RegisterForm({ handleGoogleLogin, isProcessingOAuth }: { handleGoogleLogin: () => void, isProcessingOAuth: boolean }) {
+function RegisterForm({ 
+  handleGoogleLogin, 
+  isProcessingOAuth 
+}: { 
+  handleGoogleLogin: () => void; 
+  isProcessingOAuth: boolean; 
+}) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -336,11 +248,10 @@ function RegisterForm({ handleGoogleLogin, isProcessingOAuth }: { handleGoogleLo
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!username || !email || !password) {
       toast({
-        title: "Error",
-        description: "Please fill out all fields",
+        title: "Missing Information",
+        description: "Please fill out all fields.",
         variant: "destructive"
       });
       return;
@@ -348,140 +259,181 @@ function RegisterForm({ handleGoogleLogin, isProcessingOAuth }: { handleGoogleLo
     
     if (password !== passwordConfirm) {
       toast({
-        title: "Error",
-        description: "Passwords do not match",
+        title: "Password Mismatch",
+        description: "Passwords do not match.",
         variant: "destructive"
       });
       return;
     }
     
     try {
-      await registerMutation.mutateAsync({ 
-        username, 
-        email, 
-        password,
-        isSubscribed: false
-      });
-      toast({
-        title: "Success",
-        description: "Your cosmic account has been created!",
-      });
+      await registerMutation.mutateAsync({ username, email, password });
       setLocation("/");
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Registration failed";
-      toast({
-        title: "Registration Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+    } catch {
+      // Handled in hook
     }
   };
   
   return (
     <form onSubmit={handleSubmit}>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="register-username">Username</Label>
+      <CardContent className="space-y-3.5 pt-4">
+        <div className="space-y-1">
+          <Label htmlFor="reg-name" className="text-xs text-gray-300">Cosmic Name / Explorer ID</Label>
           <Input 
-            id="register-username" 
-            placeholder="cosmicexplorer" 
+            id="reg-name" 
+            placeholder="StarlightSeeker" 
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="register-email">Email</Label>
+        <div className="space-y-1">
+          <Label htmlFor="reg-email" className="text-xs text-gray-300">Email Address</Label>
           <Input 
-            id="register-email" 
+            id="reg-email" 
             type="email" 
-            placeholder="cosmic@example.com" 
+            placeholder="traveler@cosmos.org" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="register-password">Password</Label>
-          <Input 
-            id="register-password" 
-            type="password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="register-password-confirm">Confirm Password</Label>
-          <Input 
-            id="register-password-confirm" 
-            type="password" 
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            required
-          />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label htmlFor="reg-password" className="text-xs text-gray-300">Password</Label>
+            <Input 
+              id="reg-password" 
+              type="password" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="reg-confirm-password" className="text-xs text-gray-300">Confirm</Label>
+            <Input 
+              id="reg-confirm-password" 
+              type="password" 
+              placeholder="••••••••" 
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
+              required
+            />
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
+
+      <CardFooter className="flex flex-col space-y-4 pt-2">
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full bg-gradient-to-r from-[#7E22CE] to-[#EC4899] hover:opacity-90 text-white text-xs h-9" 
           disabled={registerMutation.isPending}
         >
-          {registerMutation.isPending ? "Creating Account..." : "Register"}
+          {registerMutation.isPending ? "Creating Account..." : "Create Free Account"}
         </Button>
         
-        <div className="relative">
+        <div className="relative w-full">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-400" />
+            <span className="w-full border-t border-white/10" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black px-2 text-gray-400">Or register with</span>
+          <div className="relative flex justify-center text-[10px] uppercase">
+            <span className="bg-[#0F172A] px-2 text-gray-400 font-mono">Or register with</span>
           </div>
         </div>
         
         <Button 
           type="button" 
           variant="outline" 
-          className="w-full"
+          className="w-full border-white/10 hover:bg-white/5 text-white text-xs h-9"
           onClick={handleGoogleLogin}
           disabled={isProcessingOAuth}
         >
-          {isProcessingOAuth ? (
-            <>
-              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent border-current"></span>
-              Authenticating with Google...
-            </>
-          ) : (
-            <>
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-              </svg>
-              Register with Google
-            </>
-          )}
+          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+          </svg>
+          Register with Google
         </Button>
       </CardFooter>
     </form>
   );
 }
 
-function FeatureItem({ title, description }: { title: string; description: string }) {
+function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
+  const [email, setEmail] = useState("");
+  const { resetPasswordMutation } = useAuth();
+  const { toast } = useToast();
+
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please provide your email to receive the reset link.",
+        variant: "destructive"
+      });
+      return;
+    }
+    await resetPasswordMutation.mutateAsync(email);
+  };
+
   return (
-    <div className="flex items-start">
-      <div className="mr-4 mt-1 text-purple-400">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
+    <form onSubmit={handleReset}>
+      <CardContent className="space-y-3.5 pt-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="forgot-email" className="text-xs text-gray-300">Your Registered Email</Label>
+          <Input 
+            id="forgot-email" 
+            type="email" 
+            placeholder="traveler@cosmos.org" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
+            required
+          />
+        </div>
+        <p className="text-[11px] text-gray-400">
+          We will send you a secure password reset link to your email inbox.
+        </p>
+      </CardContent>
+
+      <CardFooter className="flex gap-2 pt-2">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onBack}
+          className="w-1/3 border-white/10 text-xs h-9 text-gray-300 hover:bg-white/5"
+        >
+          Back
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={resetPasswordMutation.isPending}
+          className="w-2/3 bg-purple-600 hover:bg-purple-700 text-white text-xs h-9"
+        >
+          {resetPasswordMutation.isPending ? "Sending..." : "Send Reset Link"}
+        </Button>
+      </CardFooter>
+    </form>
+  );
+}
+
+function FeatureItem({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
+  return (
+    <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-3">
+      <div className="w-8 h-8 rounded-lg bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0 mt-0.5">
+        <Icon className="w-4 h-4" />
       </div>
       <div>
-        <h3 className="font-semibold mb-1">{title}</h3>
-        <p className="text-sm text-purple-200">{description}</p>
+        <h3 className="text-xs font-semibold text-white mb-0.5">{title}</h3>
+        <p className="text-[11px] text-gray-400 leading-snug">{description}</p>
       </div>
     </div>
   );

@@ -1,112 +1,204 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { User as SelectUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
+  auth,
+  onAuthStateChanged,
+  signInWithGoogle,
+  loginWithEmail,
+  registerWithEmail,
+  sendResetPassword,
+  logoutFirebase,
+  formatFirebaseAuthError,
+  type FirebaseUser,
+} from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
+
+export interface CosmicUser {
+  id: number;
+  uid: string;
+  username: string;
+  email: string | null;
+  isSubscribed: boolean;
+  photoURL?: string | null;
+}
 
 type AuthContextType = {
-  user: SelectUser | null;
+  user: CosmicUser | null;
+  firebaseUser: FirebaseUser | null;
   isLoading: boolean;
-  error: Error | null;
-  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
+  loginMutation: UseMutationResult<CosmicUser, Error, LoginData>;
+  registerMutation: UseMutationResult<CosmicUser, Error, RegisterData>;
+  googleLoginMutation: UseMutationResult<CosmicUser, Error, void>;
+  resetPasswordMutation: UseMutationResult<void, Error, string>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, RegisterData>;
 };
 
 type LoginData = {
-  username: string;
+  email: string;
   password: string;
 };
 
 type RegisterData = {
   username: string;
-  email: string | null;
+  email: string;
   password: string;
-  isSubscribed: boolean;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
+function mapFirebaseUser(fbUser: FirebaseUser | null): CosmicUser | null {
+  if (!fbUser) return null;
+  
+  // Deterministic numeric ID from UID hash for compatibility
+  let hash = 0;
+  for (let i = 0; i < fbUser.uid.length; i++) {
+    hash = (hash << 5) - hash + fbUser.uid.charCodeAt(i);
+    hash |= 0;
+  }
+  const numericId = Math.abs(hash);
+
+  const username =
+    fbUser.displayName ||
+    (fbUser.email ? fbUser.email.split("@")[0] : `cosmic_${fbUser.uid.substring(0, 6)}`);
+
+  return {
+    id: numericId,
+    uid: fbUser.uid,
+    username,
+    email: fbUser.email,
+    isSubscribed: false,
+    photoURL: fbUser.photoURL,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery<SelectUser | null, Error>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-  });
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<CosmicUser | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const loginMutation = useMutation<SelectUser, Error, LoginData>({
-    mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      if (!res.ok) {
-        const errorData: any = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Login failed");
-      }
-      return (await res.json()) as SelectUser;
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // Listen to Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setFirebaseUser(fbUser);
+      const mapped = mapFirebaseUser(fbUser);
+      setUser(mapped);
+      setIsLoading(false);
+      queryClient.setQueryData(["/api/user"], mapped);
+    });
 
-  const registerMutation = useMutation<SelectUser, Error, RegisterData>({
-    mutationFn: async (userData: RegisterData) => {
-      const res = await apiRequest("POST", "/api/register", userData);
-      if (!res.ok) {
-        const errorData: any = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Registration failed");
-      }
-      return (await res.json()) as SelectUser;
-    },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
-      toast({
-        title: "Account created",
-        description: "Welcome to Cosmic Channeling!",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+    return () => unsubscribe();
+  }, []);
 
-  const logoutMutation = useMutation<void, Error, void>({
+  // Google Login Mutation
+  const googleLoginMutation = useMutation<CosmicUser, Error, void>({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      const fbUser = await signInWithGoogle();
+      const mapped = mapFirebaseUser(fbUser)!;
+      return mapped;
+    },
+    onSuccess: (newUser) => {
+      setUser(newUser);
+      toast({
+        title: "Cosmic Connection Established",
+        description: `Welcome, ${newUser.username}!`,
+      });
+    },
+    onError: (error: any) => {
+      // Don't toast if user simply cancelled the popup
+      if (error?.code !== "auth/popup-closed-by-user") {
+        toast({
+          title: "Google Sign-In Error",
+          description: formatFirebaseAuthError(error),
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  // Email/Password Login Mutation
+  const loginMutation = useMutation<CosmicUser, Error, LoginData>({
+    mutationFn: async (credentials: LoginData) => {
+      const fbUser = await loginWithEmail(credentials.email, credentials.password);
+      return mapFirebaseUser(fbUser)!;
+    },
+    onSuccess: (newUser) => {
+      setUser(newUser);
+      toast({
+        title: "Welcome Back!",
+        description: `Signed in as ${newUser.username}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Login Failed",
+        description: formatFirebaseAuthError(error),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Email/Password Register Mutation
+  const registerMutation = useMutation<CosmicUser, Error, RegisterData>({
+    mutationFn: async (data: RegisterData) => {
+      const fbUser = await registerWithEmail(data.email, data.password, data.username);
+      return mapFirebaseUser(fbUser)!;
+    },
+    onSuccess: (newUser) => {
+      setUser(newUser);
+      toast({
+        title: "Account Created!",
+        description: "Welcome to the Cosmic Channeling community.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Registration Failed",
+        description: formatFirebaseAuthError(error),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Password Reset Mutation
+  const resetPasswordMutation = useMutation<void, Error, string>({
+    mutationFn: async (email: string) => {
+      await sendResetPassword(email);
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
+        title: "Reset Email Sent",
+        description: "Please check your inbox for password reset instructions.",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: "Logout failed",
-        description: error.message,
+        title: "Reset Failed",
+        description: formatFirebaseAuthError(error),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Logout Mutation
+  const logoutMutation = useMutation<void, Error, void>({
+    mutationFn: async () => {
+      await logoutFirebase();
+    },
+    onSuccess: () => {
+      setUser(null);
+      setFirebaseUser(null);
+      queryClient.setQueryData(["/api/user"], null);
+      toast({
+        title: "Logged Out",
+        description: "You have been safely disconnected.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Logout Error",
+        description: formatFirebaseAuthError(error),
         variant: "destructive",
       });
     },
@@ -115,12 +207,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user,
+        firebaseUser,
         isLoading,
-        error,
         loginMutation,
-        logoutMutation,
         registerMutation,
+        googleLoginMutation,
+        resetPasswordMutation,
+        logoutMutation,
       }}
     >
       {children}
