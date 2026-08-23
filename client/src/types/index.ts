@@ -7,9 +7,14 @@ export interface Quote {
 export interface CelestialObject {
   id: string;
   name: string;
-  type: 'planet' | 'galaxy' | 'nebula' | 'exoplanet';
+  type: 'planet' | 'galaxy' | 'nebula' | 'exoplanet' | 'blackhole' | 'solar';
   image: string;
+  hdImage?: string;
   description: string;
+  distance?: string;
+  constellation?: string;
+  mission?: string;
+  keyFact?: string;
 }
 
 export interface CosmicPattern {

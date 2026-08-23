@@ -1,402 +1,386 @@
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Star, Moon, Sun, Waves } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Play,
+  Clock,
+  Sparkles,
+  ExternalLink,
+  Search,
+  Moon,
+  Sun,
+  Flame,
+  Waves,
+  Compass,
+} from 'lucide-react';
 
-interface MeditationSession {
+interface GuidedSession {
   id: string;
   title: string;
+  channelTitle: string;
   description: string;
-  duration: number; // in minutes
-  theme: 'cosmic' | 'nature' | 'energy' | 'mindfulness';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  icon: React.ReactNode;
-  script: string[];
+  durationMinutes: number;
+  theme: 'cosmic' | 'astral' | 'chakra' | 'sleep' | 'solar' | 'lunar';
+  level: 'beginner' | 'intermediate' | 'advanced';
+  videoId: string;
+  thumbnail: string;
+  tags: string[];
 }
 
-const meditationSessions: MeditationSession[] = [
+const GUIDED_MEDITATIONS: GuidedSession[] = [
   {
-    id: 'cosmic-journey',
-    title: 'Cosmic Journey',
-    description: 'Travel through the cosmos and connect with universal energy',
-    duration: 10,
+    id: '1',
+    title: 'Deep Space Cosmic Alignment & 432 Hz Sound Bath',
+    channelTitle: 'Cosmic Channeling',
+    description: 'Immerse your body and consciousness into the universal grid with 432Hz deep space resonance and celestial visualization.',
+    durationMinutes: 15,
     theme: 'cosmic',
-    difficulty: 'beginner',
-    icon: <Star className="w-5 h-5" />,
-    script: [
-      "Welcome to your cosmic journey. Find a comfortable position and close your eyes.",
-      "Take three deep breaths, feeling your body relax with each exhale.",
-      "Imagine yourself floating gently in the vastness of space.",
-      "See the Earth below you, a beautiful blue marble in the cosmic void.",
-      "Feel yourself surrounded by countless stars, each one a source of ancient light.",
-      "Allow the cosmic energy to flow through you, connecting you to all of existence.",
-      "Rest in this space of infinite possibility and universal connection.",
-      "When you're ready, slowly bring your awareness back to your body.",
-      "Take a few deep breaths and gently open your eyes."
-    ]
+    level: 'beginner',
+    videoId: 'w0gBwZ77j9M',
+    thumbnail: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=600&auto=format&fit=crop&q=80',
+    tags: ['432Hz', 'Cosmic Alignment', 'Deep Peace', 'Sound Bath'],
   },
   {
-    id: 'moon-phases',
-    title: 'Moon Phase Meditation',
-    description: 'Align with lunar energy and inner cycles of transformation',
-    duration: 8,
-    theme: 'cosmic',
-    difficulty: 'intermediate',
-    icon: <Moon className="w-5 h-5" />,
-    script: [
-      "Close your eyes and breathe deeply, centering yourself in this moment.",
-      "Visualize the moon in your mind's eye, glowing softly in the darkness.",
-      "Feel its gentle pull, the same force that moves the oceans.",
-      "Notice how this lunar energy flows through your own body.",
-      "Like the moon, you too have cycles of growth and release.",
-      "Embrace both your light and shadow aspects with compassion.",
-      "Allow the moon's wisdom to guide your inner transformation.",
-      "Rest in the peaceful energy of lunar consciousness.",
-      "Slowly return to the present moment when you feel ready."
-    ]
+    id: '2',
+    title: 'Astral Projection & Higher Dimensional Consciousness Journey',
+    channelTitle: 'Universal Astral Pathways',
+    description: 'A gentle, step-by-step guided meditation to expand beyond physical boundaries and travel through the starfields of consciousness.',
+    durationMinutes: 25,
+    theme: 'astral',
+    level: 'advanced',
+    videoId: 'hHW1oYw642k',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80',
+    tags: ['Astral Travel', 'Theta Waves', 'Expansion', 'Lucid Mind'],
   },
   {
-    id: 'solar-energy',
-    title: 'Solar Energy Activation',
-    description: 'Harness the power of solar energy for vitality and clarity',
-    duration: 6,
-    theme: 'energy',
-    difficulty: 'beginner',
-    icon: <Sun className="w-5 h-5" />,
-    script: [
-      "Sit tall and imagine golden sunlight streaming down from above.",
-      "Feel this warm, healing light entering through the top of your head.",
-      "Let it flow down through your body, energizing every cell.",
-      "Your heart center glows with this radiant solar energy.",
-      "Feel your personal power and clarity awakening.",
-      "You are connected to the life-giving force of our star.",
-      "Carry this solar light with you throughout your day.",
-      "Gently bring your attention back to your breath and surroundings."
-    ]
+    id: '3',
+    title: 'Full Moon Emotional Cleansing & Celestial Renewal',
+    channelTitle: 'Lunar Alchemy',
+    description: 'Harness lunar magnetic frequencies to dissolve subconscious tension, forgive past cycles, and invite radiant clarity.',
+    durationMinutes: 20,
+    theme: 'lunar',
+    level: 'intermediate',
+    videoId: 'eKFTSSKCzWA',
+    thumbnail: 'https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=600&auto=format&fit=crop&q=80',
+    tags: ['Full Moon', 'Emotional Healing', 'Renewal', 'Release'],
   },
   {
-    id: 'cosmic-waves',
-    title: 'Cosmic Sound Waves',
-    description: 'Ride the vibrational frequencies of the universe',
-    duration: 12,
-    theme: 'nature',
-    difficulty: 'advanced',
-    icon: <Waves className="w-5 h-5" />,
-    script: [
-      "Begin by listening to the silence around you.",
-      "In this silence, become aware of subtle vibrations.",
-      "These are the cosmic sound waves that permeate all existence.",
-      "Feel your body as a resonating chamber for these frequencies.",
-      "Allow these cosmic vibrations to tune your entire being.",
-      "You are both the listener and the instrument.",
-      "Rest in the harmony of universal sound.",
-      "Let these frequencies heal and align your energy centers.",
-      "Notice how you feel more connected to the cosmic symphony.",
-      "Slowly return your awareness to ordinary sound and sensation."
-    ]
-  }
+    id: '4',
+    title: 'Solar Plexus Prana & Creative Vitality Activation',
+    channelTitle: 'Solar Breathwork',
+    description: 'Connect with our host star, the Sun, to ignite your inner flame, energize the physical vessel, and boost confidence.',
+    durationMinutes: 10,
+    theme: 'solar',
+    level: 'beginner',
+    videoId: 'M576WGiDBdQ',
+    thumbnail: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80',
+    tags: ['Solar Light', 'Prana', 'Vitality', 'Focus'],
+  },
+  {
+    id: '5',
+    title: '7 Chakras Cosmic Harmonization & 528 Hz Healing',
+    channelTitle: 'Sacred Frequencies',
+    description: 'Align each energetic chakra vortex from root to crown with sacred geometry tones and guided universal light streams.',
+    durationMinutes: 30,
+    theme: 'chakra',
+    level: 'intermediate',
+    videoId: '1ZYbU8csapM',
+    thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80',
+    tags: ['528Hz', '7 Chakras', 'Energy Body', 'Harmonization'],
+  },
+  {
+    id: '6',
+    title: 'Deep Cosmic Sleep & Delta Wave Night Journey',
+    channelTitle: 'Slumber Sanctuary',
+    description: 'Drift effortlessly into the starlit void with delta frequencies, soothing cosmic ocean winds, and peaceful deep rest guidance.',
+    durationMinutes: 45,
+    theme: 'sleep',
+    level: 'beginner',
+    videoId: '86YLFOog4GM',
+    thumbnail: 'https://images.unsplash.com/photo-1507499739999-097706ad8914?w=600&auto=format&fit=crop&q=80',
+    tags: ['Deep Sleep', 'Delta Waves', 'Insomnia Relief', 'Starlight'],
+  },
 ];
 
-const GuidedMeditation = () => {
-  const [selectedSession, setSelectedSession] = useState<MeditationSession | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const [isMuted, setIsMuted] = useState(false);
-  
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const intervalRef = useRef<number | null>(null);
-  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  const themeColors = {
-    cosmic: 'from-purple-500 to-blue-600',
-    nature: 'from-green-500 to-teal-600',
-    energy: 'from-yellow-500 to-orange-600',
-    mindfulness: 'from-indigo-500 to-purple-600'
-  };
-
-  const difficultyColors = {
-    beginner: 'bg-green-100 text-green-800 border-green-200',
-    intermediate: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    advanced: 'bg-red-100 text-red-800 border-red-200'
-  };
-
-  useEffect(() => {
-    // Create ambient cosmic sound
-    if (typeof window !== 'undefined') {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      
-      audioRef.current = {
-        start: () => oscillator.start(),
-        stop: () => oscillator.stop(),
-        context: audioContext
-      } as any;
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (speechRef.current) {
-        speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isPlaying && selectedSession) {
-      intervalRef.current = window.setInterval(() => {
-        setTimeElapsed(prev => prev + 1);
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isPlaying, selectedSession]);
-
-  const speakText = (text: string) => {
-    if ('speechSynthesis' in window) {
-      speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.7;
-      utterance.pitch = 0.9;
-      utterance.volume = isMuted ? 0 : volume;
-      
-      speechRef.current = utterance;
-      speechSynthesis.speak(utterance);
-    }
-  };
-
-  const startSession = (session: MeditationSession) => {
-    setSelectedSession(session);
-    setCurrentStep(0);
-    setTimeElapsed(0);
-    setIsPlaying(true);
-    
-    // Start with first instruction
-    setTimeout(() => {
-      speakText(session.script[0]);
-    }, 1000);
-  };
-
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-    
-    if (!isPlaying && selectedSession && selectedSession.script[currentStep]) {
-      speakText(selectedSession.script[currentStep]);
-    } else {
-      speechSynthesis.cancel();
-    }
-  };
-
-  const nextStep = () => {
-    if (selectedSession && currentStep < selectedSession.script.length - 1) {
-      const nextStepIndex = currentStep + 1;
-      setCurrentStep(nextStepIndex);
-      speakText(selectedSession.script[nextStepIndex]);
-    }
-  };
-
-  const previousStep = () => {
-    if (selectedSession && currentStep > 0) {
-      const prevStepIndex = currentStep - 1;
-      setCurrentStep(prevStepIndex);
-      speakText(selectedSession.script[prevStepIndex]);
-    }
-  };
-
-  const resetSession = () => {
-    setIsPlaying(false);
-    setCurrentStep(0);
-    setTimeElapsed(0);
-    speechSynthesis.cancel();
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  if (selectedSession) {
-    return (
-      <Card className="bg-slate-800 border-slate-700">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg bg-gradient-to-r ${themeColors[selectedSession.theme]}`}>
-                {selectedSession.icon}
-              </div>
-              <div>
-                <CardTitle className="text-white">{selectedSession.title}</CardTitle>
-                <p className="text-slate-400 text-sm">{selectedSession.description}</p>
-              </div>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setSelectedSession(null)}
-              className="text-slate-400 hover:text-white"
-            >
-              ← Back
-            </Button>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {/* Progress and Timer */}
-          <div className="text-center space-y-2">
-            <div className="text-3xl font-space text-white">
-              {formatTime(timeElapsed)}
-            </div>
-            <div className="text-sm text-slate-400">
-              Step {currentStep + 1} of {selectedSession.script.length}
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full bg-gradient-to-r ${themeColors[selectedSession.theme]} transition-all duration-300`}
-                style={{ width: `${((currentStep + 1) / selectedSession.script.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Current Instruction */}
-          <Card className="bg-slate-900 border-slate-600">
-            <CardContent className="pt-6">
-              <p className="text-slate-200 text-center italic">
-                "{selectedSession.script[currentStep]}"
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={previousStep}
-              disabled={currentStep === 0}
-              className="border-slate-600 text-slate-300"
-            >
-              Previous
-            </Button>
-            
-            <Button
-              onClick={togglePlayPause}
-              className={`bg-gradient-to-r ${themeColors[selectedSession.theme]} hover:opacity-90`}
-            >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={nextStep}
-              disabled={currentStep === selectedSession.script.length - 1}
-              className="border-slate-600 text-slate-300"
-            >
-              Next
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resetSession}
-              className="border-slate-600 text-slate-300"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Volume Control */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMuted(!isMuted)}
-              className="text-slate-400 hover:text-white"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </Button>
-            <Slider
-              value={[volume]}
-              onValueChange={(value) => setVolume(value[0])}
-              max={1}
-              step={0.1}
-              className="flex-1"
-            />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">Guided Meditations</h2>
-        <p className="text-slate-400">Journey through consciousness with cosmic guidance</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {meditationSessions.map((session) => (
-          <Card 
-            key={session.id} 
-            className="bg-slate-800 border-slate-700 hover:border-purple-500 transition-all duration-300 cursor-pointer"
-            onClick={() => startSession(session)}
-          >
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-gradient-to-r ${themeColors[session.theme]}`}>
-                    {session.icon}
-                  </div>
-                  <div>
-                    <CardTitle className="text-white text-lg">{session.title}</CardTitle>
-                    <p className="text-slate-400 text-sm">{session.description}</p>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={difficultyColors[session.difficulty]}>
-                    {session.difficulty}
-                  </Badge>
-                  <span className="text-slate-400 text-sm">{session.duration} min</span>
-                </div>
-                <Button size="sm" className={`bg-gradient-to-r ${themeColors[session.theme]}`}>
-                  Start Journey
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+const THEME_ICONS: Record<string, any> = {
+  cosmic: Compass,
+  astral: Sparkles,
+  lunar: Moon,
+  solar: Sun,
+  chakra: Flame,
+  sleep: Waves,
 };
 
-export default GuidedMeditation;
+export default function GuidedMeditation() {
+  const [selectedTheme, setSelectedTheme] = useState<string>('all');
+  const [selectedDuration, setSelectedDuration] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeSession, setActiveSession] = useState<GuidedSession | null>(null);
+
+  const filteredSessions = useMemo(() => {
+    return GUIDED_MEDITATIONS.filter((item) => {
+      // Theme filter
+      if (selectedTheme !== 'all' && item.theme !== selectedTheme) return false;
+
+      // Duration filter
+      if (selectedDuration === 'short' && item.durationMinutes > 15) return false;
+      if (selectedDuration === 'medium' && (item.durationMinutes <= 15 || item.durationMinutes > 30)) return false;
+      if (selectedDuration === 'long' && item.durationMinutes <= 30) return false;
+
+      // Search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = item.title.toLowerCase().includes(q);
+        const matchesDesc = item.description.toLowerCase().includes(q);
+        const matchesTags = item.tags.some((t) => t.toLowerCase().includes(q));
+        if (!matchesTitle && !matchesDesc && !matchesTags) return false;
+      }
+
+      return true;
+    });
+  }, [selectedTheme, selectedDuration, searchQuery]);
+
+  return (
+    <div className="space-y-8">
+      {/* Header Banner */}
+      <div className="text-center max-w-2xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-space font-bold bg-gradient-to-r from-purple-300 via-pink-300 to-sky-300 bg-clip-text text-transparent mb-2">
+          Guided Cosmic Journeys
+        </h2>
+        <p className="text-xs sm:text-sm text-gray-300">
+          Curated guided meditation sessions playable directly in-app or via YouTube. Expand awareness, tune your chakras, and explore the universe within.
+        </p>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div className="bg-[#0F172A]/90 p-4 rounded-2xl border border-white/10 shadow-lg space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search guided meditations by topic (e.g. 432Hz, sleep, astral)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-[#020617]/70 border-[#334155] text-xs h-9 text-white placeholder:text-gray-500"
+            />
+          </div>
+
+          {/* Duration Selector */}
+          <div className="flex gap-1.5 shrink-0 overflow-x-auto pb-1 sm:pb-0">
+            {[
+              { id: 'all', label: 'All Lengths' },
+              { id: 'short', label: '≤ 15 min' },
+              { id: 'medium', label: '15 - 30 min' },
+              { id: 'long', label: '30+ min' },
+            ].map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setSelectedDuration(d.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all shrink-0 ${
+                  selectedDuration === d.id
+                    ? 'bg-purple-600 text-white font-medium shadow-sm'
+                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Theme Category Badges */}
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {[
+            { id: 'all', label: 'All Themes' },
+            { id: 'cosmic', label: 'Cosmic Alignment' },
+            { id: 'astral', label: 'Astral Journey' },
+            { id: 'chakra', label: 'Chakra 528Hz' },
+            { id: 'lunar', label: 'Lunar Cleansing' },
+            { id: 'solar', label: 'Solar Prana' },
+            { id: 'sleep', label: 'Deep Sleep' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setSelectedTheme(t.id)}
+              className={`px-3 py-1 rounded-full text-xs transition-all ${
+                selectedTheme === t.id
+                  ? 'bg-gradient-to-r from-[#7E22CE] to-[#EC4899] text-white font-medium shadow-sm shadow-purple-900/30'
+                  : 'bg-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10 border border-white/5'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid of Guided Meditation Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredSessions.map((session) => {
+          const IconComponent = THEME_ICONS[session.theme] || Sparkles;
+
+          return (
+            <Card
+              key={session.id}
+              className="bg-[#0F172A]/90 border-[#334155] hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-lg hover:shadow-purple-900/20"
+            >
+              <div>
+                {/* Thumbnail with overlay play trigger */}
+                <div
+                  onClick={() => setActiveSession(session)}
+                  className="aspect-video relative overflow-hidden bg-black/60 cursor-pointer"
+                >
+                  <img
+                    src={session.thumbnail}
+                    alt={session.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity">
+                    <div className="w-12 h-12 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-lg shadow-purple-950/80 group-hover:scale-110 transition-transform">
+                      <Play className="w-5 h-5 fill-current ml-0.5" />
+                    </div>
+                  </div>
+
+                  <Badge className="absolute top-3 right-3 bg-purple-950/80 text-purple-200 border border-purple-500/30 text-[10px] uppercase font-mono">
+                    {session.theme}
+                  </Badge>
+
+                  <div className="absolute bottom-2.5 left-3 flex items-center gap-1 text-[11px] text-gray-200 font-mono bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm">
+                    <Clock className="w-3 h-3 text-sky-400" />
+                    <span>{session.durationMinutes} mins</span>
+                  </div>
+                </div>
+
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <IconComponent className="w-4 h-4 text-purple-400 shrink-0" />
+                    <span className="text-[11px] text-gray-400 truncate">{session.channelTitle}</span>
+                  </div>
+                  <CardTitle className="text-base font-space text-white leading-snug line-clamp-2">
+                    {session.title}
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-3 pb-3">
+                  <CardDescription className="text-xs text-gray-300 line-clamp-2 leading-relaxed">
+                    {session.description}
+                  </CardDescription>
+
+                  <div className="flex flex-wrap gap-1">
+                    {session.tags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-purple-950/50 text-purple-300 border border-purple-500/20"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </div>
+
+              <CardFooter className="pt-3 border-t border-white/5 flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => setActiveSession(session)}
+                  className="flex-1 bg-gradient-to-r from-[#7E22CE] to-[#EC4899] hover:opacity-90 text-white text-xs h-8"
+                >
+                  <Play className="w-3.5 h-3.5 mr-1 fill-current" />
+                  Play in App
+                </Button>
+                <a
+                  href={`https://www.youtube.com/watch?v=${session.videoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-2.5 h-8 rounded-md bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs border border-white/10 transition-colors"
+                  title="Open on YouTube in new tab"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </div>
+
+      {filteredSessions.length === 0 && (
+        <div className="text-center py-16 bg-[#0F172A]/40 rounded-2xl border border-white/5">
+          <p className="text-gray-400 text-sm mb-3">No guided meditations found matching your search.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSelectedTheme('all');
+              setSelectedDuration('all');
+              setSearchQuery('');
+            }}
+            className="border-white/10 text-xs text-gray-300"
+          >
+            Clear Filters
+          </Button>
+        </div>
+      )}
+
+      {/* In-App YouTube Player Lightbox Modal */}
+      {activeSession && (
+        <Dialog open={!!activeSession} onOpenChange={(open) => !open && setActiveSession(null)}>
+          <DialogContent className="sm:max-w-[760px] max-h-[90vh] overflow-y-auto bg-[#0B0F19]/95 backdrop-blur-xl border-purple-500/40 text-white p-4 sm:p-6 shadow-2xl">
+            <DialogHeader className="mb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-purple-900/60 text-purple-200 border-purple-400/30 text-[10px] uppercase font-mono">
+                  {activeSession.theme} Journey
+                </Badge>
+                <span className="text-xs text-gray-400">• {activeSession.durationMinutes} Minutes</span>
+              </div>
+              <DialogTitle className="text-lg sm:text-xl font-space font-bold text-white">
+                {activeSession.title}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-gray-400">
+                {activeSession.channelTitle}
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Responsive 16:9 YouTube Embed */}
+            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black border border-white/10 shadow-lg my-2">
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${activeSession.videoId}?autoplay=1&rel=0&modestbranding=1`}
+                title={activeSession.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full border-0"
+              />
+            </div>
+
+            {/* Session Notes & External Link Action */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-gray-300">
+              <p className="line-clamp-2 leading-relaxed flex-1">
+                {activeSession.description}
+              </p>
+              <a
+                href={`https://www.youtube.com/watch?v=${activeSession.videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/40 border border-red-500/30 text-red-300 hover:bg-red-950/60 transition-colors shrink-0"
+              >
+                <i className="ri-youtube-line text-sm"></i>
+                <span>Open in YouTube</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}

@@ -4,9 +4,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { CelestialObject } from '@/types';
 import NasaApodCard from '@/components/features/NasaApodCard';
-import { Sparkles, Globe, Orbit, Radio, ExternalLink } from 'lucide-react';
+import {
+  Sparkles,
+  Radio,
+  ExternalLink,
+  Maximize2,
+  Telescope,
+  Compass,
+  Orbit,
+  Eye,
+  Info,
+} from 'lucide-react';
+import { celestialObjects as staticCelestialObjects } from '@/lib/data';
 
 // Type for space news and facts coming from the API
 interface SpaceNewsItem {
@@ -74,14 +91,17 @@ const SpaceNewsCard = ({ item }: { item: SpaceNewsItem }) => {
   );
 };
 
-const Explore = () => {
-  const [selectedObject, setSelectedObject] = useState<CelestialObject | null>(null);
+export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState<string>('planets');
+  const [selectedObject, setSelectedObject] = useState<CelestialObject | null>(null);
+  const [hdModalOpen, setHdModalOpen] = useState<boolean>(false);
 
-  // Query for celestial objects
-  const { data: celestialObjects = [], isLoading: isLoadingCelestial } = useQuery<CelestialObject[]>({
+  // Query for celestial objects from API (falls back to expanded static data)
+  const { data: apiCelestialObjects = [], isLoading: isLoadingCelestial } = useQuery<CelestialObject[]>({
     queryKey: ['/api/celestial'],
   });
+
+  const allCelestialObjects = apiCelestialObjects.length > 0 ? apiCelestialObjects : staticCelestialObjects;
 
   // Query for space news and facts (from SNAPI v4 + RSS)
   const { data: spaceNews = [], isLoading: isLoadingNews } = useQuery<SpaceNewsItem[]>({
@@ -89,111 +109,80 @@ const Explore = () => {
     staleTime: 1000 * 60 * 30, // 30 min
   });
 
-  useEffect(() => {
-    if (celestialObjects && celestialObjects.length > 0) {
-      const filteredObjects = celestialObjects.filter((obj: CelestialObject) =>
-        obj.type.toLowerCase() === selectedCategory.slice(0, -1).toLowerCase()
-      );
+  // Filter objects by selected category tab
+  const getFilteredObjects = (cat: string) => {
+    return allCelestialObjects.filter((obj: CelestialObject) => {
+      if (cat === 'planets') return obj.type === 'planet' || obj.type === 'solar';
+      if (cat === 'galaxies') return obj.type === 'galaxy';
+      if (cat === 'nebulae') return obj.type === 'nebula';
+      if (cat === 'exoplanets') return obj.type === 'exoplanet';
+      if (cat === 'blackholes') return obj.type === 'blackhole';
+      return false;
+    });
+  };
 
-      if (filteredObjects.length > 0) {
-        setSelectedObject(filteredObjects[0]);
+  // Sync selected object when category changes
+  useEffect(() => {
+    if (selectedCategory !== 'apod' && selectedCategory !== 'news') {
+      const items = getFilteredObjects(selectedCategory);
+      if (items.length > 0) {
+        setSelectedObject(items[0]);
       }
     }
-  }, [celestialObjects, selectedCategory]);
-
-  // Fallback data if API fails
-  const fallbackData: Record<string, CelestialObject[]> = {
-    planets: [
-      {
-        id: 'saturn',
-        name: 'Saturn',
-        type: 'planet',
-        image: 'https://images.unsplash.com/photo-1614642264762-d0a3b8bf3700?auto=format&fit=crop&w=1000&q=80',
-        description: 'Saturn is the sixth planet from the Sun and the second-largest in the Solar System, with magnificent rings of ice and dust.',
-      },
-      {
-        id: 'mars',
-        name: 'Mars',
-        type: 'planet',
-        image: 'https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=1000&q=80',
-        description: 'Mars is the fourth planet from the Sun, known as the Red Planet due to its iron-rich surface and thin atmosphere.',
-      },
-    ],
-    galaxies: [
-      {
-        id: 'andromeda',
-        name: 'Andromeda Galaxy',
-        type: 'galaxy',
-        image: 'https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&w=800&q=80',
-        description: 'The Andromeda Galaxy (Messier 31) is a spiral galaxy approximately 2.5 million light-years from Earth and the nearest major galaxy to the Milky Way.',
-      },
-    ],
-    nebulae: [
-      {
-        id: 'orion',
-        name: 'Orion Nebula',
-        type: 'nebula',
-        image: 'https://images.unsplash.com/photo-1570032257806-7272438f38da?auto=format&fit=crop&w=1000&q=80',
-        description: 'The Orion Nebula is a diffuse nursery situated in the Milky Way, south of Orion’s Belt, where new stars are continuously born.',
-      },
-    ],
-    exoplanets: [
-      {
-        id: 'trappist1e',
-        name: 'TRAPPIST-1e',
-        type: 'exoplanet',
-        image: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1400&q=80',
-        description: 'TRAPPIST-1e is an Earth-sized exoplanet orbiting within the habitable zone of the ultra-cool dwarf star TRAPPIST-1, 40 light-years away.',
-      },
-    ],
-  };
-
-  const getFilteredObjects = () => {
-    if (celestialObjects && celestialObjects.length > 0) {
-      return celestialObjects.filter(
-        (obj: CelestialObject) =>
-          obj.type.toLowerCase() === selectedCategory.slice(0, -1).toLowerCase()
-      );
-    }
-    return fallbackData[selectedCategory as keyof typeof fallbackData] || [];
-  };
+  }, [selectedCategory, allCelestialObjects]);
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <section className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 font-space">
+    <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <section className="max-w-6xl mx-auto space-y-8">
+        {/* Header Title Section */}
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-mono">
+            <Telescope className="w-3.5 h-3.5" />
+            <span>Deep Space Celestial Atlas & Observations</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-space">
             <span className="bg-gradient-to-r from-[#EC4899] via-purple-400 to-[#0EA5E9] bg-clip-text text-transparent">
               Explore the Universe
             </span>
           </h1>
-          <p className="text-[#F1F5F9] max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-            Journey through deep space with real NASA observation feeds, live spaceflight news, and celestial catalogs of our cosmos.
+          <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed">
+            Journey through deep space with real NASA observation feeds, 30+ high-definition celestial worlds, and live global spaceflight dispatches.
           </p>
         </div>
 
+        {/* Category Navigation Tabs */}
         <Tabs
           defaultValue="apod"
-          onValueChange={(value) => {
-            if (value !== 'apod' && value !== 'news') {
-              setSelectedCategory(value);
-            }
-          }}
+          value={selectedCategory}
+          onValueChange={setSelectedCategory}
         >
-          <TabsList className="grid grid-cols-3 sm:grid-cols-6 mb-8 bg-[#1E293B] border border-white/10 p-1">
-            <TabsTrigger value="apod" className="text-xs sm:text-sm">
-              <Sparkles className="h-3.5 w-3.5 mr-1 text-yellow-300" />
-              NASA APOD
-            </TabsTrigger>
-            <TabsTrigger value="planets" className="text-xs sm:text-sm">Planets</TabsTrigger>
-            <TabsTrigger value="galaxies" className="text-xs sm:text-sm">Galaxies</TabsTrigger>
-            <TabsTrigger value="nebulae" className="text-xs sm:text-sm">Nebulae</TabsTrigger>
-            <TabsTrigger value="exoplanets" className="text-xs sm:text-sm">Exoplanets</TabsTrigger>
-            <TabsTrigger value="news" className="text-xs sm:text-sm">
-              <Radio className="h-3.5 w-3.5 mr-1 text-sky-400" />
-              Live News
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-8 overflow-x-auto pb-2 sm:pb-0">
+            <TabsList className="grid grid-cols-3 sm:grid-cols-7 w-full max-w-4xl bg-[#1E293B] border border-white/10 p-1 rounded-2xl">
+              <TabsTrigger value="apod" className="text-xs sm:text-sm font-space flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-yellow-300 shrink-0" />
+                <span>NASA APOD</span>
+              </TabsTrigger>
+              <TabsTrigger value="planets" className="text-xs sm:text-sm font-space">
+                Solar System
+              </TabsTrigger>
+              <TabsTrigger value="galaxies" className="text-xs sm:text-sm font-space">
+                Galaxies
+              </TabsTrigger>
+              <TabsTrigger value="nebulae" className="text-xs sm:text-sm font-space">
+                Nebulae
+              </TabsTrigger>
+              <TabsTrigger value="exoplanets" className="text-xs sm:text-sm font-space">
+                Exoplanets
+              </TabsTrigger>
+              <TabsTrigger value="blackholes" className="text-xs sm:text-sm font-space">
+                Black Holes
+              </TabsTrigger>
+              <TabsTrigger value="news" className="text-xs sm:text-sm font-space flex items-center gap-1.5">
+                <Radio className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+                <span>Live News</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* 1. NASA APOD Tab */}
           <TabsContent value="apod" className="focus:outline-none space-y-6">
@@ -202,119 +191,197 @@ const Explore = () => {
             </div>
           </TabsContent>
 
-          {/* 2-5. Celestial Objects Tabs */}
-          {['planets', 'galaxies', 'nebulae', 'exoplanets'].map((category) => (
-            <TabsContent key={category} value={category} className="focus:outline-none">
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="md:col-span-2">
-                  {isLoadingCelestial ? (
-                    <div className="bg-[#1E293B] rounded-lg w-full h-96 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0EA5E9]"></div>
-                    </div>
-                  ) : selectedObject ? (
-                    <div className="bg-[#1E293B] rounded-xl overflow-hidden border border-[#334155] shadow-lg">
-                      <div className="h-72 w-full overflow-hidden bg-black/40">
-                        <img
-                          src={selectedObject.image}
-                          alt={selectedObject.name}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                        />
-                      </div>
-                      <div className="p-6">
-                        <h2 className="text-2xl font-space font-bold text-white mb-3">
-                          {selectedObject.name}
-                        </h2>
-                        <p className="text-[#F1F5F9] mb-6 leading-relaxed">
-                          {selectedObject.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="text-xs bg-[#7E22CE]/30 text-purple-300 px-3 py-1 rounded-full border border-purple-500/30 capitalize">
-                            {selectedObject.type}
-                          </span>
-                          <a
-                            href={`https://science.nasa.gov/${selectedObject.type !== 'planet' ? 'universe' : selectedObject.name.toLowerCase()}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs bg-[#0EA5E9]/20 text-[#0EA5E9] px-3 py-1 rounded-full hover:bg-[#0EA5E9]/30 transition-colors flex items-center gap-1"
-                          >
-                            Scientific Data <ExternalLink className="h-3 w-3" />
-                          </a>
-                          <a
-                            href={`https://en.wikipedia.org/wiki/${selectedObject.name}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs bg-[#EC4899]/20 text-[#EC4899] px-3 py-1 rounded-full hover:bg-[#EC4899]/30 transition-colors flex items-center gap-1"
-                          >
-                            Encyclopedia <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-[#1E293B] rounded-lg w-full h-96 flex items-center justify-center">
-                      <p className="text-[#64748B]">No {category} data available</p>
-                    </div>
-                  )}
-                </div>
+          {/* 2-6. Celestial Atlas Category Tabs */}
+          {['planets', 'galaxies', 'nebulae', 'exoplanets', 'blackholes'].map((categoryKey) => {
+            const categoryObjects = getFilteredObjects(categoryKey);
 
-                <div>
-                  <h3 className="text-lg font-space font-semibold text-white mb-3">
-                    Browse {category}
-                  </h3>
-                  <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                    {isLoadingCelestial
-                      ? Array(3)
-                          .fill(0)
-                          .map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-20 bg-[#1E293B] rounded-md animate-pulse"
-                            ></div>
-                          ))
-                      : getFilteredObjects().map((obj: CelestialObject) => (
+            return (
+              <TabsContent key={categoryKey} value={categoryKey} className="focus:outline-none space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  {/* Left Viewport: Main Featured Object Card */}
+                  <div className="lg:col-span-8">
+                    {selectedObject ? (
+                      <Card className="bg-[#0F172A]/95 rounded-2xl border border-purple-500/30 overflow-hidden shadow-2xl backdrop-blur-xl">
+                        {/* High-Res Hero Image with Expand Action */}
+                        <div className="relative h-72 sm:h-96 w-full overflow-hidden bg-black/60 group">
+                          <img
+                            src={selectedObject.hdImage || selectedObject.image}
+                            alt={selectedObject.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-transparent to-black/30 pointer-events-none" />
+
+                          {/* Top Badges */}
+                          <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                            <Badge className="bg-purple-950/80 text-purple-200 border border-purple-400/30 text-xs font-mono uppercase backdrop-blur-sm">
+                              {selectedObject.type}
+                            </Badge>
+                            {selectedObject.constellation && (
+                              <Badge className="bg-black/60 text-gray-200 border border-white/10 text-xs font-mono backdrop-blur-sm">
+                                {selectedObject.constellation}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Expand Modal Trigger */}
+                          <button
+                            onClick={() => setHdModalOpen(true)}
+                            className="absolute top-4 right-4 p-2 rounded-full bg-black/60 hover:bg-purple-900/80 border border-white/20 text-white transition-all shadow-lg backdrop-blur-sm"
+                            title="Expand Full HD Image"
+                          >
+                            <Maximize2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Telemetry & Description Content */}
+                        <div className="p-6 sm:p-8 space-y-6">
+                          <div>
+                            <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+                              <h2 className="text-2xl sm:text-3xl font-space font-bold text-white">
+                                {selectedObject.name}
+                              </h2>
+                              {selectedObject.distance && (
+                                <span className="text-xs font-mono text-sky-400 flex items-center gap-1">
+                                  <Orbit className="w-3.5 h-3.5" />
+                                  {selectedObject.distance}
+                                </span>
+                              )}
+                            </div>
+
+                            {selectedObject.mission && (
+                              <p className="text-xs font-mono text-purple-300">
+                                Observation: {selectedObject.mission}
+                              </p>
+                            )}
+                          </div>
+
+                          <p className="text-sm text-gray-200 leading-relaxed">
+                            {selectedObject.description}
+                          </p>
+
+                          {/* Key Cosmic Fact */}
+                          {selectedObject.keyFact && (
+                            <div className="p-4 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-1">
+                              <div className="flex items-center gap-1.5 text-xs font-bold text-purple-200">
+                                <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                                <span>Cosmic Telemetry Insight</span>
+                              </div>
+                              <p className="text-xs text-purple-200/90 leading-relaxed italic">
+                                {selectedObject.keyFact}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Action Links */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/5">
+                            <div className="flex flex-wrap gap-2">
+                              <a
+                                href={`https://science.nasa.gov/${selectedObject.type !== 'planet' ? 'universe' : selectedObject.name.toLowerCase()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs bg-[#0EA5E9]/20 hover:bg-[#0EA5E9]/30 text-[#0EA5E9] px-3.5 py-1.5 rounded-lg transition-colors border border-[#0EA5E9]/30"
+                              >
+                                <span>NASA Science Data</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                              <a
+                                href={`https://en.wikipedia.org/wiki/${encodeURIComponent(selectedObject.name)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs bg-white/5 hover:bg-white/10 text-gray-300 px-3.5 py-1.5 rounded-lg transition-colors border border-white/10"
+                              >
+                                <span>Encyclopedia</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+
+                            <Button
+                              size="sm"
+                              onClick={() => setHdModalOpen(true)}
+                              className="bg-gradient-to-r from-[#7E22CE] to-[#EC4899] text-white text-xs h-8 px-4"
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1.5" />
+                              View 4K Visual
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ) : (
+                      <div className="bg-[#1E293B] rounded-2xl h-96 flex items-center justify-center border border-white/10">
+                        <p className="text-gray-400 text-sm">Select a celestial object to view details.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Sidebar: Object Catalog List */}
+                  <div className="lg:col-span-4 space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                      <h3 className="text-sm font-space font-bold text-white uppercase tracking-wider">
+                        {categoryKey === 'planets'
+                          ? 'Solar Objects'
+                          : categoryKey === 'blackholes'
+                          ? 'Black Holes'
+                          : categoryKey}
+                      </h3>
+                      <Badge className="bg-[#1E293B] text-purple-300 border-purple-500/30 text-xs font-mono">
+                        {categoryObjects.length} Wonders
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2.5 max-h-[640px] overflow-y-auto pr-1">
+                      {categoryObjects.map((obj: CelestialObject) => {
+                        const isSelected = selectedObject?.id === obj.id;
+
+                        return (
                           <Card
                             key={obj.id}
-                            className={`bg-[#1E293B] border-[#334155] hover:border-[#7E22CE]/60 transition-all cursor-pointer overflow-hidden ${
-                              selectedObject?.id === obj.id
-                                ? 'border-[#7E22CE] ring-1 ring-[#7E22CE]'
-                                : ''
-                            }`}
                             onClick={() => setSelectedObject(obj)}
+                            className={`bg-[#0F172A]/90 border transition-all cursor-pointer overflow-hidden group ${
+                              isSelected
+                                ? 'border-purple-500 shadow-md shadow-purple-950/60 ring-1 ring-purple-500/50'
+                                : 'border-[#334155]/80 hover:border-purple-500/40 hover:bg-[#1E293B]'
+                            }`}
                           >
                             <CardContent className="p-0">
                               <div className="flex items-center">
-                                <div className="h-20 w-20 flex-shrink-0 bg-black/40">
+                                <div className="h-20 w-20 flex-shrink-0 bg-black/60 relative overflow-hidden">
                                   <img
                                     src={obj.image}
                                     alt={obj.name}
-                                    className="h-full w-full object-cover"
+                                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                                   />
                                 </div>
-                                <div className="p-3">
-                                  <h4 className="font-medium text-white text-sm">{obj.name}</h4>
-                                  <p className="text-xs text-[#64748B] line-clamp-2 mt-0.5">
-                                    {obj.description.substring(0, 70)}...
+                                <div className="p-3 min-w-0 flex-1">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <h4 className="font-space font-semibold text-white text-xs sm:text-sm truncate group-hover:text-purple-300 transition-colors">
+                                      {obj.name}
+                                    </h4>
+                                  </div>
+                                  <p className="text-[11px] text-gray-400 font-mono truncate mt-0.5">
+                                    {obj.distance || obj.constellation || obj.type}
                                   </p>
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
-                        ))}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
-          ))}
+              </TabsContent>
+            );
+          })}
 
-          {/* 6. Spaceflight News tab content */}
-          <TabsContent value="news" className="focus:outline-none">
+          {/* 7. Live Spaceflight News Tab */}
+          <TabsContent value="news" className="focus:outline-none space-y-6">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold font-space text-white">
                   Live Global Spaceflight Feed
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Aggregated in real-time from Spaceflight News API & space agencies
+                  Aggregated in real-time from Spaceflight News API & global space agencies
                 </p>
               </div>
             </div>
@@ -334,12 +401,12 @@ const Explore = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-[#1E293B] rounded-lg w-full py-12 flex items-center justify-center">
+              <div className="bg-[#1E293B] rounded-2xl w-full py-12 flex items-center justify-center border border-white/10">
                 <div className="text-center">
-                  <p className="text-[#64748B] mb-4">Unable to fetch space news at the moment</p>
+                  <p className="text-gray-400 mb-4 text-sm">Unable to fetch live space news at the moment</p>
                   <Button
                     onClick={() => window.location.reload()}
-                    className="bg-[#7E22CE] hover:bg-purple-800"
+                    className="bg-[#7E22CE] hover:bg-purple-800 text-white text-xs"
                   >
                     Try Again
                   </Button>
@@ -349,8 +416,47 @@ const Explore = () => {
           </TabsContent>
         </Tabs>
       </section>
+
+      {/* Full-Screen HD Contemplation Modal */}
+      {selectedObject && (
+        <Dialog open={hdModalOpen} onOpenChange={setHdModalOpen}>
+          <DialogContent className="sm:max-w-[920px] max-h-[90vh] overflow-y-auto bg-[#0B0F19]/95 backdrop-blur-2xl border-purple-500/40 text-white p-4 sm:p-6 shadow-2xl">
+            <DialogHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-purple-950/80 text-purple-200 border-purple-400/30 text-[10px] font-mono uppercase">
+                  {selectedObject.type}
+                </Badge>
+                {selectedObject.distance && (
+                  <span className="text-xs text-sky-400 font-mono">• {selectedObject.distance}</span>
+                )}
+              </div>
+              <DialogTitle className="text-2xl font-space font-bold text-white">
+                {selectedObject.name}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="relative rounded-xl overflow-hidden bg-black max-h-[520px] flex items-center justify-center my-3 shadow-xl border border-white/10">
+              <img
+                src={selectedObject.hdImage || selectedObject.image}
+                alt={selectedObject.name}
+                className="w-full h-full object-contain max-h-[500px]"
+              />
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                {selectedObject.description}
+              </p>
+              {selectedObject.keyFact && (
+                <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/20 text-xs text-purple-200">
+                  <span className="font-bold mr-1">Key Insight:</span>
+                  {selectedObject.keyFact}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </main>
   );
-};
-
-export default Explore;
+}

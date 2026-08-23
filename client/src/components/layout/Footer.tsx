@@ -57,9 +57,6 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-200 font-mono">Resources</h4>
             <div className="space-y-2 text-xs">
-              <Link href="/downloads" className="block text-gray-400 hover:text-sky-400 transition-colors">
-                Resource Vault (4K/Audio)
-              </Link>
               <Link href="/blog" className="block text-gray-400 hover:text-sky-400 transition-colors">
                 Cosmic Insights Blog
               </Link>
