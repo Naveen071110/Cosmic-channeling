@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEO from '@/components/SEO';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DreamInterpreter from '@/components/tools/DreamInterpreter';
 import CosmicSignals from '@/components/tools/CosmicSignals';
@@ -8,7 +9,13 @@ export default function Tools() {
   const [activeTab, setActiveTab] = useState('dreams');
   
   return (
-    <main className="container mx-auto px-4 py-8">
+    <>
+      <SEO
+        title="Cosmic Signals, Dream Interpreter & Alignments | Cosmic Channeling"
+        description="Decode your dream symbolism, inspect live solar and lunar alignment windows, and generate contemplation patterns for mindfulness."
+        canonical="https://cosmic-channeling.vercel.app/tools"
+      />
+      <main className="container mx-auto px-4 py-8">
       <section className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 font-space">
@@ -44,5 +51,6 @@ export default function Tools() {
         </Tabs>
       </section>
     </main>
+    </>
   );
 }

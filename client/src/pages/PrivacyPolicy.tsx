@@ -1,4 +1,5 @@
 import React from 'react';
+import SEO from '@/components/SEO';
 import { 
   Card, 
   CardContent, 
@@ -8,14 +9,20 @@ import {
 
 const PrivacyPolicy = () => {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <>
+      <SEO
+        title="Privacy Policy & Data Protection | Cosmic Channeling"
+        description="Understand how Cosmic Channeling protects your personal data, secure authentication tokens, and astronomical preferences."
+        canonical="https://cosmic-channeling.vercel.app/privacy"
+      />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Card className="bg-[#1E293B] border-[#334155]">
         <CardHeader>
-          <CardTitle className="text-3xl text-center mb-2 font-space">
+          <h1 className="text-3xl text-center mb-2 font-space font-bold">
             <span className="bg-gradient-to-r from-[#EC4899] to-[#0EA5E9] bg-clip-text text-transparent">
               Privacy Policy
             </span>
-          </CardTitle>
+          </h1>
           <p className="text-center text-muted-foreground">Last Updated: 04/21/2025</p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -105,6 +112,7 @@ const PrivacyPolicy = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

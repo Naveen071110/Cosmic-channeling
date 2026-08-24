@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SEO from "@/components/SEO";
 import { useAuth } from "../hooks/use-auth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,13 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#020617] text-white">
+    <>
+      <SEO
+        title="Sign In & Account Portal | Cosmic Channeling"
+        description="Sign in or create your Cosmic Channeling account with Google or email to sync your Astro-Journal reflections and meditation progress."
+        canonical="https://cosmic-channeling.vercel.app/auth"
+      />
+      <div className="min-h-screen flex flex-col md:flex-row bg-[#020617] text-white">
       {/* Form column */}
       <div className="w-full md:w-1/2 px-4 py-12 flex flex-col justify-center items-center relative">
         <StarBackground />
@@ -109,6 +116,7 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

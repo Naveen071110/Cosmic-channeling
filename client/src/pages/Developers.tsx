@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEO from '@/components/SEO';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +92,13 @@ if __name__ == "__main__":
 }`;
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 py-12 max-w-6xl space-y-12">
+    <>
+      <SEO
+        title="Developer API Hub & OpenAPI 3.1 Documentation | Cosmic Channeling"
+        description="Access REST and agentic endpoints for 30+ celestial bodies, NASA APOD feeds, Solfeggio soundscape parameters, and zero-shot LLM function calling."
+        canonical="https://cosmic-channeling.vercel.app/developers"
+      />
+      <main className="container mx-auto px-4 sm:px-6 py-12 max-w-6xl space-y-12">
       {/* Hero Title */}
       <div className="text-center space-y-4 max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-mono">
@@ -312,5 +319,6 @@ if __name__ == "__main__":
         </div>
       </section>
     </main>
+    </>
   );
 }

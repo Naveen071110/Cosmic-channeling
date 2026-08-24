@@ -6,9 +6,11 @@ const Hero = () => {
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <img 
           src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1400&q=80" 
-          alt="Galaxy background" 
+          alt="Deep space spiral galaxy nebula with stars in the cosmic tapestry" 
           className="w-full h-full object-cover" 
-          loading="lazy"
+          width={1400}
+          height={800}
+          fetchPriority="high"
         />
       </div>
       

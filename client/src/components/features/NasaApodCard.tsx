@@ -59,8 +59,9 @@ export default function NasaApodCard({ compact = false }: { compact?: boolean })
           ) : (
             <img
               src={apod.url}
-              alt={apod.title}
+              alt={`NASA Astronomy Picture of the Day: ${apod.title}`}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 cursor-pointer"
+              loading="lazy"
               onClick={() => setIsOpen(true)}
             />
           )}

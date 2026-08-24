@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import SEO from '@/components/SEO';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -132,7 +133,13 @@ export default function Explore() {
   }, [selectedCategory, allCelestialObjects]);
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
+    <>
+      <SEO
+        title="30+ HD Celestial Atlas & NASA APOD Telemetry | Cosmic Channeling"
+        description="Explore 30+ deep-space celestial objects across the Solar System, Andromeda, JWST starbirth nebulae, habitable exoplanets, and black holes with NASA telemetry."
+        canonical="https://cosmic-channeling.vercel.app/explore"
+      />
+      <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
       <section className="max-w-6xl mx-auto space-y-8">
         {/* Header Title Section */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -206,8 +213,9 @@ export default function Explore() {
                         <div className="relative h-72 sm:h-96 w-full overflow-hidden bg-black/60 group">
                           <img
                             src={selectedObject.hdImage || selectedObject.image}
-                            alt={selectedObject.name}
+                            alt={`Astronomical view of ${selectedObject.name}`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            loading="lazy"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-transparent to-black/30 pointer-events-none" />
 
@@ -347,8 +355,9 @@ export default function Explore() {
                                 <div className="h-20 w-20 flex-shrink-0 bg-black/60 relative overflow-hidden">
                                   <img
                                     src={obj.image}
-                                    alt={obj.name}
+                                    alt={`Thumbnail of ${obj.name}`}
                                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    loading="lazy"
                                   />
                                 </div>
                                 <div className="p-3 min-w-0 flex-1">
@@ -438,8 +447,9 @@ export default function Explore() {
             <div className="relative rounded-xl overflow-hidden bg-black max-h-[520px] flex items-center justify-center my-3 shadow-xl border border-white/10">
               <img
                 src={selectedObject.hdImage || selectedObject.image}
-                alt={selectedObject.name}
+                alt={`High definition celestial view of ${selectedObject.name}`}
                 className="w-full h-full object-contain max-h-[500px]"
+                loading="lazy"
               />
             </div>
 
@@ -458,5 +468,6 @@ export default function Explore() {
         </Dialog>
       )}
     </main>
+    </>
   );
 }

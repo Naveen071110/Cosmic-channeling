@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEO from '@/components/SEO';
 import Hero from '@/components/home/Hero';
 import FeatureGrid from '@/components/home/FeatureGrid';
 import Newsletter from '@/components/home/Newsletter';
@@ -18,6 +19,11 @@ const Home = () => {
 
   return (
     <>
+      <SEO
+        title="Cosmic Channeling — Deep Space Sanctuary & Solfeggio Meditation"
+        description="Explore the cosmos through real-time Solfeggio soundscapes (432Hz/528Hz), 30+ HD Celestial Atlas, guided cosmic journeys, and live NASA feeds."
+        canonical="https://cosmic-channeling.vercel.app/"
+      />
       {showWelcome && <WelcomeCarousel onComplete={handleOnboardingComplete} />}
       <main className="container mx-auto px-4 py-8 space-y-16">
         {/* 1. Hero Section */}

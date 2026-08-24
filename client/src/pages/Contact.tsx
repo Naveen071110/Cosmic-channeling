@@ -1,10 +1,17 @@
+import SEO from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, MessageSquare, Github, Youtube, Globe, Sparkles, Send } from 'lucide-react';
 
 export default function ContactPage() {
   return (
-    <main className="container mx-auto px-4 sm:px-6 py-12 max-w-4xl space-y-12">
+    <>
+      <SEO
+        title="Contact Technical Support & Developer Relations | Cosmic Channeling"
+        description="Get in touch with the Cosmic Channeling team for technical support, feedback, developer API questions, and community connections."
+        canonical="https://cosmic-channeling.vercel.app/contact"
+      />
+      <main className="container mx-auto px-4 sm:px-6 py-12 max-w-4xl space-y-12">
       {/* Title */}
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-mono">
@@ -84,5 +91,6 @@ export default function ContactPage() {
         </Card>
       </div>
     </main>
+    </>
   );
 }

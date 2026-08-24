@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEO from '@/components/SEO';
 import MeditationTimer from '@/components/features/MeditationTimer';
 import GuidedMeditation from '@/components/features/GuidedMeditation';
 import CosmicImageGallery from '@/components/CosmicImageGallery';
@@ -10,7 +11,13 @@ export default function Meditate() {
   const [activeTab, setActiveTab] = useState('timer');
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
+    <>
+      <SEO
+        title="432Hz & 528Hz Solfeggio Soundscapes | Cosmic Channeling"
+        description="Experience procedural Solfeggio soundscapes, 4-4-4-4 box breathing pacers, Tibetan singing bowls, and guided cosmic meditation journeys."
+        canonical="https://cosmic-channeling.vercel.app/meditate"
+      />
+      <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
       <section className="max-w-6xl mx-auto space-y-8">
         {/* Main Title Section */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -156,5 +163,6 @@ export default function Meditate() {
         </Tabs>
       </section>
     </main>
+    </>
   );
 }

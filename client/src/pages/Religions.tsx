@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SEO from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -249,7 +250,13 @@ const Religions = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <>
+      <SEO
+        title="Cosmic Spirituality & World Traditions | Cosmic Channeling"
+        description="Explore the rich tapestry of human spiritual traditions, sacred wisdom, cosmic consciousness, and their relevance to modern life."
+        canonical="https://cosmic-channeling.vercel.app/religions"
+      />
+      <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -311,6 +318,7 @@ const Religions = () => {
         </section>
       </div>
     </div>
+    </>
   );
 };
 

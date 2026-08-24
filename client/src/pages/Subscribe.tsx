@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import SEO from '@/components/SEO';
 import {
   Card,
   CardContent,
@@ -35,7 +36,13 @@ export default function Subscribe() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <SEO
+        title="Cosmic Membership & Premium Sanctuary | Cosmic Channeling"
+        description="Unlock full cosmic features, personalized astronomical notifications, extended meditation sessions, and exclusive deep space tools."
+        canonical="https://cosmic-channeling.vercel.app/subscribe"
+      />
+      <div className="container mx-auto px-4 py-8">
       <div className="max-w-xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 font-space">
@@ -113,5 +120,6 @@ export default function Subscribe() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

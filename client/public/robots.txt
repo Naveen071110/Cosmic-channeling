@@ -1,8 +1,17 @@
 # robots.txt for Cosmic Channeling (https://cosmic-channeling.vercel.app)
 User-agent: *
 Allow: /
+Disallow: /api/private/
+Disallow: /admin/
 
-# Explicit AI and Agent Crawlers
+# Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Explicit AI & Agent Crawlers
 User-agent: GPTBot
 Allow: /
 

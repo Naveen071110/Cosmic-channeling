@@ -1,10 +1,17 @@
+import SEO from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Telescope, Heart, Waves, Globe, Compass, ShieldCheck } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <main className="container mx-auto px-4 sm:px-6 py-12 max-w-4xl space-y-12">
+    <>
+      <SEO
+        title="About Our Vision, Creator & Acoustic Science | Cosmic Channeling"
+        description="Learn about the origin, creator story, and procedural Solfeggio acoustic architecture powering the Cosmic Channeling sanctuary."
+        canonical="https://cosmic-channeling.vercel.app/about"
+      />
+      <main className="container mx-auto px-4 sm:px-6 py-12 max-w-4xl space-y-12">
       {/* Title */}
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-mono">
@@ -69,5 +76,6 @@ export default function AboutPage() {
         </p>
       </Card>
     </main>
+    </>
   );
 }

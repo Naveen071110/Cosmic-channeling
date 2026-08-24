@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import SEO from '@/components/SEO';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ExternalLink, User } from 'lucide-react';
@@ -124,7 +125,13 @@ const Blog = () => {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <>
+      <SEO
+        title="Cosmic Insights & Astrophysics Blog | Cosmic Channeling"
+        description="Explore articles and reflections on cosmic wisdom, astronomical discoveries, meditation practices, and human consciousness."
+        canonical="https://cosmic-channeling.vercel.app/blog"
+      />
+      <main className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 font-space">
@@ -202,6 +209,7 @@ const Blog = () => {
         )}
       </div>
     </main>
+    </>
   );
 };
 

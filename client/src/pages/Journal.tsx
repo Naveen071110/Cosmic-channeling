@@ -1,8 +1,15 @@
+import SEO from '@/components/SEO';
 import EnhancedJournal from '@/components/journal/EnhancedJournal';
 
 const Journal = () => {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <>
+      <SEO
+        title="Astro-Journal & Cosmic Reflection Vault | Cosmic Channeling"
+        description="Record your cosmic thoughts, dreams, and spiritual insights. Your private, cloud-synchronized space to reflect on your journey through the universe."
+        canonical="https://cosmic-channeling.vercel.app/journal"
+      />
+      <main className="container mx-auto px-4 py-8">
       <section className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 font-space">
@@ -18,6 +25,7 @@ const Journal = () => {
         <EnhancedJournal />
       </section>
     </main>
+    </>
   );
 };
 

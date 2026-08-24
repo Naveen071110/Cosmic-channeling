@@ -363,6 +363,7 @@ export default function CosmicImageGallery() {
                   src={img.imageUrl}
                   alt={img.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <div className="px-3 py-1.5 rounded-full bg-purple-600/90 text-white text-xs font-mono flex items-center gap-1.5 shadow-lg">
@@ -451,6 +452,7 @@ export default function CosmicImageGallery() {
                 src={activeImage.largeImageUrl}
                 alt={activeImage.title}
                 className="w-full h-full object-contain max-h-[480px]"
+                loading="lazy"
               />
             </div>
 
