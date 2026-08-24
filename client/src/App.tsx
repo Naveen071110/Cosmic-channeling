@@ -22,6 +22,9 @@ const Subscribe = lazy(() => import("./pages/Subscribe"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Developers = lazy(() => import("./pages/Developers"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 
 function AppRouter() {
@@ -44,6 +47,10 @@ function AppRouter() {
             <Route path="/auth" component={Auth} />
             <Route path="/terms" component={TermsOfService} />
             <Route path="/privacy" component={PrivacyPolicy} />
+            <Route path="/about" component={About} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/developers" component={Developers} />
+            <Route path="/docs" component={Developers} />
             <Route path="/" component={Home} />
             <Route path="/meditate" component={Meditate} />
             <Route path="/explore" component={Explore} />

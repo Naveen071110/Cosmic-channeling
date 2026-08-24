@@ -1,0 +1,122 @@
+# Cosmic Channeling — Complete Platform & API Documentation
+
+> Complete technical, astronomical, and meditative guide for Cosmic Channeling (https://cosmic-channeling.vercel.app).
+
+---
+
+## 1. Overview & Architecture
+
+Cosmic Channeling unites modern astrophysics with meditative consciousness expansion. The system is architected as an ultra-fast edge ecosystem:
+- **Frontend SPA**: React 18, TypeScript, Tailwind CSS, shadcn/ui, deployed on Vercel Edge.
+- **Backend API**: Cloudflare Workers + Hono, providing REST endpoints with low-latency edge caching.
+- **Synthesizer Engine**: Client-side Web Audio API zero-CORS procedural sound engine with mathematical frequency modeling.
+- **Authentication**: Firebase Client Auth + RS256 JWKS edge token verification with `jose`.
+
+---
+
+## 2. Audio Synthesis Specifications
+
+All soundscapes in Cosmic Channeling are generated procedurally in real time using the native Web Audio API (`AudioContext`), eliminating static MP3 downloads, bandwidth constraints, and cross-origin CORS limitations.
+
+### A. 432 Hz Sacred Frequency
+- **Tuning**: Natural Pythagorean / A4 = 432 Hz harmonic ratio.
+- **Acoustic Structure**: 
+  - Primary Sine Wave: 432.0 Hz (gain: 0.3)
+  - Sub-harmonic Foundation: 216.0 Hz (gain: 0.15)
+  - Amplitude Breathing LFO: 0.1 Hz sine oscillator (10-second breath cycle) modulating master gain.
+- **Target Psychological State**: Parasympathetic nervous system activation, reduction of cortisol, heart rate coherence.
+
+### B. 528 Hz Solfeggio Transformation Tone
+- **Tuning**: Ancient Solfeggio frequency 528 Hz ("Miracle / DNA Repair" tone).
+- **Acoustic Structure**:
+  - Primary Sine Wave: 528.0 Hz (gain: 0.28)
+  - Grounding Foundation: 264.0 Hz (gain: 0.14)
+  - Gentle Tremolo LFO: 0.15 Hz modulating secondary amplitude.
+- **Target Psychological State**: Emotional balance, creative focus, cellular vitality.
+
+### C. 6 Hz Theta Binaural Beat
+- **Tuning**: True stereo channel separation using `ChannelMergerNode(2)`.
+  - Left Ear Carrier: 200.0 Hz sine wave.
+  - Right Ear Carrier: 206.0 Hz sine wave.
+  - Resulting Inter-aural Beat: 6.0 Hz (Deep Theta rhythm).
+- **Target Psychological State**: Deep meditation, astral projection, hypnagogic imagery, lucid dream state induction.
+
+### D. Cosmic Pink & Brown Noise
+- **Algorithm**: Continuous Voss-McCartney 7-state running sum generator.
+- **Filtering**: Low-pass biquad filter with cutoff at 400 Hz and 0.05 Hz sweeping frequency to simulate solar wind.
+
+### E. Physical Model: Tibetan Singing Bowl
+- **Structure**: Multi-overtone synthesis with exponential decay envelopes:
+  - Mode 0 (Fundamental): `F0` (Default 216 Hz or 432 Hz)
+  - Mode 1 (Second Harmonic): `F0 * 2.01` (Decay: 3.5s)
+  - Mode 2 (Third Harmonic): `F0 * 3.03` (Decay: 2.8s)
+  - Mode 3 (Fourth Harmonic): `F0 * 4.25` (Decay: 2.1s)
+- **Usage**: Automatically triggered at meditation start, interval intervals, and session completion.
+
+---
+
+## 3. Celestial Atlas Telemetry (30+ Objects)
+
+The Celestial Atlas categorizes 30+ deep-space astronomical bodies into 5 distinct realms:
+
+### 1. Solar System & Sun
+- `sun`: The Sun (Sol) | Distance: 149.6M km (1 AU) | Mission: SDO & Parker Solar Probe
+- `jupiter`: Jupiter | Distance: 778M km (5.2 AU) | Mission: Juno & JWST
+- `saturn`: Saturn | Distance: 1.4B km (9.5 AU) | Mission: Cassini-Huygens
+- `mars`: Mars | Distance: 225M km (1.5 AU) | Mission: Perseverance & MRO
+- `earth-moon`: Earth & Moon | Distance: 384,400 km | Mission: Apollo & ISS
+- `europa`: Europa (Ocean Moon) | Distance: 628M km | Mission: Galileo & Europa Clipper
+- `titan`: Titan (Methane World) | Distance: 1.4B km | Mission: Cassini-Huygens & Dragonfly
+- `neptune`: Neptune | Distance: 4.5B km (30.1 AU) | Mission: Voyager 2 & JWST
+- `pluto`: Pluto & Charon | Distance: 5.9B km (39.5 AU) | Mission: New Horizons
+
+### 2. Galaxies & Deep Field
+- `andromeda`: Andromeda Galaxy (M31) | Distance: 2.5M Light-Years | Local Group Spiral
+- `whirlpool`: Whirlpool Galaxy (M51) | Distance: 23M Light-Years | Interacting Grand-Design Spiral
+- `sombrero`: Sombrero Galaxy (M104) | Distance: 29M Light-Years | Core Supermassive Black Hole
+- `cartwheel`: Cartwheel Galaxy | Distance: 500M Light-Years | Collision Ring Galaxy (JWST)
+- `stephans-quintet`: Stephan's Quintet | Distance: 290M Light-Years | Compact Gravitational Group
+- `deep-field-smacs`: Webb's First Deep Field (SMACS 0723) | Distance: 13.1B Light-Years | Gravitational Lens
+
+### 3. Nebulae & Star Nurseries
+- `carina-cliffs`: Carina Cosmic Cliffs (NGC 3324) | Distance: 7,600 Light-Years | JWST Starbirth Region
+- `pillars-of-creation`: Pillars of Creation (M16) | Distance: 6,500 Light-Years | Eagle Nebula
+- `orion`: Orion Nebula (M42) | Distance: 1,344 Light-Years | Closest Massive Stellar Nursery
+- `helix-nebula`: Helix Nebula (Eye of God) | Distance: 650 Light-Years | Planetary Nebula
+- `tarantula-nebula`: Tarantula Nebula (30 Doradus) | Distance: 160,000 Light-Years | Supergiant Starburst
+- `southern-ring`: Southern Ring Nebula (NGC 3132) | Distance: 2,000 Light-Years | Dying Binary Star
+- `crab-nebula`: Crab Nebula (M1) | Distance: 6,500 Light-Years | 1054 AD Supernova Remnant & Pulsar
+
+### 4. Habitable & Extreme Exoplanets
+- `trappist1e`: TRAPPIST-1e | Distance: 39.6 Light-Years | Earth-sized Habitable Zone Terrestrial World
+- `kepler22b`: Kepler-22b | Distance: 600 Light-Years | Super-Earth Ocean World
+- `55-cancri-e`: 55 Cancri e | Distance: 41 Light-Years | Super-Earth Lava & Diamond World
+- `proxima-b`: Proxima Centauri b | Distance: 4.24 Light-Years | Closest Known Exoplanet
+- `kepler186f`: Kepler-186f | Distance: 582 Light-Years | Earth-radius Red Dwarf Habitable World
+
+### 5. Black Holes & Cosmic Extremes
+- `sagittarius-a`: Sagittarius A* | Distance: 26,000 Light-Years | Supermassive Black Hole at Milky Way Heart
+- `m87-blackhole`: M87* Supermassive Black Hole | Distance: 55M Light-Years | First Imaged Event Horizon
+- `crab-pulsar`: Crab Nebula Pulsar | Distance: 6,500 Light-Years | 30 rev/sec High-Energy Neutron Star
+
+---
+
+## 4. Complete OpenAPI 3.1 Schema Reference
+
+All endpoints return JSON by default, support `Accept: text/markdown` content negotiation, and implement `ETag` / `Cache-Control` response headers.
+
+### Base URL: `https://cosmic-channeling.vercel.app` (or `https://cosmic-channeling.singhnaveen360.workers.dev`)
+
+| Method | Endpoint | operationId | Description |
+|---|---|---|---|
+| GET | `/api/celestial` | `getCelestialObjects` | Retrieve full list of 30+ celestial objects with telemetry |
+| GET | `/api/celestial/{id}` | `getCelestialObjectById` | Retrieve specific celestial object by ID |
+| GET | `/api/quotes` | `getQuotes` | Retrieve collection of cosmic quotes |
+| GET | `/api/quotes/random` | `getRandomQuote` | Retrieve a random quote |
+| GET | `/api/cosmic-patterns` | `getCosmicPatterns` | Retrieve contemplation patterns |
+| GET | `/api/cosmic-patterns/random` | `getRandomCosmicPattern` | Retrieve random pattern |
+| GET | `/api/space-news` | `getSpaceNews` | Retrieve live spaceflight news & cosmic facts |
+| GET | `/api/nasa/apod` | `getAstronomyPictureOfTheDay` | Retrieve daily NASA APOD image and explanation |
+| POST | `/api/newsletter/subscribe` | `subscribeNewsletter` | Subscribe an email to weekly celestial dispatches |
+| GET | `/openapi.json` | `getOpenApiSpec` | Retrieve OpenAPI 3.1.0 schema |
+| GET | `/llms.txt` | `getLlmsIndex` | Retrieve llmstxt.org discovery index |

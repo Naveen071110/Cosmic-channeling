@@ -1,0 +1,324 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cosmic Channeling API",
+    "version": "1.0.0",
+    "description": "Public REST & agentic API for Cosmic Channeling (https://cosmic-channeling.vercel.app). Provides access to a 30+ HD Celestial Atlas, live spaceflight news, NASA APOD feeds, Solfeggio soundscape parameters, and cosmic inspiration.",
+    "contact": {
+      "name": "Cosmic Channeling Support",
+      "url": "https://cosmic-channeling.vercel.app/contact",
+      "email": "support@cosmic-channeling.vercel.app"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://cosmic-channeling.vercel.app",
+      "description": "Production Edge Gateway (Vercel)"
+    },
+    {
+      "url": "https://cosmic-channeling.singhnaveen360.workers.dev",
+      "description": "Direct Cloudflare Worker API"
+    }
+  ],
+  "paths": {
+    "/api/celestial": {
+      "get": {
+        "operationId": "getCelestialObjects",
+        "summary": "Retrieve all celestial objects in the Celestial Atlas",
+        "description": "Fetches an array of 30+ scientifically verified celestial objects across planets, galaxies, nebulae, exoplanets, and black holes with astronomical telemetry (distance, constellation, mission, keyFact).",
+        "tags": ["Celestial Atlas"],
+        "responses": {
+          "200": {
+            "description": "Array of celestial objects returned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CelestialObject"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/celestial/{id}": {
+      "get": {
+        "operationId": "getCelestialObjectById",
+        "summary": "Retrieve a single celestial object by ID",
+        "description": "Fetches detailed astronomical information, distance, host constellation, mission, and description for a single celestial object (e.g. 'jupiter', 'andromeda', 'carina-cliffs', 'trappist1e', 'sagittarius-a').",
+        "tags": ["Celestial Atlas"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Unique slug identifier for the celestial body (e.g. 'sun', 'mars', 'saturn', 'andromeda', 'orion', 'trappist1e', 'm87-blackhole').",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Celestial object found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CelestialObject"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Celestial object not found."
+          }
+        }
+      }
+    },
+    "/api/quotes": {
+      "get": {
+        "operationId": "getQuotes",
+        "summary": "Retrieve all cosmic quotes",
+        "description": "Fetches a curated collection of quotes from legendary astronomers, physicists, and philosophers regarding the cosmos and human consciousness.",
+        "tags": ["Cosmic Wisdom"],
+        "responses": {
+          "200": {
+            "description": "List of quotes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Quote"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/quotes/random": {
+      "get": {
+        "operationId": "getRandomQuote",
+        "summary": "Retrieve a random inspirational cosmic quote",
+        "description": "Returns a single randomly selected inspirational quote from astrophysicists and visionaries (Carl Sagan, Stephen Hawking, Neil deGrasse Tyson).",
+        "tags": ["Cosmic Wisdom"],
+        "responses": {
+          "200": {
+            "description": "A random quote object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cosmic-patterns": {
+      "get": {
+        "operationId": "getCosmicPatterns",
+        "summary": "Retrieve cosmic contemplation patterns",
+        "description": "Fetches a collection of contemplation prompts, visual imagery, and personal affirmations designed for mindfulness and self-reflection.",
+        "tags": ["Cosmic Wisdom"],
+        "responses": {
+          "200": {
+            "description": "Array of cosmic patterns.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CosmicPattern"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cosmic-patterns/random": {
+      "get": {
+        "operationId": "getRandomCosmicPattern",
+        "summary": "Retrieve a random contemplation pattern",
+        "description": "Returns a single random reflection question and empowering affirmation for meditation.",
+        "tags": ["Cosmic Wisdom"],
+        "responses": {
+          "200": {
+            "description": "A random contemplation pattern.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CosmicPattern"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/space-news": {
+      "get": {
+        "operationId": "getSpaceNews",
+        "summary": "Retrieve live global spaceflight news and cosmic facts",
+        "description": "Fetches real-time spaceflight news articles and facts aggregated from Spaceflight News API (SNAPI v4) and space agency feeds, cached at the edge for 1 hour.",
+        "tags": ["Space News"],
+        "responses": {
+          "200": {
+            "description": "Array of news articles and facts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SpaceNewsItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/nasa/apod": {
+      "get": {
+        "operationId": "getAstronomyPictureOfTheDay",
+        "summary": "Retrieve NASA Astronomy Picture of the Day",
+        "description": "Fetches the current daily NASA APOD image, HD URL, copyright, title, date, and detailed astrophysicist explanation.",
+        "tags": ["NASA Feeds"],
+        "responses": {
+          "200": {
+            "description": "Daily APOD entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NasaApodResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/newsletter/subscribe": {
+      "post": {
+        "operationId": "subscribeNewsletter",
+        "summary": "Subscribe an email to weekly celestial dispatches",
+        "description": "Registers an email address into the Cosmic Channeling newsletter KV store for weekly astronomical alignment guides and meditation updates.",
+        "tags": ["Newsletter"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Subscriber's email address."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid email address format."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CelestialObject": {
+        "type": "object",
+        "required": ["id", "name", "type", "image", "description"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique slug identifier (e.g. 'saturn', 'andromeda', 'pillars-of-creation')." },
+          "name": { "type": "string", "description": "Human-readable display name of the celestial body." },
+          "type": { "type": "string", "enum": ["solar", "planet", "galaxy", "nebula", "exoplanet", "blackhole"], "description": "Category classification of the celestial body." },
+          "image": { "type": "string", "format": "uri", "description": "Web-optimized high-resolution image URL." },
+          "hdImage": { "type": "string", "format": "uri", "description": "Ultra-high-definition 4K image URL." },
+          "distance": { "type": "string", "description": "Distance from Earth (e.g. '1.4 Billion km', '2.5 Million Light-Years')." },
+          "constellation": { "type": "string", "description": "Host constellation or orbital location." },
+          "mission": { "type": "string", "description": "Observing telescope or mission (e.g. 'James Webb Space Telescope', 'Cassini')." },
+          "description": { "type": "string", "description": "Scientific and philosophical overview of the object." },
+          "keyFact": { "type": "string", "description": "Key astronomical insight or discovery." }
+        }
+      },
+      "Quote": {
+        "type": "object",
+        "required": ["id", "text", "author"],
+        "properties": {
+          "id": { "type": "string", "description": "Unique quote ID." },
+          "text": { "type": "string", "description": "The quote content." },
+          "author": { "type": "string", "description": "The author or speaker." }
+        }
+      },
+      "CosmicPattern": {
+        "type": "object",
+        "required": ["id", "image", "question", "affirmation"],
+        "properties": {
+          "id": { "type": "string", "description": "Pattern unique ID." },
+          "image": { "type": "string", "format": "uri", "description": "Background image for meditation visual." },
+          "question": { "type": "string", "description": "Philosophical contemplation prompt." },
+          "affirmation": { "type": "string", "description": "Positive cosmic affirmation." }
+        }
+      },
+      "SpaceNewsItem": {
+        "type": "object",
+        "required": ["title", "content", "url", "type", "image"],
+        "properties": {
+          "title": { "type": "string", "description": "Headline of the article or fact." },
+          "content": { "type": "string", "description": "Summary of the discovery or mission." },
+          "pubDate": { "type": "string", "description": "Publication timestamp." },
+          "url": { "type": "string", "format": "uri", "description": "Link to official article." },
+          "type": { "type": "string", "enum": ["news", "fact"], "description": "Item category." },
+          "source": { "type": "string", "description": "Publishing agency or journal." },
+          "image": { "type": "string", "format": "uri", "description": "Cover thumbnail." }
+        }
+      },
+      "NasaApodResponse": {
+        "type": "object",
+        "required": ["title", "explanation", "url", "date"],
+        "properties": {
+          "title": { "type": "string", "description": "APOD title." },
+          "explanation": { "type": "string", "description": "Scientific description written by an astrophysicist." },
+          "url": { "type": "string", "format": "uri", "description": "Standard image or video URL." },
+          "hdurl": { "type": "string", "format": "uri", "description": "High-definition image URL." },
+          "date": { "type": "string", "description": "Date of publication (YYYY-MM-DD)." },
+          "media_type": { "type": "string", "description": "Type of media ('image' or 'video')." },
+          "copyright": { "type": "string", "description": "Image credit / copyright." }
+        }
+      }
+    }
+  }
+}

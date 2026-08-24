@@ -21,6 +21,46 @@ declare module "hono" {
 
 const app = new Hono<{ Bindings: Env }>();
 
+const NOT_FOUND_MARKDOWN = `# 404 Not Found
+The requested resource does not exist on Cosmic Channeling.
+- Sitemap: [https://cosmic-channeling.vercel.app/sitemap.xml](https://cosmic-channeling.vercel.app/sitemap.xml)
+- Agent Docs: [https://cosmic-channeling.vercel.app/llms.txt](https://cosmic-channeling.vercel.app/llms.txt)
+- OpenAPI Spec: [https://cosmic-channeling.vercel.app/openapi.json](https://cosmic-channeling.vercel.app/openapi.json)
+- Developer Portal: [https://cosmic-channeling.vercel.app/developers](https://cosmic-channeling.vercel.app/developers)
+`;
+
+const HOME_MARKDOWN = `# Cosmic Channeling — Deep Space & Meditation Sanctuary
+
+> Connect with the living cosmos through real-time Solfeggio soundscapes (432Hz / 528Hz), a 30+ HD Celestial Atlas, guided meditation journeys, and live NASA deep-space observation feeds.
+
+## Core Capabilities & Features
+- **Procedural Web Audio Synthesizer**: Pure harmonic frequencies generated directly in browser (432Hz Peace, 528Hz Vitality, 6Hz Theta binaural beat carriers, Tibetan singing bowl physical modeling).
+- **Interactive 4-4-4-4 Box Breathing Guide**: Synchronized visual breath pacer with customizable session timers (1m–30m).
+- **30+ HD Celestial Atlas**: Curated deep-space catalog with astronomical telemetry (Solar System, Andromeda, Whirlpool, JWST Carina Cliffs, Pillars of Creation, Habitable Exoplanets, Black Holes).
+- **Live NASA APOD & Spaceflight News**: Real-time integration with NASA Astronomy Picture of the Day and Spaceflight News API (SNAPI v4).
+- **Astro-Journal**: Private cloud-synchronized reflection vault for cosmic thoughts and dream insights.
+- **Developer Hub & OpenAPI 3.1**: Machine-readable function-calling specifications for autonomous AI agents.
+
+## Machine-Readable Resources
+- [OpenAPI 3.1 Specification](https://cosmic-channeling.vercel.app/openapi.json)
+- [llms.txt Discovery Guide](https://cosmic-channeling.vercel.app/llms.txt)
+- [Full LLM Documentation](https://cosmic-channeling.vercel.app/llms-full.txt)
+- [XML Sitemap](https://cosmic-channeling.vercel.app/sitemap.xml)
+- [Developer Hub](https://cosmic-channeling.vercel.app/developers)
+
+## Navigation Index
+- [Meditation Sanctuary](https://cosmic-channeling.vercel.app/meditate)
+- [Celestial Atlas](https://cosmic-channeling.vercel.app/explore)
+- [Astro-Journal](https://cosmic-channeling.vercel.app/journal)
+- [Cosmic Tools](https://cosmic-channeling.vercel.app/tools)
+- [Spiritual Traditions](https://cosmic-channeling.vercel.app/religions)
+- [Blog](https://cosmic-channeling.vercel.app/blog)
+- [About Us](https://cosmic-channeling.vercel.app/about)
+- [Contact Support](https://cosmic-channeling.vercel.app/contact)
+- [Privacy Policy](https://cosmic-channeling.vercel.app/privacy)
+- [Terms of Service](https://cosmic-channeling.vercel.app/terms)
+`;
+
 // --- Global Middleware ---
 
 // CORS — allow frontend to call API with credentials
@@ -29,8 +69,26 @@ app.use("*", cors({ origin: "*", credentials: true }));
 // Request logger
 app.use("*", logger());
 
+// Add Vary header globally for content negotiation
+app.use("*", async (c, next) => {
+  await next();
+  c.header("Vary", "Accept, Accept-Encoding");
+});
+
+// Markdown content negotiation for root and documentation requests
+app.use("*", async (c, next) => {
+  const accept = c.req.header("Accept") || "";
+  const path = c.req.path;
+  
+  if (accept.includes("text/markdown") && (path === "/" || path === "" || path === "/index.html")) {
+    c.header("Content-Type", "text/markdown; charset=utf-8");
+    c.header("Vary", "Accept, Accept-Encoding");
+    return c.body(HOME_MARKDOWN, 200);
+  }
+  await next();
+});
+
 // Storage middleware — attaches the storage implementation to context
-// Uses DatabaseStorage when DATABASE_URL is set, otherwise MemStorage
 app.use("*", async (c, next) => {
   if (c.env.DATABASE_URL) {
     const db = getDb(c.env.DATABASE_URL);
@@ -63,14 +121,12 @@ app.get("/api/health", (c) => {
   });
 });
 
-// --- 404 for unknown API routes ---
+// --- 404 for unknown routes ---
 
 app.notFound((c) => {
-  if (c.req.path.startsWith("/api")) {
-    return c.json({ message: "Not found" }, 404);
-  }
-  // Non-API routes: let the static assets handler serve the SPA
-  return c.body(null, 404);
+  c.header("Content-Type", "text/markdown; charset=utf-8");
+  c.header("Vary", "Accept, Accept-Encoding");
+  return c.body(NOT_FOUND_MARKDOWN, 404);
 });
 
 // --- Error Handler ---
@@ -80,26 +136,50 @@ app.onError((err, c) => {
   return c.json({ message: "Internal server error" }, 500);
 });
 
-// --- SPA Fallback Middleware ---
-// For any non-API request that doesn't match a static asset,
-// serve index.html so the React router can handle client-side routing.
+// --- Static Asset / SPA Fallback ---
 
 app.all("*", async (c) => {
   if (c.req.path.startsWith("/api")) {
-    return c.json({ message: "Not found" }, 404);
+    c.header("Content-Type", "text/markdown; charset=utf-8");
+    c.header("Vary", "Accept, Accept-Encoding");
+    return c.body(NOT_FOUND_MARKDOWN, 404);
   }
 
   try {
-    // Try to serve the static asset first via the ASSETS binding
     const asset = await c.env.ASSETS.fetch(c.req.raw);
     if (asset.status !== 404) {
       return asset;
     }
   } catch {
-    // ASSETS.fetch threw — fall through to SPA handler
+    // ASSETS.fetch threw — fall through
   }
 
-  // SPA fallback: serve index.html for all non-file, non-API routes
+  // If path is unknown on worker, return agent 404 markdown
+  const validWorkerPages = new Set([
+    "/",
+    "/meditate",
+    "/explore",
+    "/journal",
+    "/tools",
+    "/blog",
+    "/religions",
+    "/subscribe",
+    "/auth",
+    "/terms",
+    "/privacy",
+    "/about",
+    "/contact",
+    "/developers",
+    "/docs",
+  ]);
+
+  if (!validWorkerPages.has(c.req.path.replace(/\/$/, "") || "/")) {
+    c.header("Content-Type", "text/markdown; charset=utf-8");
+    c.header("Vary", "Accept, Accept-Encoding");
+    return c.body(NOT_FOUND_MARKDOWN, 404);
+  }
+
+  // SPA fallback for valid routes
   const indexHtml = await c.env.ASSETS.fetch(
     new Request(new URL("/index.html", c.req.url), c.req.raw),
   );

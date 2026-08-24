@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#0B0F19]/80 backdrop-blur-md border-t border-[#334155]/60 mt-auto text-gray-400 text-sm">
       <div className="container mx-auto px-4 sm:px-6 py-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 mb-10">
           {/* Brand Column */}
           <div className="space-y-3 sm:col-span-2 md:col-span-1">
             <div className="flex items-center space-x-2">
@@ -55,8 +55,11 @@ export default function Footer() {
           
           {/* Content & Resources */}
           <div className="space-y-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-200 font-mono">Resources</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-200 font-mono">Platform</h4>
             <div className="space-y-2 text-xs">
+              <Link href="/about" className="block text-gray-400 hover:text-sky-400 transition-colors">
+                About & Vision
+              </Link>
               <Link href="/blog" className="block text-gray-400 hover:text-sky-400 transition-colors">
                 Cosmic Insights Blog
               </Link>
@@ -66,6 +69,28 @@ export default function Footer() {
               <Link href="/subscribe" className="block text-gray-400 hover:text-sky-400 transition-colors">
                 Cosmic Membership
               </Link>
+              <Link href="/contact" className="block text-gray-400 hover:text-sky-400 transition-colors">
+                Contact & Support
+              </Link>
+            </div>
+          </div>
+
+          {/* Developers & Agent Discovery */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-200 font-mono">Developers & AI</h4>
+            <div className="space-y-2 text-xs">
+              <Link href="/developers" className="block text-gray-400 hover:text-sky-400 transition-colors">
+                Developer Hub
+              </Link>
+              <a href="/openapi.json" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-sky-400 transition-colors">
+                OpenAPI 3.1 Spec
+              </a>
+              <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-sky-400 transition-colors">
+                Agent Guide (llms.txt)
+              </a>
+              <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-sky-400 transition-colors">
+                XML Sitemap
+              </a>
             </div>
           </div>
           

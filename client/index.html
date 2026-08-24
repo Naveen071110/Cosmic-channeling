@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>Cosmic Channeling — Deep Space & Meditation Sanctuary</title>
     <meta name="description" content="Explore the cosmos through real-time Solfeggio soundscapes (432Hz/528Hz), 30+ HD Celestial Atlas, guided cosmic journeys, and live NASA feeds." />
+    <link rel="canonical" href="https://cosmic-channeling.vercel.app/" />
 
     <!-- Open Graph / Facebook / LinkedIn / WhatsApp Preview -->
     <meta property="og:type" content="website" />
@@ -27,6 +28,43 @@
     <meta name="twitter:image" content="https://cosmic-channeling.vercel.app/og-image.jpg" />
     <meta name="twitter:image:alt" content="Cosmic Channeling - Explore the Cosmos & Meditation Sanctuary" />
 
+    <!-- Structured Data (JSON-LD Graph) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Cosmic Channeling",
+          "applicationCategory": "HealthAndFitnessApplication, DeveloperApplication",
+          "operatingSystem": "Web",
+          "url": "https://cosmic-channeling.vercel.app",
+          "description": "Deep space exploration, procedural Solfeggio soundscapes (432Hz/528Hz), 30+ HD celestial atlas, and mindfulness sanctuary for cosmic consciousness.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        },
+        {
+          "@type": "Organization",
+          "name": "Cosmic Channeling",
+          "url": "https://cosmic-channeling.vercel.app",
+          "logo": "https://cosmic-channeling.vercel.app/og-image.png",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "Technical Support",
+            "email": "support@cosmic-channeling.vercel.app"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "IN"
+          }
+        }
+      ]
+    }
+    </script>
+
     <!-- Favicon & Themes -->
     <link rel="icon" type="image/svg+xml" href="/og-image.svg" />
     <meta name="theme-color" content="#0F172A" />
@@ -34,8 +72,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-[#020617] text-white">
+    <!-- Pre-Hydration Semantic HTML for Search Engines and LLM Scrapers -->
+    <div id="root">
+      <header style="padding: 1.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h1 style="font-size: 2rem; font-family: 'Space Grotesk', sans-serif; font-weight: bold;">
+          Cosmic Channeling — Deep Space &amp; Meditation Sanctuary
+        </h1>
+        <p style="color: #94A3B8; margin-top: 0.5rem;">
+          Bridging modern astrophysics with meditative consciousness expansion, sacred acoustic geometry, and universal wonder.
+        </p>
+      </header>
+
+      <main style="max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6;">
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.5rem; color: #EC4899;">Connect with the Cosmos</h2>
+          <p>
+            Cosmic Channeling is an edge-deployed astronomical and mindfulness sanctuary. Explore real-time Solfeggio soundscapes, deep-space telemetry from NASA, and an interactive 30+ celestial catalog designed for contemplation and inner peace.
+          </p>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; color: #0EA5E9;">Core Capabilities &amp; Features</h2>
+          <ul style="list-style-type: disc; padding-left: 1.5rem; color: #E2E8F0;">
+            <li><strong>Procedural Web Audio Synthesizer:</strong> Zero-CORS real-time harmonic sine generators producing 432 Hz Peace, 528 Hz Vitality, 6 Hz Theta binaural beat carriers, and physical Tibetan singing bowl chimes.</li>
+            <li><strong>Interactive 4-4-4-4 Box Breathing Guide:</strong> Visual breath pacer synchronized with customizable meditation durations from 1 to 30 minutes.</li>
+            <li><strong>30+ HD Celestial Atlas:</strong> Curated deep-space catalog spanning the Solar System, deep galaxies (Andromeda, Whirlpool, Cartwheel), James Webb Space Telescope nebulae (Carina Cosmic Cliffs, Pillars of Creation), habitable exoplanets (TRAPPIST-1e, Kepler-22b), and black holes (Sagittarius A*, M87*).</li>
+            <li><strong>Live NASA Feeds &amp; Spaceflight News:</strong> Real-time integration with NASA Astronomy Picture of the Day (APOD) and the Spaceflight News API (SNAPI v4).</li>
+            <li><strong>OpenAPI 3.1 &amp; Agent Protocol:</strong> Complete machine-readable function-calling specifications and llms.txt standard guidance for autonomous AI agents.</li>
+          </ul>
+        </section>
+
+        <nav style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
+          <a href="/meditate" style="color: #38BDF8;">Meditation Sanctuary</a>
+          <a href="/explore" style="color: #38BDF8;">Celestial Atlas</a>
+          <a href="/developers" style="color: #38BDF8;">Developer Hub</a>
+          <a href="/journal" style="color: #38BDF8;">Astro-Journal</a>
+          <a href="/about" style="color: #38BDF8;">About Us</a>
+          <a href="/contact" style="color: #38BDF8;">Contact Support</a>
+          <a href="/openapi.json" style="color: #38BDF8;">OpenAPI 3.1 Spec</a>
+          <a href="/llms.txt" style="color: #38BDF8;">llms.txt Guide</a>
+        </nav>
+      </main>
+
+      <footer style="text-align: center; padding: 2rem; color: #64748B; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05);">
+        <p>&copy; 2026 Cosmic Channeling. Built with &hearts; by Naveen.</p>
+      </footer>
+    </div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

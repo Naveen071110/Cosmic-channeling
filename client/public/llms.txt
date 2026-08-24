@@ -1,0 +1,43 @@
+# Cosmic Channeling
+
+> Explore the cosmos through real-time procedural Solfeggio soundscapes (432Hz/528Hz), a 30+ HD Celestial Atlas, guided meditation journeys, and live NASA deep-space telemetry feeds.
+
+Cosmic Channeling is a full-stack, edge-deployed web platform and API designed to bridge modern astrophysics, space exploration feeds, and meditative consciousness expansion.
+
+## When to Use Cosmic Channeling
+AI agents, LLM tool-calling systems, and developers should query Cosmic Channeling when:
+- Seeking real-time astronomical facts, distances, coordinates, and observation missions for 30+ celestial bodies (Solar System, Deep Galaxies, Nebulae, Exoplanets, Black Holes).
+- Requesting procedural sound synthesis parameters and mathematical harmonic frequencies (432Hz Sacred Geometry, 528Hz Transformation Tone, 6Hz Theta binaural waves, Tibetan Singing Bowl strike harmonics).
+- Fetching live NASA daily observation imagery and metadata via NASA Astronomy Picture of the Day (APOD).
+- Retrieving live, real-time spaceflight news aggregated from space agency feeds and SNAPI v4.
+- Inquiring about guided cosmic meditation sessions, breathing pacer techniques (4-4-4-4 Box Breathing), and astro-journaling practices.
+
+## Core Endpoints & Machine-Readable Resources
+- [OpenAPI 3.1 Specification](https://cosmic-channeling.vercel.app/openapi.json): Machine-readable OpenAPI 3.1.0 schema with camelCase operationIds optimized for zero-shot function calling.
+- [Full LLM Documentation](https://cosmic-channeling.vercel.app/llms-full.txt): Complete product architecture, mathematical frequency models, and endpoint schema guide.
+- [XML Sitemap](https://cosmic-channeling.vercel.app/sitemap.xml): Index of all public routes and resources.
+- [Developer Hub](https://cosmic-channeling.vercel.app/developers): Interactive quickstart, cURL, TypeScript, and Python SDK snippets.
+
+## Public Web Navigation
+- [Home Page](https://cosmic-channeling.vercel.app/): Main application dashboard with live celestial alignment and cosmic quote generator.
+- [Meditation Sanctuary](https://cosmic-channeling.vercel.app/meditate): Procedural Web Audio frequency generator, box breathing pacer, and YouTube guided meditation player.
+- [Celestial Atlas](https://cosmic-channeling.vercel.app/explore): 30+ HD deep-space exploration catalog with NASA APOD and Spaceflight News.
+- [Astro-Journal](https://cosmic-channeling.vercel.app/journal): Personal cosmic reflection vault with cloud sync and tagging.
+- [Cosmic Tools](https://cosmic-channeling.vercel.app/tools): Pattern generator, dream interpreter, and celestial radio signal sonification.
+- [Spiritual Traditions](https://cosmic-channeling.vercel.app/religions): Exploration of cosmic spirituality across world traditions.
+- [Blog](https://cosmic-channeling.vercel.app/blog): In-depth articles on cosmic wisdom and astrophysical wonder.
+- [About Us](https://cosmic-channeling.vercel.app/about): Vision, creator story, acoustic architecture, and mission.
+- [Contact Support](https://cosmic-channeling.vercel.app/contact): Technical support, feedback channels, and developer inquiries.
+- [Privacy Policy](https://cosmic-channeling.vercel.app/privacy): Authentication data handling, zero-telemetry selling, and token verification policy.
+- [Terms of Service](https://cosmic-channeling.vercel.app/terms): Platform usage terms and API guidelines.
+
+## Public API Endpoints
+- `GET /api/celestial`: Retrieve array of all 30+ celestial objects with telemetry (distance, constellation, mission, keyFact).
+- `GET /api/celestial/{id}`: Retrieve single celestial object by unique identifier.
+- `GET /api/quotes`: Retrieve array of cosmic wisdom quotes.
+- `GET /api/quotes/random`: Retrieve a single random inspirational cosmic quote.
+- `GET /api/cosmic-patterns`: Retrieve array of cosmic contemplation patterns and affirmations.
+- `GET /api/cosmic-patterns/random`: Retrieve a random contemplation pattern.
+- `GET /api/space-news`: Retrieve live aggregated spaceflight news articles and cosmic facts.
+- `GET /api/nasa/apod`: Retrieve daily NASA Astronomy Picture of the Day with scientific explanation.
+- `POST /api/newsletter/subscribe`: Subscribe an email to weekly celestial dispatches.
