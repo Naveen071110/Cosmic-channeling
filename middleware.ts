@@ -41,6 +41,7 @@ const STATIC_FILES = new Set([
   '/og-image.jpg',
   '/og-image.png',
   '/og-image.svg',
+  '/google47e1a93ad265b624.html',
 ]);
 
 const STATIC_EXTENSIONS = [
@@ -60,6 +61,7 @@ const STATIC_EXTENSIONS = [
   '.mp3',
   '.map',
   '.webmanifest',
+  '.html',
 ];
 
 const NOT_FOUND_MARKDOWN = `# 404 Not Found
