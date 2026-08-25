@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
 import {
   Play,
   Pause,
@@ -14,6 +15,7 @@ import {
   Moon,
 } from 'lucide-react';
 import { cosmicAudio, type SoundscapeType } from '@/lib/WebAudioCosmicSynth';
+import { useCosmicPersona } from '@/lib/persona/storage';
 
 type TimerState = 'idle' | 'running' | 'paused' | 'completed';
 type BreathingPhase = 'inhale' | 'hold-in' | 'exhale' | 'hold-out';
@@ -37,6 +39,7 @@ const SOUNDSCAPES: { id: SoundscapeType; label: string; description: string; ico
 ];
 
 export default function MeditationTimer() {
+  const { persona, hasPersona } = useCosmicPersona();
   const [selectedDuration, setSelectedDuration] = useState<number>(5); // minutes
   const [totalSeconds, setTotalSeconds] = useState<number>(300);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(300);
@@ -51,6 +54,21 @@ export default function MeditationTimer() {
 
   const timerIntervalRef = useRef<number | null>(null);
   const breathingIntervalRef = useRef<number | null>(null);
+
+  // Auto-tune soundscape based on user's active archetype
+  useEffect(() => {
+    if (hasPersona && persona) {
+      if (persona.rulingFrequency === 528) {
+        setSelectedSoundscape('528hz');
+      } else if (persona.rulingFrequency === 639) {
+        setSelectedSoundscape('theta');
+      } else if (persona.rulingFrequency === 741 || persona.rulingFrequency === 963) {
+        setSelectedSoundscape('cosmic-noise');
+      } else {
+        setSelectedSoundscape('432hz');
+      }
+    }
+  }, [hasPersona, persona]);
 
   // Set initial duration
   const handleSelectPreset = (minutes: number) => {
@@ -398,12 +416,19 @@ export default function MeditationTimer() {
       {/* Soundscape & Audio Controls */}
       <div className="mt-8 pt-5 border-t border-white/5 space-y-4">
         <div>
-          <div className="flex items-center justify-between mb-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
             <span className="text-xs font-mono uppercase text-gray-300 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-purple-400" />
               Procedural Soundscape
             </span>
-            <span className="text-[11px] text-gray-500 font-mono">100% Web Audio Synthesizer</span>
+            {hasPersona && persona ? (
+              <Badge className="bg-purple-950/80 text-purple-200 border border-purple-500/30 text-[10px] font-mono flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5 text-yellow-300" />
+                Tuned to {persona.archetype.title} ({persona.rulingFrequency}Hz)
+              </Badge>
+            ) : (
+              <span className="text-[11px] text-gray-500 font-mono">100% Web Audio Synthesizer</span>
+            )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

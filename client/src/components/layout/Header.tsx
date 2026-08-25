@@ -59,6 +59,9 @@ const Header = () => {
           <Link href="/religions" className={`transition-colors ${isActive('/religions') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
             Religions
           </Link>
+          <Link href="/profile" className={`transition-colors ${isActive('/profile') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#EC4899]'}`}>
+            Profile
+          </Link>
         </nav>
         
         <div className="flex items-center space-x-3">
@@ -71,10 +74,12 @@ const Header = () => {
 
           {user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-[#334155]">
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/60 border border-purple-500/30 text-xs text-purple-200">
-                <UserIcon className="w-3.5 h-3.5 text-purple-400" />
-                <span className="font-medium max-w-[100px] truncate">{user.username}</span>
-              </div>
+              <Link href="/profile">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/30 text-xs text-purple-200 cursor-pointer transition-all">
+                  <UserIcon className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="font-medium max-w-[100px] truncate">{user.username}</span>
+                </div>
+              </Link>
               <Button
                 variant="ghost"
                 size="sm"
@@ -146,6 +151,9 @@ const Header = () => {
               </Link>
               <Link href="/religions" onClick={closeMenu} className={isActive('/religions') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
                 Religions
+              </Link>
+              <Link href="/profile" onClick={closeMenu} className={isActive('/profile') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+                Profile &amp; Alignment
               </Link>
             </nav>
           </div>

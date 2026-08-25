@@ -8,6 +8,7 @@ import { lazy, Suspense } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StarBackground from "@/components/ui/StarBackground";
+import CookieBanner from "@/components/cookies/CookieBanner";
 import { AuthProvider } from "./hooks/use-auth";
 
 // Lazy load pages to reduce initial bundle size
@@ -25,6 +26,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Developers = lazy(() => import("./pages/Developers"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Profile = lazy(() => import("./pages/Profile"));
 
 
 function AppRouter() {
@@ -45,6 +47,7 @@ function AppRouter() {
         }>
           <Switch>
             <Route path="/auth" component={Auth} />
+            <Route path="/profile" component={Profile} />
             <Route path="/terms" component={TermsOfService} />
             <Route path="/privacy" component={PrivacyPolicy} />
             <Route path="/about" component={About} />
@@ -78,6 +81,7 @@ function App() {
             <Toaster />
             <Router>
               <AppRouter />
+              <CookieBanner />
             </Router>
           </div>
         </TooltipProvider>

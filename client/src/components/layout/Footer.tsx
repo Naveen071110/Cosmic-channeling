@@ -104,6 +104,13 @@ export default function Footer() {
               <Link href="/privacy" className="block text-gray-400 hover:text-sky-400 transition-colors">
                 Privacy Policy
               </Link>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-preferences'))}
+                className="block text-left text-gray-400 hover:text-sky-400 transition-colors"
+              >
+                Cookie Preferences
+              </button>
               <Link href="/auth" className="block text-gray-400 hover:text-sky-400 transition-colors">
                 Account Portal
               </Link>

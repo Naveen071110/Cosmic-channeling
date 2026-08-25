@@ -25,6 +25,7 @@ AI agents, LLM tool-calling systems, and developers should query Cosmic Channeli
 - [Astro-Journal](https://cosmic-channeling.vercel.app/journal): Personal cosmic reflection vault with cloud sync and tagging.
 - [Cosmic Tools](https://cosmic-channeling.vercel.app/tools): Pattern generator, dream interpreter, and celestial radio signal sonification.
 - [Spiritual Traditions](https://cosmic-channeling.vercel.app/religions): Exploration of cosmic spirituality across world traditions.
+- [Profile & Celestial Alignment](https://cosmic-channeling.vercel.app/profile): User archetype dashboard, 5-dimension resonance matrix, and live alignment directives.
 - [Blog](https://cosmic-channeling.vercel.app/blog): In-depth articles on cosmic wisdom and astrophysical wonder.
 - [About Us](https://cosmic-channeling.vercel.app/about): Vision, creator story, acoustic architecture, and mission.
 - [Contact Support](https://cosmic-channeling.vercel.app/contact): Technical support, feedback channels, and developer inquiries.
