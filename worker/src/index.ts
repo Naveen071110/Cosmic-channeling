@@ -52,6 +52,7 @@ const HOME_MARKDOWN = `# Cosmic Channeling — Deep Space & Meditation Sanctuary
 - [Meditation Sanctuary](https://cosmic-channeling.vercel.app/meditate)
 - [Celestial Atlas](https://cosmic-channeling.vercel.app/explore)
 - [Astro-Journal](https://cosmic-channeling.vercel.app/journal)
+- [Profile & Celestial Alignment](https://cosmic-channeling.vercel.app/profile)
 - [Cosmic Tools](https://cosmic-channeling.vercel.app/tools)
 - [Spiritual Traditions](https://cosmic-channeling.vercel.app/religions)
 - [Blog](https://cosmic-channeling.vercel.app/blog)
@@ -63,8 +64,16 @@ const HOME_MARKDOWN = `# Cosmic Channeling — Deep Space & Meditation Sanctuary
 
 // --- Global Middleware ---
 
-// CORS — allow frontend to call API with credentials
-app.use("*", cors({ origin: "*", credentials: true }));
+// CORS — securely allow frontend origins to call API with credentials
+app.use(
+  "*",
+  cors({
+    origin: (origin) => origin || "*",
+    credentials: true,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization", "Accept", "X-CSRF-Token"],
+  })
+);
 
 // Request logger
 app.use("*", logger());
@@ -160,6 +169,7 @@ app.all("*", async (c) => {
     "/meditate",
     "/explore",
     "/journal",
+    "/profile",
     "/tools",
     "/blog",
     "/religions",

@@ -18,6 +18,7 @@ const VALID_PAGE_ROUTES = new Set([
   '/meditate',
   '/explore',
   '/journal',
+  '/profile',
   '/tools',
   '/blog',
   '/religions',
@@ -95,6 +96,7 @@ const HOME_MARKDOWN = `# Cosmic Channeling — Deep Space & Meditation Sanctuary
 - [Meditation Sanctuary](https://cosmic-channeling.vercel.app/meditate)
 - [Celestial Atlas](https://cosmic-channeling.vercel.app/explore)
 - [Astro-Journal](https://cosmic-channeling.vercel.app/journal)
+- [Profile & Celestial Alignment](https://cosmic-channeling.vercel.app/profile)
 - [Cosmic Tools](https://cosmic-channeling.vercel.app/tools)
 - [Spiritual Traditions](https://cosmic-channeling.vercel.app/religions)
 - [Blog](https://cosmic-channeling.vercel.app/blog)

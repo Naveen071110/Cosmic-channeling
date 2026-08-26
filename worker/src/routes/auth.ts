@@ -13,6 +13,14 @@ const router = new Hono<{ Bindings: Env }>();
 // Apply auth middleware to all auth routes
 router.use("*", authMiddleware);
 
+function getJwtSecret(env: Env): string {
+  if (env.JWT_SECRET) return env.JWT_SECRET;
+  if (env.ENVIRONMENT === "production") {
+    console.error("[CRITICAL SECURITY WARNING] JWT_SECRET is not configured in production environment!");
+  }
+  return "dev-secret-change-in-production";
+}
+
 const registerSchema = z.object({
   username: z.string().min(3).max(30),
   email: z.string().email(),
@@ -56,7 +64,7 @@ router.post("/register", zValidator("json", registerSchema), async (c) => {
   });
 
   // Sign JWT
-  const secret = c.env.JWT_SECRET || "dev-secret-change-in-production";
+  const secret = getJwtSecret(c.env);
   const token = await signToken(
     { id: user.id, username: user.username, email: user.email, isSubscribed: user.isSubscribed },
     secret,
@@ -93,7 +101,7 @@ router.post("/login", zValidator("json", loginSchema), async (c) => {
   }
 
   // Sign JWT
-  const secret = c.env.JWT_SECRET || "dev-secret-change-in-production";
+  const secret = getJwtSecret(c.env);
   const token = await signToken(
     { id: user.id, username: user.username, email: user.email, isSubscribed: user.isSubscribed },
     secret,
