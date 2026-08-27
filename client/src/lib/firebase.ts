@@ -12,9 +12,9 @@ import {
   User as FirebaseUser,
 } from "firebase/auth";
 
-// Firebase configuration (Loaded from secure environment variables)
+// Firebase configuration (Loaded from environment variables with fallback)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB-SXSPiTaWZNa0JGXaVO8WCl8CCT8hqsw",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "cosmic-channeling.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "cosmic-channeling",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "cosmic-channeling.firebasestorage.app",
