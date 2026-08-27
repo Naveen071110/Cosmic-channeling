@@ -12,15 +12,15 @@ import {
   User as FirebaseUser,
 } from "firebase/auth";
 
-// Firebase configuration
+// Firebase configuration (Loaded from secure environment variables)
 const firebaseConfig = {
-  apiKey: "AIzaSyB-SXSPiTaWZNa0JGXaVO8WCl8CCT8hqsw",
-  authDomain: "cosmic-channeling.firebaseapp.com",
-  projectId: "cosmic-channeling",
-  storageBucket: "cosmic-channeling.firebasestorage.app",
-  messagingSenderId: "291863078941",
-  appId: "1:291863078941:web:08ffa6bea0de0e5ee57ef4",
-  measurementId: "G-1MYQ3NM73W"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "cosmic-channeling.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "cosmic-channeling",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "cosmic-channeling.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "291863078941",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:291863078941:web:08ffa6bea0de0e5ee57ef4",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-1MYQ3NM73W"
 };
 
 // Initialize Firebase (safely avoid double initialization)
