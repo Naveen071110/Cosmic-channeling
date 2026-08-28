@@ -10,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import StarBackground from "@/components/ui/StarBackground";
 import CookieBanner from "@/components/cookies/CookieBanner";
 import { AuthProvider } from "./hooks/use-auth";
+import { Analytics } from "@vercel/analytics/react";
 
 // Lazy load pages to reduce initial bundle size
 const Home = lazy(() => import("./pages/Home"));
@@ -83,6 +84,7 @@ function App() {
               <AppRouter />
               <CookieBanner />
             </Router>
+            <Analytics />
           </div>
         </TooltipProvider>
       </AuthProvider>
