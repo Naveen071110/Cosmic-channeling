@@ -3,9 +3,10 @@ import SEO from '@/components/SEO';
 import MeditationTimer from '@/components/features/MeditationTimer';
 import GuidedMeditation from '@/components/features/GuidedMeditation';
 import CosmicImageGallery from '@/components/CosmicImageGallery';
+import CymaticsVisualizer from '@/components/features/CymaticsVisualizer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Play, Telescope, Sparkles, Brain, Heart, Radio } from 'lucide-react';
+import { Clock, Play, Telescope, Sparkles, Brain, Heart, Radio, Waves } from 'lucide-react';
 
 export default function Meditate() {
   const [activeTab, setActiveTab] = useState('timer');
@@ -38,13 +39,20 @@ export default function Meditate() {
         {/* Tab Navigation */}
         <Tabs defaultValue="timer" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-8">
-            <TabsList className="grid grid-cols-3 w-full max-w-xl bg-[#1E293B] border border-white/10 p-1 rounded-2xl">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full max-w-2xl bg-[#1E293B] border border-white/10 p-1 rounded-2xl">
               <TabsTrigger
                 value="timer"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7E22CE] data-[state=active]:to-[#EC4899] data-[state=active]:text-white text-xs sm:text-sm font-space flex items-center justify-center gap-1.5"
               >
                 <Clock className="w-4 h-4" />
                 <span>Timer & Sounds</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="cymatics"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7E22CE] data-[state=active]:to-[#EC4899] data-[state=active]:text-white text-xs sm:text-sm font-space flex items-center justify-center gap-1.5"
+              >
+                <Waves className="w-4 h-4" />
+                <span>Cymatics</span>
               </TabsTrigger>
               <TabsTrigger
                 value="guided"
@@ -149,6 +157,11 @@ export default function Meditate() {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          {/* Cymatic Harmonics Tab */}
+          <TabsContent value="cymatics" className="focus:outline-none">
+            <CymaticsVisualizer />
           </TabsContent>
 
           {/* Guided Journeys Tab */}

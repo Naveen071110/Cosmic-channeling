@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { CelestialObject } from '@/types';
 import NasaApodCard from '@/components/features/NasaApodCard';
+import RelativisticBlackHoleViewer from '@/components/features/RelativisticBlackHoleViewer';
 import {
   Sparkles,
   Radio,
@@ -204,6 +205,11 @@ export default function Explore() {
 
             return (
               <TabsContent key={categoryKey} value={categoryKey} className="focus:outline-none space-y-6">
+                {categoryKey === 'blackholes' && (
+                  <div className="mb-6">
+                    <RelativisticBlackHoleViewer />
+                  </div>
+                )}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   {/* Left Viewport: Main Featured Object Card */}
                   <div className="lg:col-span-8">

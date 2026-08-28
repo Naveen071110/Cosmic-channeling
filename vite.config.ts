@@ -5,9 +5,25 @@ import path from "path";
 // Guard: only load Replit-specific plugins when running on Replit
 const isReplit = !!process.env.REPL_ID;
 
+// WGSL shader loader plugin for WebGPU shaders
+function wgslPlugin() {
+  return {
+    name: "wgsl-loader",
+    transform(code: string, id: string) {
+      if (id.endsWith(".wgsl")) {
+        return {
+          code: `export default ${JSON.stringify(code)};`,
+          map: { mappings: "" },
+        };
+      }
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     react(),
+    wgslPlugin(),
     ...(isReplit
       ? [
           (await import("@replit/vite-plugin-shadcn-theme-json")).default(),

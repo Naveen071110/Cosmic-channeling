@@ -23,6 +23,8 @@ class CosmicAudioEngine {
   private volume: number = 0.6;
   private isPlaying: boolean = false;
   private currentType: SoundscapeType = 'none';
+  private analyser: AnalyserNode | null = null;
+  private freqDataArray: Uint8Array | null = null;
 
   private initContext(): AudioContext {
     if (!this.ctx || this.ctx.state === 'closed') {
@@ -35,9 +37,38 @@ class CosmicAudioEngine {
     if (!this.masterGain && this.ctx) {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
-      this.masterGain.connect(this.ctx.destination);
+
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.analyser.smoothingTimeConstant = 0.82;
+      this.freqDataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+      this.masterGain.connect(this.analyser);
+      this.analyser.connect(this.ctx.destination);
     }
     return this.ctx;
+  }
+
+  public getAnalyser(): AnalyserNode | null {
+    return this.analyser;
+  }
+
+  public getAudioFrequencyData(): Uint8Array {
+    if (this.analyser && this.freqDataArray) {
+      this.analyser.getByteFrequencyData(this.freqDataArray);
+      return this.freqDataArray;
+    }
+    return new Uint8Array(128);
+  }
+
+  public getAverageEnergy(): number {
+    const data = this.getAudioFrequencyData();
+    if (!data || data.length === 0) return 0;
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      sum += data[i];
+    }
+    return sum / (data.length * 255);
   }
 
   public setVolume(vol: number) {

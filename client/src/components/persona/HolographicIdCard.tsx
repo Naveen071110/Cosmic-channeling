@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { CosmicPersona } from '@/lib/persona/types';
 import { useToast } from '@/hooks/use-toast';
+import WebGpuHologram from './WebGpuHologram';
 
 interface HolographicIdCardProps {
   persona: CosmicPersona;
@@ -91,12 +92,10 @@ export default function HolographicIdCard({
           }}
           className="relative rounded-3xl p-6 sm:p-8 overflow-hidden bg-gradient-to-br from-[#0B0F19] via-[#151226] to-[#0B0F19] border border-purple-500/40"
         >
-          {/* Holographic Sheen Layer */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-40 transition-opacity duration-300"
-            style={{
-              background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(255,255,255,0.25) 0%, rgba(168,85,247,0.15) 30%, transparent 70%)`,
-            }}
+          {/* WebGPU Hardware-Accelerated Holographic Foil Layer (with CSS Fallback) */}
+          <WebGpuHologram
+            rulingFrequency={persona.rulingFrequency}
+            auraHex={archetype.colorTheme.primary}
           />
 
           {/* Holographic Border Shimmer */}
