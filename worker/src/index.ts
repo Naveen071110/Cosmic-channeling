@@ -9,7 +9,8 @@ import { cosmicApiRoutes } from "./routes/cosmic-api";
 import { toolsRoutes } from "./routes/tools";
 import { newsletterRoutes } from "./routes/newsletter";
 import { traditionsRoutes } from "./routes/traditions";
-import { MemStorage, DatabaseStorage, type IStorage } from "./storage";
+import { personaRoutes } from "./routes/persona";
+import { MemStorage, DatabaseStorage, KVStorage, type IStorage } from "./storage";
 import { getDb } from "./db";
 
 // Extend Hono's ContextVariableMap for our custom variables
@@ -102,6 +103,8 @@ app.use("*", async (c, next) => {
   if (c.env.DATABASE_URL) {
     const db = getDb(c.env.DATABASE_URL);
     c.set("storage", new DatabaseStorage(db));
+  } else if (c.env.NEWSLETTER_KV) {
+    c.set("storage", new KVStorage(c.env.NEWSLETTER_KV));
   } else {
     c.set("storage", new MemStorage());
   }
@@ -114,6 +117,7 @@ app.use("*", authMiddleware);
 // --- API Routes ---
 
 app.route("/api", authRoutes);
+app.route("/api", personaRoutes);
 app.route("/api", contentRoutes);
 app.route("/api", cosmicApiRoutes);
 app.route("/api", toolsRoutes);

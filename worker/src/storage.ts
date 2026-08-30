@@ -434,3 +434,192 @@ export class DatabaseStorage implements IStorage {
     return r;
   }
 }
+
+// --- Cloudflare KV Persistent Storage ---
+export class KVStorage implements IStorage {
+  private kv: KVNamespace;
+  private memFallback: MemStorage;
+
+  constructor(kv: KVNamespace) {
+    this.kv = kv;
+    this.memFallback = new MemStorage();
+  }
+
+  // --- Users ---
+  async getUser(id: number): Promise<User | undefined> {
+    try {
+      const raw = await this.kv.get(`user:id:${id}`, "text");
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.warn("KV getUser error:", e);
+    }
+    return this.memFallback.getUser(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    try {
+      const idRaw = await this.kv.get(`user:username:${username}`, "text");
+      if (idRaw) {
+        return this.getUser(parseInt(idRaw, 10));
+      }
+    } catch (e) {
+      console.warn("KV getUserByUsername error:", e);
+    }
+    return this.memFallback.getUserByUsername(username);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const idRaw = await this.kv.get(`user:email:${email}`, "text");
+      if (idRaw) {
+        return this.getUser(parseInt(idRaw, 10));
+      }
+    } catch (e) {
+      console.warn("KV getUserByEmail error:", e);
+    }
+    return this.memFallback.getUserByEmail(email);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    const user: User = {
+      id,
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email || null,
+      isSubscribed: false,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      createdAt: new Date(),
+    };
+    try {
+      await this.kv.put(`user:id:${id}`, JSON.stringify(user));
+      await this.kv.put(`user:username:${user.username}`, String(id));
+      if (user.email) {
+        await this.kv.put(`user:email:${user.email}`, String(id));
+      }
+    } catch (e) {
+      console.warn("KV createUser error:", e);
+    }
+    return user;
+  }
+
+  async updateUserSubscription(userId: number, isSubscribed: boolean): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+    user.isSubscribed = isSubscribed;
+    try {
+      await this.kv.put(`user:id:${userId}`, JSON.stringify(user));
+    } catch (e) {
+      console.warn("KV updateUserSubscription error:", e);
+    }
+    return user;
+  }
+
+  // --- Journal Entries (Persistent across Web & Mobile) ---
+  async getJournalEntriesByUserId(userId: number): Promise<JournalEntry[]> {
+    try {
+      const raw = await this.kv.get(`journal:user_${userId}`, "text");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (e) {
+      console.warn("KV getJournalEntriesByUserId error:", e);
+    }
+    return this.memFallback.getJournalEntriesByUserId(userId);
+  }
+
+  async getJournalEntry(id: number): Promise<JournalEntry | undefined> {
+    return this.memFallback.getJournalEntry(id);
+  }
+
+  async createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry> {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    const userId = entry.userId ?? null;
+    const newEntry: JournalEntry = {
+      id,
+      userId,
+      text: entry.text,
+      tags: Array.isArray(entry.tags) ? (entry.tags as string[]) : null,
+      createdAt: new Date(),
+    };
+
+    try {
+      if (userId !== null) {
+        const existing = await this.getJournalEntriesByUserId(userId);
+        const updated = [newEntry, ...existing];
+        await this.kv.put(`journal:user_${userId}`, JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.warn("KV createJournalEntry error:", e);
+      return this.memFallback.createJournalEntry(entry);
+    }
+
+    return newEntry;
+  }
+
+  async updateJournalEntry(id: number, entry: Partial<InsertJournalEntry>): Promise<JournalEntry | undefined> {
+    if (!entry.userId) return undefined;
+    try {
+      const existing = await this.getJournalEntriesByUserId(entry.userId);
+      let found: JournalEntry | undefined;
+      const updated = existing.map((e) => {
+        if (e.id === id) {
+          found = {
+            ...e,
+            text: entry.text !== undefined ? entry.text : e.text,
+            tags: entry.tags !== undefined ? (entry.tags as string[]) : e.tags,
+          };
+          return found;
+        }
+        return e;
+      });
+      if (found) {
+        await this.kv.put(`journal:user_${entry.userId}`, JSON.stringify(updated));
+        return found;
+      }
+    } catch (e) {
+      console.warn("KV updateJournalEntry error:", e);
+    }
+    return this.memFallback.updateJournalEntry(id, entry);
+  }
+
+  async deleteJournalEntry(id: number): Promise<boolean> {
+    return this.memFallback.deleteJournalEntry(id);
+  }
+
+  // --- Static Seed Delegations ---
+  async getAllQuotes() { return this.memFallback.getAllQuotes(); }
+  async getQuote(id: number) { return this.memFallback.getQuote(id); }
+  async getRandomQuote() { return this.memFallback.getRandomQuote(); }
+  async createQuote(quote: InsertQuote) { return this.memFallback.createQuote(quote); }
+
+  async getAllCelestialObjects() { return this.memFallback.getAllCelestialObjects(); }
+  async getCelestialObjectsByType(type: string) { return this.memFallback.getCelestialObjectsByType(type); }
+  async getCelestialObject(id: number) { return this.memFallback.getCelestialObject(id); }
+  async createCelestialObject(object: InsertCelestialObject) { return this.memFallback.createCelestialObject(object); }
+
+  async getAllCosmicPatterns() { return this.memFallback.getAllCosmicPatterns(); }
+  async getCosmicPattern(id: number) { return this.memFallback.getCosmicPattern(id); }
+  async getRandomCosmicPattern() { return this.memFallback.getRandomCosmicPattern(); }
+  async createCosmicPattern(pattern: InsertCosmicPattern) { return this.memFallback.createCosmicPattern(pattern); }
+
+  async getAllCosmicSounds() { return this.memFallback.getAllCosmicSounds(); }
+  async getCosmicSound(id: number) { return this.memFallback.getCosmicSound(id); }
+  async createCosmicSound(sound: InsertCosmicSound) { return this.memFallback.createCosmicSound(sound); }
+
+  async getAllQuizQuestions() { return this.memFallback.getAllQuizQuestions(); }
+  async getQuizQuestion(id: number) { return this.memFallback.getQuizQuestion(id); }
+  async createQuizQuestion(question: InsertQuizQuestion) { return this.memFallback.createQuizQuestion(question); }
+
+  async getAllQuizResults() { return this.memFallback.getAllQuizResults(); }
+  async getQuizResult(id: number) { return this.memFallback.getQuizResult(id); }
+  async createQuizResult(insert: InsertQuizResult) { return this.memFallback.createQuizResult(insert); }
+
+  async getAllTraditions() { return this.memFallback.getAllTraditions(); }
+  async getTradition(id: number) { return this.memFallback.getTradition(id); }
+  async getTraditionBySlug(slug: string) { return this.memFallback.getTraditionBySlug(slug); }
+  async getFeaturedTraditions() { return this.memFallback.getFeaturedTraditions(); }
+  async createTradition(tradition: InsertTradition) { return this.memFallback.createTradition(tradition); }
+}

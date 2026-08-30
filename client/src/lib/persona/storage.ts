@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CosmicPersona } from './types';
 import { COSMIC_ARCHETYPES } from './archetypes';
+import { apiRequest } from '@/lib/queryClient';
 
 const STORAGE_KEY = 'cosmic_channeling_user_persona';
 
@@ -28,6 +29,13 @@ export function saveStoredPersona(persona: CosmicPersona, userId?: string | numb
     localStorage.setItem(STORAGE_KEY, JSON.stringify(persona));
     // Dispatch custom event for cross-component reactivity
     window.dispatchEvent(new CustomEvent('cosmic-persona-updated', { detail: persona }));
+
+    // Asynchronously synchronize to Cloudflare KV / Cloud Backend if user is logged in
+    if (userId) {
+      apiRequest('POST', '/api/persona', { persona }).catch((err) => {
+        console.warn('[Persona] Cloud sync background warning:', err);
+      });
+    }
   } catch (e) {
     console.error('Failed to save persona to storage:', e);
   }
@@ -39,6 +47,12 @@ export function clearStoredPersona(userId?: string | number | null): void {
     localStorage.removeItem(key);
     localStorage.removeItem(STORAGE_KEY);
     window.dispatchEvent(new CustomEvent('cosmic-persona-updated', { detail: null }));
+
+    if (userId) {
+      apiRequest('POST', '/api/persona', { persona: null }).catch((err) => {
+        console.warn('[Persona] Cloud clear background warning:', err);
+      });
+    }
   } catch (e) {
     console.error('Failed to clear persona:', e);
   }
@@ -49,8 +63,35 @@ export function useCosmicPersona(userId?: string | number | null) {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    setPersona(getStoredPersona(userId));
+    // 1. Instant local cache hydration
+    const local = getStoredPersona(userId);
+    setPersona(local);
     setIsLoaded(true);
+
+    // 2. Cloud Synchronization for cross-device persistence (Desktop <-> Mobile)
+    if (userId) {
+      apiRequest('GET', '/api/persona')
+        .then(async (res) => {
+          if (res.ok) {
+            const data: any = await res.json();
+            if (data?.persona) {
+              const serverPersona = data.persona as CosmicPersona;
+              if (serverPersona.archetypeId && COSMIC_ARCHETYPES[serverPersona.archetypeId]) {
+                serverPersona.archetype = COSMIC_ARCHETYPES[serverPersona.archetypeId];
+              }
+              const key = `${STORAGE_KEY}_${userId}`;
+              localStorage.setItem(key, JSON.stringify(serverPersona));
+              setPersona(serverPersona);
+            } else if (local) {
+              // Server has no persona yet, but local does (e.g. taken offline or before sign-in)
+              apiRequest('POST', '/api/persona', { persona: local }).catch(() => {});
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn('[Persona] Cloud fetch offline/fallback:', err);
+        });
+    }
 
     const handleUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<CosmicPersona | null>;

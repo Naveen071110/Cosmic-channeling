@@ -108,12 +108,26 @@ export default function EnhancedJournal() {
   // Load journal entries when user is logged in
   useEffect(() => {
     if (user) {
+      // 1. Instant local cache hydration for zero lag
+      const local = localStorage.getItem(`cosmic_journal_${user.id}`);
+      let localParsed: JournalEntry[] = [];
+      if (local) {
+        try {
+          localParsed = JSON.parse(local).map((e: any) => ({ ...e, date: new Date(e.date) }));
+          setJournalEntries(localParsed);
+        } catch {
+          // ignore
+        }
+      }
+
+      // 2. Cloud fetch from backend API (synced across Web & Mobile)
       const fetchEntries = async () => {
         try {
           const res = await apiRequest("GET", "/api/journal-entries");
           if (res.ok) {
             const rawEntries: any = await res.json();
-            const formatted: JournalEntry[] = (Array.isArray(rawEntries) ? rawEntries : []).map((e: any) => ({
+            const serverArray = Array.isArray(rawEntries) ? rawEntries : [];
+            const formatted: JournalEntry[] = serverArray.map((e: any) => ({
               id: String(e.id),
               date: new Date(e.createdAt || Date.now()),
               content: e.text || "",
@@ -122,22 +136,22 @@ export default function EnhancedJournal() {
               wordCount: (e.text || "").split(/\s+/).filter(Boolean).length,
               themes: ["Cosmic Reflection", "Mindfulness"],
             }));
-            setJournalEntries(formatted);
-            return;
+
+            if (formatted.length > 0) {
+              setJournalEntries(formatted);
+              localStorage.setItem(`cosmic_journal_${user.id}`, JSON.stringify(formatted));
+            } else if (localParsed.length > 0) {
+              // Server is empty but local has entries: sync local to cloud
+              for (const entry of localParsed) {
+                apiRequest("POST", "/api/journal-entries", {
+                  text: entry.content,
+                  tags: entry.tags,
+                }).catch(() => {});
+              }
+            }
           }
         } catch (err) {
-          console.warn("Failed to fetch server journal entries, reading local storage:", err);
-        }
-
-        // Local storage fallback for this user
-        const local = localStorage.getItem(`cosmic_journal_${user.id}`);
-        if (local) {
-          try {
-            const parsed = JSON.parse(local);
-            setJournalEntries(parsed.map((e: any) => ({ ...e, date: new Date(e.date) })));
-          } catch (e) {
-            // ignore
-          }
+          console.warn("Failed to fetch server journal entries, staying with local cache:", err);
         }
       };
 
