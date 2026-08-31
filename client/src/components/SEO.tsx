@@ -10,7 +10,7 @@ export interface SEOProps {
 }
 
 const DEFAULT_DOMAIN = 'https://cosmic-channeling.vercel.app';
-const DEFAULT_OG_IMAGE = 'https://cosmic-channeling.vercel.app/og-image.jpg';
+const DEFAULT_OG_IMAGE = 'https://cosmic-channeling.vercel.app/og-image.png';
 
 export default function SEO({
   title,
