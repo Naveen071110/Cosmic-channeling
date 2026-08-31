@@ -76,7 +76,7 @@ export default function StarBackground() {
   }, [useWebGpu]);
 
   // ---------------------------------------------------------------------------
-  // 2. Resilient Canvas 2D Fallback for Legacy Browsers
+  // 2. Resilient Canvas 2D Particle Engine with Dynamic Drifting & Twinkling
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (useWebGpu) return; // Skip 2D canvas if WebGPU is active
@@ -101,17 +101,18 @@ export default function StarBackground() {
       size: number;
       opacity: number;
       speed: number;
-      color: string;
+      baseColor: string;
     };
 
     const colorPalette = [
-      "rgba(255, 255, 255, {})",
-      "rgba(135, 206, 250, {})",
-      "rgba(147, 112, 219, {})",
-      "rgba(238, 130, 238, {})",
+      "255, 255, 255", // Pure white
+      "135, 206, 250", // Light sky blue
+      "192, 132, 252", // Cosmic purple
+      "244, 114, 182", // Nebula pink
+      "253, 224, 71",  // Stardust gold
     ];
 
-    const starCount = Math.floor((canvas.width * canvas.height) / 4000);
+    const starCount = Math.min(Math.floor((canvas.width * canvas.height) / 3500), 200);
     const stars: Star[] = [];
 
     for (let i = 0; i < starCount; i++) {
@@ -120,15 +121,15 @@ export default function StarBackground() {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * 1.5 + 0.5,
+        size: Math.random() * 1.8 + 0.6,
         opacity,
-        speed: Math.random() * 0.02 + 0.01,
-        color: colorPalette[colorIndex].replace("{}", opacity.toString()),
+        speed: Math.random() * 0.15 + 0.05,
+        baseColor: colorPalette[colorIndex],
       });
     }
 
-    let mouseX = 0;
-    let mouseY = 0;
+    let mouseX = -1000;
+    let mouseY = -1000;
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
@@ -136,30 +137,50 @@ export default function StarBackground() {
     document.addEventListener("mousemove", handleMouseMove);
 
     let animationId: number;
-    const draw = () => {
+    let lastTime = performance.now();
+
+    const draw = (now: number) => {
+      const delta = (now - lastTime) / 1000;
+      lastTime = now;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      stars.forEach((star) => {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fillStyle = star.color;
-        ctx.fill();
+      stars.forEach((star, idx) => {
+        // Slow vertical drift upwards
+        star.y -= star.speed * 40 * delta;
+        if (star.y < 0) {
+          star.y = canvas.height;
+          star.x = Math.random() * canvas.width;
+        }
 
+        // Procedural twinkling
+        const twinkle = Math.sin(now * 0.002 + idx * 0.7) * 0.3 + 0.7;
+        const currentOpacity = Math.max(0.15, Math.min(1.0, star.opacity * twinkle));
+
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size * (0.8 + twinkle * 0.2), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${star.baseColor}, ${currentOpacity})`;
+        ctx.shadowBlur = star.size > 1.2 ? 6 : 0;
+        ctx.shadowColor = `rgba(${star.baseColor}, ${currentOpacity * 0.8})`;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Interactive cursor repulsion force
         const distX = mouseX - star.x;
         const distY = mouseY - star.y;
         const dist = Math.sqrt(distX * distX + distY * distY);
 
-        if (dist < 120) {
-          const force = (120 - dist) / 8000;
-          star.x -= distX * force;
-          star.y -= distY * force;
+        if (dist < 140 && dist > 0) {
+          const force = (140 - dist) / 3000;
+          star.x -= (distX / dist) * force * 100 * delta;
+          star.y -= (distY / dist) * force * 100 * delta;
         }
       });
 
       animationId = requestAnimationFrame(draw);
     };
 
-    draw();
+    animationId = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animationId);
@@ -171,7 +192,7 @@ export default function StarBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none w-full h-full z-0"
+      className="fixed inset-0 pointer-events-none w-full h-full z-0 opacity-80"
     />
   );
 }
