@@ -1,10 +1,13 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Telescope, Radio, Orbit, Compass, Star } from 'lucide-react';
 
+const CosmicPrism = lazy(() => import('@/components/features/CosmicPrism'));
+
 const Hero = () => {
   return (
-    <header className="relative flex flex-col items-center justify-center min-h-[60vh] text-center py-20 px-4 overflow-hidden">
+    <header className="relative flex flex-col items-center justify-center min-h-[60vh] text-center py-16 px-4 overflow-hidden">
       {/* 1. LCP Hero Background Image with Atmospheric Blend */}
       <div className="absolute inset-0 opacity-25 pointer-events-none">
         <img 
@@ -70,6 +73,16 @@ const Hero = () => {
         <p className="text-base sm:text-lg md:text-xl text-[#F1F5F9] max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
           Experience pure 432Hz &amp; 528Hz harmonic Solfeggio soundscapes, an interactive 30+ HD Celestial Atlas, and live NASA space telemetry. Expand your consciousness and discover your celestial alignment in our deep space meditation sanctuary.
         </p>
+
+        {/* 6. Interactive 3D Cosmic Prism Centerpiece */}
+        <Suspense fallback={
+          <div className="w-full max-w-2xl h-72 sm:h-80 mx-auto my-4 rounded-2xl bg-black/40 border border-purple-500/20 flex flex-col items-center justify-center gap-3 backdrop-blur-sm">
+            <div className="w-8 h-8 rounded-full border-2 border-purple-500/20 border-t-purple-400 animate-spin" />
+            <span className="text-xs font-mono text-purple-300/70">Aligning Optical Crystal Prism...</span>
+          </div>
+        }>
+          <CosmicPrism />
+        </Suspense>
 
         {/* Quick Action CTAs with Hover Glow Effects */}
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
