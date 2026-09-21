@@ -70,97 +70,122 @@ const Newsletter = () => {
   };
 
   return (
-    <section id="community" className="my-16 max-w-4xl mx-auto px-4" aria-label="Join Our Cosmic Community">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1E1B4B]/80 via-[#0F172A] to-[#0A101D] border border-purple-500/30 p-6 sm:p-10 shadow-2xl shadow-purple-950/40 backdrop-blur-xl">
-        {/* Subtle Ambient Glowing Orbs */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+    <section id="community" className="max-w-4xl mx-auto px-4" aria-label="Join Our Cosmic Community">
+      <div className="relative overflow-hidden rounded-2xl bg-white/[0.02] border border-white/[0.08] p-8 sm:p-12 shadow-none backdrop-blur-md">
+        {/* Subtle Ambient Starlight Mesh */}
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-white/[0.02] rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-white/[0.02] rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
           <div className="flex-1 space-y-4 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/40 text-purple-300 text-xs font-mono">
-              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/10 text-slate-300 text-xs font-mono">
+              <Sparkles className="w-3.5 h-3.5 text-slate-400" />
               <span>100% Free Cosmic Community</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-space font-bold text-white tracking-tight">
-              Join Our Cosmic Community on{' '}
-              <span className="bg-gradient-to-r from-pink-400 via-purple-300 to-sky-400 bg-clip-text text-transparent">
-                Medium
-              </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-space font-semibold text-[#F8FAFC] tracking-tight">
+              Join Our Cosmic Community on Medium
             </h2>
 
-            <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed max-w-xl font-normal">
               We publish essays and transmissions on astrophysics, Solfeggio sound therapy, and universal consciousness on Medium. Join our readership for free or register your email for story alerts.
             </p>
 
             {/* Email Registration / Subscription Form */}
             {isSubscribed ? (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                <span>You are connected! Read our latest essays directly on Medium.</span>
+              <div className="flex items-center gap-2 p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-slate-200 text-xs sm:text-sm">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-slate-300" />
+                <span>You're registered for story alerts. Thank you for joining our frequency!</span>
               </div>
             ) : (
-              <form className="flex flex-col sm:flex-row gap-2.5 max-w-lg" onSubmit={handleSubmit}>
-                <Input 
-                  type="email" 
+              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 max-w-md pt-1">
+                <Input
+                  type="email"
+                  placeholder="Enter your email for story alerts"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email for free updates..." 
-                  className="bg-[#090D16] border-[#334155] focus:border-purple-400 text-white placeholder-gray-500 text-xs sm:text-sm h-10 px-4"
+                  disabled={isSubmitting}
+                  className="bg-white/[0.03] border-white/10 text-white placeholder-slate-500 rounded-xl h-11 px-4 text-sm focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all"
+                  aria-label="Email address for community alerts"
                   required
                 />
-                
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs sm:text-sm h-10 px-5 font-medium whitespace-nowrap shadow-md shadow-purple-950/50"
+                  className="bg-white text-black hover:bg-slate-200 font-medium rounded-xl h-11 px-6 text-sm shrink-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
                 >
-                  <Send className="w-3.5 h-3.5 mr-1.5" />
-                  {isSubmitting ? 'Connecting...' : 'Join for Free'}
+                  <Send className="w-3.5 h-3.5 mr-2" />
+                  {isSubmitting ? 'Joining...' : 'Get Alerts'}
                 </Button>
               </form>
             )}
 
-            {/* Community Links & Actions */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-              <a 
-                href={MEDIUM_PROFILE_URL}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium border border-white/10 transition-colors"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-pink-400" />
-                <span>Read on Medium</span>
-                <ExternalLink className="w-3 h-3 text-gray-400" />
-              </a>
-
-              <a 
-                href={MEDIUM_SUBSCRIBE_URL}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-purple-950/60 hover:bg-purple-900/60 text-purple-200 text-xs font-medium border border-purple-500/30 transition-colors"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-                <span>Get Medium Story Alerts</span>
-                <ExternalLink className="w-3 h-3 text-purple-300" />
-              </a>
-
-              <Link href="/blog">
-                <span className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 cursor-pointer font-medium pl-1">
-                  Browse In-App Blog <ArrowRight className="w-3 h-3" />
-                </span>
-              </Link>
+            <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-[#94A3B8]">
+              <span className="flex items-center gap-1">
+                ✓ No spam, ever
+              </span>
+              <span className="flex items-center gap-1">
+                ✓ Unsubscribe anytime
+              </span>
+              <span className="flex items-center gap-1">
+                ✓ 100% Free essays
+              </span>
             </div>
           </div>
-          
-          {/* Animated Icon Avatar */}
-          <div className="flex-shrink-0 w-28 h-28 relative flex items-center justify-center">
-            <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-purple-600/30 to-pink-500/30 border border-purple-400/40 flex items-center justify-center animate-float shadow-[0_0_30px_rgba(168,85,247,0.3)]">
-              <div className="w-16 h-16 rounded-full bg-purple-950/80 border border-purple-400/30 flex items-center justify-center">
-                <BookOpen className="w-8 h-8 text-pink-400" />
-              </div>
+
+          {/* Medium Direct Action Box */}
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] backdrop-blur-md w-full md:w-auto shrink-0 text-center">
+            <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-slate-200" />
             </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-space font-medium text-[#F8FAFC]">
+                Cosmic Channeling
+              </p>
+              <p className="text-xs text-[#94A3B8]">
+                Official Medium Publication
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 w-full mt-2">
+              <a
+                href={MEDIUM_PROFILE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-white/15 bg-white/[0.02] hover:bg-white/[0.06] text-slate-200 hover:text-white rounded-xl h-9 text-xs font-medium transition-all"
+                >
+                  Read on Medium
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+              </a>
+
+              <a
+                href={MEDIUM_SUBSCRIBE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button
+                  size="sm"
+                  className="w-full bg-white text-black hover:bg-slate-200 font-medium rounded-xl h-9 text-xs transition-all shadow-sm"
+                >
+                  Get Story Alerts
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+              </a>
+            </div>
+
+            <Link href="/blog">
+              <span className="text-[11px] text-[#94A3B8] hover:text-white transition-colors cursor-pointer mt-1 underline underline-offset-4">
+                Or read articles directly in-app →
+              </span>
+            </Link>
           </div>
         </div>
       </div>

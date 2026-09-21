@@ -38,51 +38,49 @@ export default function FaqSection() {
   };
 
   return (
-    <section id="faq" className="my-16 max-w-4xl mx-auto px-4" aria-labelledby="faq-heading">
-      <div className="text-center mb-10 space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-mono">
-          <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+    <section id="faq" className="space-y-10 max-w-4xl mx-auto px-4" aria-labelledby="faq-heading">
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.03] border border-white/10 text-slate-300 text-xs font-mono">
+          <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
           <span>Frequently Asked Questions</span>
         </div>
-        <h2 id="faq-heading" className="text-2xl sm:text-3xl font-bold font-space text-white">
-          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-sky-400 bg-clip-text text-transparent">
-            Astrophysics &amp; Meditation FAQs
-          </span>
+        <h2 id="faq-heading" className="text-2xl sm:text-3xl md:text-4xl font-semibold font-space text-[#F8FAFC] tracking-tight">
+          Astrophysics &amp; Meditation FAQs
         </h2>
-        <p className="text-xs sm:text-sm text-gray-400 max-w-lg mx-auto">
+        <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed max-w-lg mx-auto font-normal">
           Everything you need to know about our Solfeggio soundscapes, Celestial Atlas telemetry, and deep space sanctuary.
         </p>
       </div>
 
-      <div className="space-y-3.5">
+      <div className="space-y-3">
         {FAQS.map((faq, index) => {
           const isOpen = openIndex === index;
           return (
             <Card
               key={index}
-              className={`bg-[#0F172A]/90 border transition-all duration-200 overflow-hidden ${
-                isOpen ? 'border-purple-500/50 shadow-lg shadow-purple-950/40' : 'border-[#334155]/70 hover:border-[#334155]'
+              className={`bg-white/[0.02] border transition-all duration-200 overflow-hidden rounded-2xl shadow-none ${
+                isOpen ? 'border-white/20 bg-white/[0.03]' : 'border-white/[0.06] hover:border-white/15'
               }`}
             >
               <button
                 type="button"
                 onClick={() => toggleIndex(index)}
-                className="w-full p-5 text-left flex items-center justify-between gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 cursor-pointer"
                 aria-expanded={isOpen}
               >
-                <span className="font-space font-medium text-sm sm:text-base text-white flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                <span className="font-space font-medium text-sm sm:text-base text-[#F8FAFC] flex items-center gap-2.5">
+                  <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   {faq.question}
                 </span>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 text-purple-400' : ''
+                  className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 text-white' : ''
                   }`}
                 />
               </button>
 
               {isOpen && (
-                <CardContent className="px-5 pb-5 pt-0 text-xs sm:text-sm text-gray-300 leading-relaxed border-t border-white/5 mt-1 pt-3">
+                <CardContent className="px-5 sm:px-6 pb-6 pt-0 text-sm text-[#94A3B8] leading-relaxed border-t border-white/[0.06] mt-1 pt-4">
                   <p>{faq.answer}</p>
                 </CardContent>
               )}

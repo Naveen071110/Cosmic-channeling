@@ -26,7 +26,7 @@ const Home = () => {
         canonical="https://cosmic-channeling.vercel.app/"
       />
       {showWelcome && <WelcomeCarousel onComplete={handleOnboardingComplete} />}
-      <main className="container mx-auto px-4 py-8 space-y-16">
+      <main className="container max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 md:py-28 space-y-24 sm:space-y-32 md:space-y-40">
         {/* 1. Hero Section (Includes H1 and Semantic Header) */}
         <Hero />
 
@@ -36,14 +36,12 @@ const Home = () => {
         </section>
 
         {/* 3. Daily NASA Astronomy Picture of the Day (APOD) */}
-        <section aria-labelledby="nasa-apod-heading">
-          <div className="text-center mb-6">
-            <h2 id="nasa-apod-heading" className="text-2xl sm:text-3xl font-bold font-space">
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-sky-400 bg-clip-text text-transparent">
-                Deep Space Daily Discovery
-              </span>
+        <section aria-labelledby="nasa-apod-heading" className="space-y-8">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 id="nasa-apod-heading" className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white font-space">
+              Deep Space Daily Discovery
             </h2>
-            <p className="text-sm text-gray-400 mt-1 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed">
               Live celestial imagery from NASA’s deep-space observation satellites and space telescopes
             </p>
           </div>
@@ -53,12 +51,10 @@ const Home = () => {
         </section>
 
         {/* 4. Daily Cosmic Wisdom Channel */}
-        <section aria-labelledby="cosmic-inspiration-heading">
-          <div className="text-center mb-6">
-            <h2 id="cosmic-inspiration-heading" className="text-2xl sm:text-3xl font-bold font-space">
-              <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
-                Daily Cosmic Inspiration
-              </span>
+        <section aria-labelledby="cosmic-inspiration-heading" className="space-y-8">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 id="cosmic-inspiration-heading" className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white font-space">
+              Daily Cosmic Inspiration
             </h2>
           </div>
           <QuoteGenerator />
@@ -68,12 +64,10 @@ const Home = () => {
         <FeatureGrid />
 
         {/* 6. Astral Test */}
-        <section aria-labelledby="astral-test-heading">
-          <div className="text-center mb-8">
-            <h2 id="astral-test-heading" className="text-2xl sm:text-3xl font-bold font-space">
-              <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
-                Discover Your Cosmic Potential
-              </span>
+        <section aria-labelledby="astral-test-heading" className="space-y-8">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <h2 id="astral-test-heading" className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white font-space">
+              Discover Your Cosmic Potential
             </h2>
           </div>
           <AstralTest />

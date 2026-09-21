@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { cosmicAudio } from '@/lib/WebAudioCosmicSynth';
-import { Sparkles, Radio, Eye, RotateCw } from 'lucide-react';
+import { Sparkles, Radio, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CosmicPrism() {
@@ -141,19 +141,13 @@ export default function CosmicPrism() {
       }
 
       void main() {
-        // vUv.x: 0.0 (near prism) -> 1.0 (far right)
-        // vUv.y: 0.0 (violet 432Hz) -> 1.0 (red 285Hz)
         float hue = mix(0.78, 0.02, vUv.y);
         vec3 color = physhue2rgb(hue, 0.33);
 
-        // Volumetric distance falloff
         float alpha = smoothstep(0.02, 0.25, vUv.x) * (1.0 - smoothstep(0.65, 1.0, vUv.x));
-        
-        // Edge curve smoothing
         float edge = sin(vUv.y * 3.14159);
         alpha *= pow(edge, 0.55);
 
-        // Gentle cosmic shimmer
         float shimmer = 0.88 + 0.12 * sin(uTime * 3.5 + vUv.x * 12.0);
         alpha *= shimmer * uIntensity;
 
@@ -161,14 +155,12 @@ export default function CosmicPrism() {
       }
     `;
 
-    // Fan Plane Geometry: spreads wider as it moves away from the prism
     const fanGeometry = new THREE.PlaneGeometry(3.6, 2.4, 32, 32);
-    // Displace vertices into a fanning cone
     const pos = fanGeometry.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const y = pos.getY(i);
-      const progress = (x + 1.8) / 3.6; // 0 at left, 1 at right
+      const progress = (x + 1.8) / 3.6;
       pos.setY(i, y * (0.2 + progress * 1.1));
     }
     fanGeometry.computeVertexNormals();
@@ -324,7 +316,7 @@ export default function CosmicPrism() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full max-w-2xl h-72 sm:h-80 mx-auto my-4 rounded-2xl bg-gradient-to-b from-purple-950/20 via-black/40 to-transparent border border-purple-500/20 shadow-[0_0_40px_rgba(168,85,247,0.15)] backdrop-blur-sm overflow-hidden group select-none"
+      className="relative w-full max-w-2xl h-72 sm:h-80 mx-auto my-6 rounded-2xl bg-white/[0.02] border border-white/[0.08] backdrop-blur-md overflow-hidden group select-none transition-all duration-300 hover:border-white/15"
     >
       {/* 3D WebGL Canvas */}
       <canvas
@@ -333,32 +325,32 @@ export default function CosmicPrism() {
       />
 
       {/* Top Status & Interaction Hint Badge */}
-      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-purple-500/30 text-purple-200 text-xs font-mono backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-spin [animation-duration:8s]" />
+      <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/10 text-[#E2E8F0] text-xs font-mono backdrop-blur-md">
+          <Sparkles className="w-3.5 h-3.5 text-slate-300" />
           <span>Cosmic Light Channeler</span>
         </div>
 
-        <div className="inline-flex items-center gap-1 text-[11px] text-gray-400 bg-black/40 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm">
-          <RotateCw className="w-3 h-3 text-sky-400 animate-spin [animation-duration:12s]" />
+        <div className="inline-flex items-center gap-1 text-[11px] text-[#94A3B8] bg-black/40 px-2.5 py-1 rounded-full border border-white/5 backdrop-blur-sm">
+          <RotateCw className="w-3 h-3 text-slate-400" />
           <span>Drag to rotate prism</span>
         </div>
       </div>
 
       {/* Interactive Solfeggio Resonance Triggers along the Spectrum */}
-      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+      <div className="absolute bottom-3.5 left-3.5 right-3.5 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => triggerFrequencyTone(432)}
-            className={`h-7 px-2.5 text-xs font-mono transition-all backdrop-blur-md ${
+            className={`h-7 px-3 text-xs font-mono rounded-lg transition-all backdrop-blur-md ${
               activeFrequency === 432
-                ? 'bg-purple-600 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.8)] scale-105'
-                : 'bg-black/60 hover:bg-purple-950/60 text-purple-300 border-purple-500/30'
+                ? 'bg-white text-black border-white shadow-sm scale-105'
+                : 'bg-black/60 hover:bg-white/10 text-slate-300 border-white/10 hover:text-white'
             }`}
           >
-            <Radio className="w-3 h-3 mr-1 text-pink-400" />
+            <Radio className="w-3 h-3 mr-1 text-slate-400" />
             432 Hz Violet Ray
           </Button>
 
@@ -366,18 +358,18 @@ export default function CosmicPrism() {
             size="sm"
             variant="outline"
             onClick={() => triggerFrequencyTone(528)}
-            className={`h-7 px-2.5 text-xs font-mono transition-all backdrop-blur-md ${
+            className={`h-7 px-3 text-xs font-mono rounded-lg transition-all backdrop-blur-md ${
               activeFrequency === 528
-                ? 'bg-emerald-600 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.8)] scale-105'
-                : 'bg-black/60 hover:bg-emerald-950/60 text-emerald-300 border-emerald-500/30'
+                ? 'bg-white text-black border-white shadow-sm scale-105'
+                : 'bg-black/60 hover:bg-white/10 text-slate-300 border-white/10 hover:text-white'
             }`}
           >
-            <Radio className="w-3 h-3 mr-1 text-emerald-400" />
+            <Radio className="w-3 h-3 mr-1 text-slate-400" />
             528 Hz Emerald Ray
           </Button>
         </div>
 
-        <span className="hidden sm:inline text-[11px] text-purple-300/80 font-mono">
+        <span className="hidden sm:inline text-[11px] text-[#94A3B8] font-mono">
           {activeFrequency ? `Resonating at ${activeFrequency} Hz` : 'Click ray to sound chime'}
         </span>
       </div>

@@ -166,31 +166,31 @@ export default function AstralTest() {
   
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <Card className="bg-black/40 backdrop-blur-sm border-purple-500/30">
-        <CardHeader>
-          <CardTitle className="text-xl text-white flex items-center">
-            <Star className="mr-2 h-5 w-5 text-purple-400" />
+      <Card className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-md rounded-2xl shadow-none">
+        <CardHeader className="pb-4 border-b border-white/[0.06]">
+          <CardTitle className="text-xl font-semibold font-space text-[#F8FAFC] flex items-center">
+            <Star className="mr-2 h-4 w-4 text-slate-300" />
             Astral Connection Test
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs text-[#94A3B8] font-normal">
             Discover your cosmic connection strength and astral potential
           </CardDescription>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="pt-6">
           {stage === 'start' && (
             <div className="text-center py-6 space-y-6">
-              <Sparkles className="mx-auto h-16 w-16 text-purple-400" />
-              <div>
-                <h3 className="text-xl font-medium text-white mb-2">Measure Your Cosmic Connection</h3>
-                <p className="text-gray-300 max-w-lg mx-auto">
+              <Sparkles className="mx-auto h-12 w-12 text-slate-300" />
+              <div className="space-y-2">
+                <h3 className="text-xl font-medium font-space text-[#F8FAFC]">Measure Your Cosmic Connection</h3>
+                <p className="text-sm text-[#94A3B8] max-w-lg mx-auto leading-relaxed">
                   This quick assessment will help you understand your natural connection to cosmic energies
                   and identify your spiritual strengths and potential abilities.
                 </p>
               </div>
               <Button 
                 onClick={startTest}
-                className="bg-purple-700 hover:bg-purple-800 mt-4"
+                className="bg-white text-black hover:bg-slate-200 font-medium rounded-xl h-11 px-7 shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer mt-2"
               >
                 Begin Assessment
               </Button>
@@ -200,28 +200,31 @@ export default function AstralTest() {
           {stage === 'test' && (
             <div className="space-y-6">
               <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">Question {currentQuestion + 1} of {questions.length}</span>
-                  <span className="text-purple-400">{progressPercentage}% Complete</span>
+                <div className="flex justify-between text-xs font-mono mb-2">
+                  <span className="text-[#94A3B8]">Question {currentQuestion + 1} of {questions.length}</span>
+                  <span className="text-slate-300">{progressPercentage}% Complete</span>
                 </div>
-                <Progress value={progressPercentage} className="h-2 bg-gray-800" />
+                <Progress value={progressPercentage} className="h-1.5 bg-white/[0.06]" />
               </div>
               
               <div>
-                <h3 className="text-lg font-medium text-white mb-4">
+                <h3 className="text-base sm:text-lg font-medium font-space text-[#F8FAFC] mb-4">
                   {questions[currentQuestion].text}
                 </h3>
                 
                 <RadioGroup className="space-y-3">
                   {questions[currentQuestion].options.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
+                    <div 
+                      key={option.value} 
+                      onClick={() => selectAnswer(option.value)}
+                      className="flex items-center space-x-3 p-3.5 rounded-xl border border-white/[0.06] hover:border-white/20 hover:bg-white/[0.02] transition-all cursor-pointer"
+                    >
                       <RadioGroupItem 
                         id={option.value} 
                         value={option.value}
-                        onClick={() => selectAnswer(option.value)}
-                        className="border-purple-500"
+                        className="border-white/30 text-white"
                       />
-                      <Label htmlFor={option.value} className="text-gray-200">
+                      <Label htmlFor={option.value} className="text-sm text-[#E2E8F0] cursor-pointer font-normal">
                         {option.label}
                       </Label>
                     </div>
@@ -232,32 +235,32 @@ export default function AstralTest() {
           )}
           
           {stage === 'results' && result && (
-            <div className="space-y-6">
+            <div className="space-y-6 py-2">
               <div className="text-center">
-                <Award className="mx-auto h-16 w-16 text-purple-400" />
-                <h3 className="text-2xl font-medium text-white mt-4">
+                <Award className="mx-auto h-12 w-12 text-slate-300" />
+                <h3 className="text-2xl font-semibold font-space text-[#F8FAFC] mt-4">
                   {result.level}
                 </h3>
-                <div className="mt-2">
-                  <span className="text-4xl font-bold text-purple-400">
+                <div className="mt-3">
+                  <span className="text-5xl font-semibold font-space text-white tracking-tight">
                     {result.score}%
                   </span>
-                  <p className="text-gray-400 mt-1">Cosmic Connection Strength</p>
+                  <p className="text-xs text-[#94A3B8] mt-1 font-mono uppercase tracking-wider">Cosmic Connection Strength</p>
                 </div>
               </div>
               
               <div>
-                <p className="text-gray-300">{result.description}</p>
+                <p className="text-sm text-[#94A3B8] leading-relaxed text-center max-w-lg mx-auto">{result.description}</p>
               </div>
               
-              <div>
-                <h4 className="text-md font-medium text-white mb-2">Potential Abilities</h4>
-                <div className="flex flex-wrap gap-2">
+              <div className="pt-2">
+                <h4 className="text-xs font-mono uppercase tracking-widest text-[#94A3B8] mb-3 text-center">Potential Abilities</h4>
+                <div className="flex flex-wrap gap-2 justify-center">
                   {result.abilities.map((ability, index) => (
                     <Badge 
                       key={index}
                       variant="outline"
-                      className="bg-purple-900/20 text-purple-300 border-purple-500/30"
+                      className="bg-white/[0.03] text-slate-200 border-white/10 font-mono text-xs py-1 px-3"
                     >
                       {ability}
                     </Badge>
@@ -269,12 +272,12 @@ export default function AstralTest() {
         </CardContent>
         
         {stage === 'results' && (
-          <CardFooter className="border-t border-gray-800 pt-4 flex justify-center">
+          <CardFooter className="border-t border-white/[0.06] pt-4 flex justify-center">
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               onClick={resetTest}
-              className="bg-purple-700 hover:bg-purple-800"
+              className="border-white/15 hover:bg-white/[0.06] text-white rounded-xl h-9 px-5 text-xs font-medium backdrop-blur-sm"
             >
               Take Test Again
             </Button>

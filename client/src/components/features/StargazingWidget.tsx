@@ -130,18 +130,18 @@ export default function StargazingWidget() {
   const solar = cycles?.solar;
 
   return (
-    <Card className="bg-gradient-to-br from-[#0F172A] via-[#111827] to-[#0A0F1D] border-[#1E293B] shadow-xl overflow-hidden">
-      <CardHeader className="pb-4 border-b border-white/5">
+    <Card className="bg-white/[0.02] border border-white/[0.08] backdrop-blur-md rounded-2xl overflow-hidden shadow-none transition-all duration-300">
+      <CardHeader className="pb-4 border-b border-white/[0.06]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#0EA5E9]" />
-              <CardTitle className="text-xl font-bold font-space text-white">
+              <Sparkles className="h-4 w-4 text-slate-300" />
+              <CardTitle className="text-xl font-semibold font-space text-[#F8FAFC]">
                 Live Cosmic Stargazing & Solar Alignment
               </CardTitle>
             </div>
-            <CardDescription className="text-xs text-gray-400 flex items-center gap-1.5 mt-1">
-              <MapPin className="h-3.5 w-3.5 text-purple-400" />
+            <CardDescription className="text-xs text-[#94A3B8] flex items-center gap-1.5 mt-1 font-normal">
+              <MapPin className="h-3.5 w-3.5 text-slate-400" />
               {isLocating ? 'Acquiring coordinates...' : `${locName} (${coords.lat}°, ${coords.lng}°)`}
             </CardDescription>
           </div>
@@ -154,7 +154,7 @@ export default function StargazingWidget() {
               refetchCycles();
             }}
             disabled={isFetchingSky}
-            className="text-xs text-gray-400 hover:text-white self-start sm:self-auto h-8 px-2.5"
+            className="text-xs text-[#94A3B8] hover:text-white hover:bg-white/[0.04] self-start sm:self-auto h-8 px-3 rounded-lg border border-white/10"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isFetchingSky ? 'animate-spin' : ''}`} />
             Live Sync
@@ -165,35 +165,35 @@ export default function StargazingWidget() {
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* 1. Stargazing Index Gauge */}
-          <div className="flex flex-col justify-between p-5 rounded-xl bg-black/40 border border-white/5 relative overflow-hidden">
+          <div className="flex flex-col justify-between p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all duration-300 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#94A3B8]">
                 Night Sky Clarity
               </span>
-              <Eye className="h-4 w-4 text-[#0EA5E9]" />
+              <Eye className="h-4 w-4 text-slate-400" />
             </div>
 
             <div className="my-4 flex items-baseline gap-3">
-              <div className="text-5xl font-black font-space bg-gradient-to-r from-cyan-400 via-sky-300 to-purple-400 bg-clip-text text-transparent">
+              <div className="text-5xl font-semibold font-space text-white tracking-tight">
                 {isLoadingSky ? '--' : score}
               </div>
               <div className="flex flex-col">
-                <span className="text-xs text-gray-400 font-medium">/ 100 Index</span>
+                <span className="text-xs text-[#94A3B8] font-medium">/ 100 Index</span>
                 <Badge className={`text-xs px-2 py-0.5 mt-1 border ${getScoreColor(score)}`}>
                   {stargazing?.qualityRating || 'Calculating...'}
                 </Badge>
               </div>
             </div>
 
-            <p className="text-xs text-gray-300 leading-relaxed">
+            <p className="text-xs text-[#94A3B8] leading-relaxed font-normal">
               {stargazing?.advice ||
                 'Clear atmospheric stability projected. Ideal for tracking constellations and planetary alignments.'}
             </p>
 
             {/* Quick atmospheric stats */}
-            <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/5 text-center text-xs text-gray-400">
+            <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/[0.06] text-center text-xs text-[#94A3B8]">
               <div>
-                <div className="flex items-center justify-center gap-1 text-gray-500 mb-0.5">
+                <div className="flex items-center justify-center gap-1 text-slate-400 mb-0.5">
                   <Cloud className="h-3 w-3" />
                   <span>Cloud</span>
                 </div>
@@ -202,7 +202,7 @@ export default function StargazingWidget() {
                 </span>
               </div>
               <div>
-                <div className="flex items-center justify-center gap-1 text-gray-500 mb-0.5">
+                <div className="flex items-center justify-center gap-1 text-slate-400 mb-0.5">
                   <Wind className="h-3 w-3" />
                   <span>Wind</span>
                 </div>
@@ -211,7 +211,7 @@ export default function StargazingWidget() {
                 </span>
               </div>
               <div>
-                <div className="flex items-center justify-center gap-1 text-gray-500 mb-0.5">
+                <div className="flex items-center justify-center gap-1 text-slate-400 mb-0.5">
                   <Compass className="h-3 w-3" />
                   <span>Temp</span>
                 </div>
@@ -223,53 +223,53 @@ export default function StargazingWidget() {
           </div>
 
           {/* 2. Lunar Phase & Illumination */}
-          <div className="flex flex-col justify-between p-5 rounded-xl bg-black/40 border border-white/5 relative overflow-hidden">
+          <div className="flex flex-col justify-between p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all duration-300 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#94A3B8]">
                 Current Lunar Phase
               </span>
-              <Moon className="h-4 w-4 text-purple-400" />
+              <Moon className="h-4 w-4 text-slate-400" />
             </div>
 
             <div className="my-4 flex items-center gap-4">
-              <div className="text-4xl filter drop-shadow-[0_0_12px_rgba(236,72,153,0.4)]">
+              <div className="text-4xl">
                 {lunar?.emoji || '🌕'}
               </div>
               <div>
-                <h4 className="text-lg font-bold font-space text-white">
+                <h4 className="text-lg font-medium font-space text-white">
                   {lunar?.phaseName || 'Full Moon'}
                 </h4>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs text-purple-300 border-purple-500/30">
+                  <Badge variant="outline" className="text-xs text-slate-300 border-white/10 bg-white/[0.02]">
                     {lunar?.illuminationPercent ?? 98}% Illuminated
                   </Badge>
-                  <span className="text-xs text-gray-500">Day {lunar?.ageDays ?? 14}</span>
+                  <span className="text-xs text-slate-500">Day {lunar?.ageDays ?? 14}</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/20">
-              <span className="text-[11px] font-semibold text-purple-300 uppercase tracking-wider block mb-1">
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-widest block mb-1">
                 Cosmic Spiritual Energy
               </span>
-              <p className="text-xs text-gray-200 italic">
+              <p className="text-xs text-[#94A3B8] italic leading-relaxed">
                 "{lunar?.theme || 'Enhanced intuition, spiritual awareness & manifestation'}"
               </p>
             </div>
           </div>
 
           {/* 3. Solar & Deep Sky Twilight Windows */}
-          <div className="flex flex-col justify-between p-5 rounded-xl bg-black/40 border border-white/5">
+          <div className="flex flex-col justify-between p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all duration-300">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#94A3B8]">
                 Celestial Alignment Windows
               </span>
-              <Sun className="h-4 w-4 text-amber-400" />
+              <Sun className="h-4 w-4 text-slate-400" />
             </div>
 
             <div className="space-y-2.5 my-3 text-xs">
-              <div className="flex items-center justify-between p-2 rounded bg-white/[0.03]">
-                <div className="flex items-center gap-2 text-amber-300">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                <div className="flex items-center gap-2 text-slate-300">
                   <Sun className="h-3.5 w-3.5" />
                   <span>Sunrise / Sunset</span>
                 </div>
@@ -278,8 +278,8 @@ export default function StargazingWidget() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2 rounded bg-white/[0.03]">
-                <div className="flex items-center gap-2 text-sky-300">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                <div className="flex items-center gap-2 text-slate-300">
                   <Clock className="h-3.5 w-3.5" />
                   <span>Dusk Meditation Window</span>
                 </div>
@@ -288,8 +288,8 @@ export default function StargazingWidget() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-2 rounded bg-white/[0.03]">
-                <div className="flex items-center gap-2 text-purple-300">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                <div className="flex items-center gap-2 text-slate-300">
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Deep Dark Sky (Astro)</span>
                 </div>
@@ -299,8 +299,8 @@ export default function StargazingWidget() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-gray-400">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-[11px] text-[#94A3B8]">
+              <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
               <span>
                 Solar Day Length: <strong className="text-white">{solar?.dayLengthFormatted || '12h 30m'}</strong>
               </span>

@@ -76,7 +76,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <div className="min-h-screen text-[#F8FAFC] bg-[#0F172A] flex flex-col">
+          <div className="min-h-screen text-[#F8FAFC] bg-[#090A0F] flex flex-col selection:bg-white/20 selection:text-white">
             <StarBackground />
             <Toaster />
             <Router>

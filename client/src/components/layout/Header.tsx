@@ -27,56 +27,56 @@ const Header = () => {
 
   return (
     <>
-      <header className="py-4 px-6 flex justify-between items-center border-b border-[#334155]">
-        <Link href="/" className="flex items-center space-x-2 cursor-pointer">
-          <div className="w-10 h-10 rounded-full bg-[#7E22CE] flex items-center justify-center shadow-md shadow-purple-900/40">
-            <i className="ri-planet-line text-xl text-[#F8FAFC]"></i>
+      <header className="py-4 px-6 flex justify-between items-center border-b border-white/[0.08] bg-[#090A0F]/80 backdrop-blur-md sticky top-0 z-40">
+        <Link href="/" className="flex items-center space-x-3 cursor-pointer">
+          <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center">
+            <i className="ri-planet-line text-lg text-[#F8FAFC]"></i>
           </div>
-          <h1 className="text-xl font-space font-bold bg-gradient-to-r from-[#EC4899] to-[#0EA5E9] bg-clip-text text-transparent">
+          <span className="text-lg font-space font-semibold text-[#F8FAFC] tracking-tight">
             Cosmic Channeling
-          </h1>
+          </span>
         </Link>
         
-        <nav className="hidden lg:flex space-x-6">
-          <Link href="/" className={`transition-colors ${isActive('/') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+        <nav className="hidden lg:flex space-x-7">
+          <Link href="/" className={`text-sm transition-colors ${isActive('/') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Home
           </Link>
-          <Link href="/meditate" className={`transition-colors ${isActive('/meditate') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+          <Link href="/meditate" className={`text-sm transition-colors ${isActive('/meditate') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Meditate
           </Link>
-          <Link href="/explore" className={`transition-colors ${isActive('/explore') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+          <Link href="/explore" className={`text-sm transition-colors ${isActive('/explore') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Explore
           </Link>
-          <Link href="/journal" className={`transition-colors ${isActive('/journal') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+          <Link href="/journal" className={`text-sm transition-colors ${isActive('/journal') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Journal
           </Link>
-          <Link href="/tools" className={`transition-colors ${isActive('/tools') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+          <Link href="/tools" className={`text-sm transition-colors ${isActive('/tools') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Tools
           </Link>
-          <Link href="/blog" className={`transition-colors ${isActive('/blog') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+          <Link href="/blog" className={`text-sm transition-colors ${isActive('/blog') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Blog
           </Link>
-          <Link href="/religions" className={`transition-colors ${isActive('/religions') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#0EA5E9]'}`}>
+          <Link href="/religions" className={`text-sm transition-colors ${isActive('/religions') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Religions
           </Link>
-          <Link href="/profile" className={`transition-colors ${isActive('/profile') ? 'text-[#F1F5F9] font-medium' : 'text-[#64748B] hover:text-[#EC4899]'}`}>
+          <Link href="/profile" className={`text-sm transition-colors ${isActive('/profile') ? 'text-white font-medium' : 'text-[#94A3B8] hover:text-white'}`}>
             Profile
           </Link>
         </nav>
         
         <div className="flex items-center space-x-3">
-          <a href="https://www.youtube.com/@CosmicChanneling001" target="_blank" rel="noopener noreferrer" className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors p-1" aria-label="YouTube Channel">
+          <a href="https://www.youtube.com/@CosmicChanneling001" target="_blank" rel="noopener noreferrer" className="text-[#94A3B8] hover:text-white transition-colors p-1" aria-label="YouTube Channel">
             <i className="ri-youtube-line text-lg"></i>
           </a>
-          <a href="/#newsletter" className="text-[#F1F5F9] hover:text-[#EC4899] transition-colors p-1" aria-label="Newsletter">
+          <a href="/#community" className="text-[#94A3B8] hover:text-white transition-colors p-1" aria-label="Newsletter">
             <i className="ri-mail-line text-lg"></i>
           </a>
 
           {user ? (
-            <div className="flex items-center gap-2 pl-2 border-l border-[#334155]">
+            <div className="flex items-center gap-2 pl-2 border-l border-white/10">
               <Link href="/profile">
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/30 text-xs text-purple-200 cursor-pointer transition-all">
-                  <UserIcon className="w-3.5 h-3.5 text-purple-400" />
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs text-slate-200 cursor-pointer transition-all">
+                  <UserIcon className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-medium max-w-[100px] truncate">{user.username}</span>
                 </div>
               </Link>
@@ -85,7 +85,7 @@ const Header = () => {
                 size="sm"
                 onClick={() => logoutMutation.mutate()}
                 disabled={logoutMutation.isPending}
-                className="text-gray-400 hover:text-red-400 hover:bg-red-950/20 text-xs h-8 px-2.5"
+                className="text-slate-400 hover:text-white hover:bg-white/[0.04] text-xs h-8 px-2.5 rounded-lg"
                 title="Sign Out"
               >
                 <LogOut className="w-4 h-4" />
@@ -96,7 +96,7 @@ const Header = () => {
             <Link href="/auth">
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-[#7E22CE] to-[#EC4899] hover:opacity-90 text-white text-xs h-8 px-3.5 shadow-sm"
+                className="bg-white text-black hover:bg-slate-200 font-medium text-xs h-8 px-4 rounded-lg shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
               >
                 <LogIn className="w-3.5 h-3.5 mr-1.5" />
                 Sign In
@@ -116,73 +116,50 @@ const Header = () => {
 
       {/* Mobile Navigation Menu */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-[#0F172A] bg-opacity-95 z-50 p-6 flex flex-col justify-between">
+        <div className="fixed inset-0 bg-[#090A0F]/98 backdrop-blur-xl z-50 p-6 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-[#7E22CE] flex items-center justify-center">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center">
                   <i className="ri-planet-line text-base text-[#F8FAFC]"></i>
                 </div>
-                <span className="font-space font-bold text-white">Cosmic Channeling</span>
+                <span className="font-space font-semibold text-white">Cosmic Channeling</span>
               </div>
-              <button aria-label="Close menu" onClick={closeMenu} className="text-gray-400 hover:text-white">
+              <button aria-label="Close menu" onClick={closeMenu} className="text-slate-400 hover:text-white">
                 <i className="ri-close-line text-2xl"></i>
               </button>
             </div>
             
             <nav className="flex flex-col space-y-5 text-lg">
-              <Link href="/" onClick={closeMenu} className={isActive('/') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/" onClick={closeMenu} className={isActive('/') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Home
               </Link>
-              <Link href="/meditate" onClick={closeMenu} className={isActive('/meditate') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/meditate" onClick={closeMenu} className={isActive('/meditate') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Meditate
               </Link>
-              <Link href="/explore" onClick={closeMenu} className={isActive('/explore') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/explore" onClick={closeMenu} className={isActive('/explore') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Explore
               </Link>
-              <Link href="/journal" onClick={closeMenu} className={isActive('/journal') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/journal" onClick={closeMenu} className={isActive('/journal') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Journal
               </Link>
-              <Link href="/tools" onClick={closeMenu} className={isActive('/tools') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/tools" onClick={closeMenu} className={isActive('/tools') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Tools
               </Link>
-              <Link href="/blog" onClick={closeMenu} className={isActive('/blog') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/blog" onClick={closeMenu} className={isActive('/blog') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Blog
               </Link>
-              <Link href="/religions" onClick={closeMenu} className={isActive('/religions') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
+              <Link href="/religions" onClick={closeMenu} className={isActive('/religions') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
                 Religions
               </Link>
-              <Link href="/profile" onClick={closeMenu} className={isActive('/profile') ? 'text-[#EC4899] font-medium' : 'text-gray-300'}>
-                Profile &amp; Alignment
+              <Link href="/profile" onClick={closeMenu} className={isActive('/profile') ? 'text-white font-medium' : 'text-[#94A3B8]'}>
+                Profile
               </Link>
             </nav>
           </div>
 
-          <div className="pt-6 border-t border-white/10">
-            {user ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-900 flex items-center justify-center text-purple-200 font-bold">
-                    {user.username.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-white">{user.username}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => { logoutMutation.mutate(); closeMenu(); }}
-                  className="text-xs border-red-500/30 text-red-400 hover:bg-red-950/20"
-                >
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <Link href="/auth" onClick={closeMenu}>
-                <Button className="w-full bg-gradient-to-r from-[#7E22CE] to-[#EC4899] text-white">
-                  Sign In / Register
-                </Button>
-              </Link>
-            )}
+          <div className="pt-6 border-t border-white/[0.08]">
+            <p className="text-xs text-[#94A3B8]">Deep Space Sanctuary & Solfeggio Meditation</p>
           </div>
         </div>
       )}

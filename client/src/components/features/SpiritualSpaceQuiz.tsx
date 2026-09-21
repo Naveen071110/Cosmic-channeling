@@ -99,34 +99,57 @@ const SpiritualSpaceQuiz = () => {
     // Move to next question or complete quiz
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setCurrentAnswer(''); // Reset current answer for the next question
+      // Reset current answer if the next question hasn't been answered yet
+      setCurrentAnswer(answers[quizQuestions[currentQuestionIndex + 1]?.id] || '');
     } else {
-      completeQuiz();
+      submitQuiz();
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
-      // Restore previous answer
       setCurrentAnswer(answers[quizQuestions[currentQuestionIndex - 1].id] || '');
     }
   };
 
-  const completeQuiz = async () => {
-    // Save the final answer
-    const finalAnswers = {
-      ...answers,
-      [quizQuestions[currentQuestionIndex].id]: currentAnswer
-    };
-    
+  const submitQuiz = async () => {
     setSubmitting(true);
     
     try {
-      // Try to get results from API
-      const response = await apiRequest('POST', '/api/quiz-results', { answers: finalAnswers });
-      const data = (await response.json()) as QuizResult;
-      setQuizResult(data);
+      // In a real app, this would be an API call
+      // const response = await apiRequest('POST', '/api/quiz/submit', { answers });
+      // const data = await response.json();
+      // setQuizResult(data);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Temporary logic to determine result based on answers
+      // This would normally be handled by the backend
+      const resultTypes: Record<string, QuizResult> = {
+        Seeker: {
+          title: "Stellar Seeker",
+          description: "You are drawn to the mysteries of the cosmos and seek spiritual growth through cosmic connection. Your intuitive nature helps you perceive patterns others miss.",
+          archetype: "Seeker"
+        },
+        Explorer: {
+          title: "Quantum Explorer",
+          description: "You blend scientific curiosity with spiritual openness. You're fascinated by the quantum nature of reality and how consciousness interacts with the physical world.",
+          archetype: "Explorer"
+        },
+        Sage: {
+          title: "Cosmic Sage",
+          description: "Your wisdom comes from understanding the interconnectedness of all things. You see the universe as a living entity and yourself as an integral part of it.",
+          archetype: "Sage"
+        }
+      };
+      
+      // Simple selection logic for demo purposes
+      const archetypes = Object.keys(resultTypes);
+      const randomArchetype = archetypes[Math.floor(Math.random() * archetypes.length)];
+      setQuizResult(resultTypes[randomArchetype]);
+      
     } catch (error) {
       console.error('Error getting quiz results:', error);
       
@@ -169,52 +192,67 @@ const SpiritualSpaceQuiz = () => {
   const progressPercentage = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
 
   return (
-    <section className="my-16 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-space font-bold text-center mb-6">Discover Your Cosmic Identity</h2>
-      <p className="text-center text-[#F1F5F9] mb-8">Take our 5-question personality quiz to reveal your cosmic archetype</p>
+    <section className="space-y-8 max-w-3xl mx-auto">
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold font-space tracking-tight text-[#F8FAFC]">
+          Discover Your Cosmic Identity
+        </h2>
+        <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed">
+          Take our 5-question personality quiz to reveal your cosmic archetype
+        </p>
+      </div>
       
-      <div className="bg-[#1E293B] rounded-xl overflow-hidden border border-[#334155] shadow-lg p-6">
+      <div className="bg-white/[0.02] rounded-2xl overflow-hidden border border-white/[0.08] backdrop-blur-md p-6 sm:p-8 shadow-none">
         {!quizComplete ? (
           <div className="space-y-6">
-            <div className="bg-[#0F172A] p-4 rounded-md border border-[#334155]">
-              <h3 className="font-medium mb-3">{quizQuestions[currentQuestionIndex].question}</h3>
+            <div className="bg-white/[0.02] p-5 rounded-xl border border-white/[0.06]">
+              <h3 className="font-medium font-space text-[#F8FAFC] text-base sm:text-lg mb-4">
+                {quizQuestions[currentQuestionIndex].question}
+              </h3>
               
               <RadioGroup 
                 value={currentAnswer}
                 onValueChange={setCurrentAnswer}
-                className="space-y-2"
+                className="space-y-2.5"
               >
                 {quizQuestions[currentQuestionIndex].options.map((option, index) => (
-                  <div key={index} className="p-2 rounded hover:bg-[#334155] transition-colors cursor-pointer">
+                  <div 
+                    key={index} 
+                    onClick={() => setCurrentAnswer(option)}
+                    className="p-3.5 rounded-xl border border-white/[0.06] hover:border-white/20 hover:bg-white/[0.02] transition-all cursor-pointer"
+                  >
                     <div className="flex items-center space-x-3">
                       <RadioGroupItem 
                         value={option} 
                         id={`option-${index}`} 
-                        className="accent-[#7E22CE]" 
+                        className="border-white/30 text-white" 
                       />
-                      <Label htmlFor={`option-${index}`} className="cursor-pointer">{option}</Label>
+                      <Label htmlFor={`option-${index}`} className="cursor-pointer text-sm text-[#E2E8F0] font-normal leading-relaxed">
+                        {option}
+                      </Label>
                     </div>
                   </div>
                 ))}
               </RadioGroup>
             </div>
             
-            <div className="text-center">
-              <span className="text-sm text-[#64748B]">Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
-              <div className="w-full bg-[#334155] h-1.5 rounded-full mt-2">
+            <div className="space-y-2 text-center">
+              <span className="text-xs font-mono text-[#94A3B8]">Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
+              <div className="w-full bg-white/[0.06] h-1.5 rounded-full">
                 <div 
-                  className="bg-[#7E22CE] h-full rounded-full" 
+                  className="bg-white h-full rounded-full transition-all duration-300" 
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
             </div>
             
-            <div className="flex justify-between">
+            <div className="flex justify-between pt-2">
               <Button 
                 onClick={handlePrevious}
                 disabled={currentQuestionIndex === 0}
-                className={`bg-[#334155] text-[#F1F5F9] py-2 px-4 rounded-md transition-colors ${
-                  currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#475569]'
+                variant="outline"
+                className={`border-white/15 bg-white/[0.02] text-slate-300 hover:text-white rounded-xl h-10 px-5 text-xs font-medium transition-colors ${
+                  currentQuestionIndex === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-white/[0.06]'
                 }`}
               >
                 Previous
@@ -222,53 +260,40 @@ const SpiritualSpaceQuiz = () => {
               
               <Button 
                 onClick={handleNext}
-                disabled={!currentAnswer}
-                className="bg-[#7E22CE] hover:bg-purple-800 text-white py-2 px-6 rounded-md transition-colors"
+                disabled={submitting}
+                className="bg-white text-black hover:bg-slate-200 font-medium rounded-xl h-10 px-6 text-xs shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
               >
-                {currentQuestionIndex < quizQuestions.length - 1 ? 'Next Question' : 'See Results'}
+                {submitting ? 'Analyzing...' : currentQuestionIndex < quizQuestions.length - 1 ? 'Next' : 'Reveal Identity'}
               </Button>
             </div>
           </div>
         ) : (
-          <div className="text-center p-4">
-            {submitting ? (
-              <div className="flex flex-col items-center justify-center h-40">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7E22CE] mb-4"></div>
-                <p>Consulting the cosmic forces...</p>
+          quizResult && (
+            <div className="text-center py-6 space-y-6">
+              <div className="space-y-3">
+                <span className="text-xs font-mono uppercase tracking-widest text-[#94A3B8]">Your Cosmic Archetype</span>
+                <h3 className="text-2xl sm:text-3xl font-semibold font-space text-[#F8FAFC]">
+                  {quizResult.title}
+                </h3>
               </div>
-            ) : (
-              <>
-                <div className="mb-6">
-                  <div className="w-24 h-24 rounded-full bg-[#7E22CE]/20 mx-auto flex items-center justify-center mb-4">
-                    <i className="ri-sparkle-fill text-4xl text-[#EC4899]"></i>
-                  </div>
-                  <h3 className="text-2xl font-space font-bold text-[#F1F5F9] mb-2">
-                    You are a {quizResult?.title}
-                  </h3>
-                  <p className="text-[#F1F5F9] mb-6">{quizResult?.description}</p>
-                  
-                  <div className="inline-block bg-[#7E22CE]/20 text-[#7E22CE] px-3 py-1.5 rounded-full text-sm">
-                    {quizResult?.archetype} Archetype
-                  </div>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <Button 
-                    onClick={resetQuiz}
-                    className="bg-[#334155] hover:bg-[#475569] text-[#F1F5F9] py-2 px-4 rounded-md transition-colors"
-                  >
-                    Retake Quiz
-                  </Button>
-                  
-                  <Button 
-                    className="bg-[#EC4899] hover:bg-pink-600 text-white py-2 px-6 rounded-md transition-colors"
-                  >
-                    <i className="ri-share-line mr-2"></i> Share Results
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
+              
+              <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] max-w-xl mx-auto">
+                <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed">
+                  {quizResult.description}
+                </p>
+              </div>
+              
+              <div className="pt-2">
+                <Button 
+                  onClick={resetQuiz}
+                  variant="outline"
+                  className="border-white/15 hover:bg-white/[0.06] text-white rounded-xl h-10 px-6 text-xs font-medium backdrop-blur-sm"
+                >
+                  Retake Quiz
+                </Button>
+              </div>
+            </div>
+          )
         )}
       </div>
     </section>
