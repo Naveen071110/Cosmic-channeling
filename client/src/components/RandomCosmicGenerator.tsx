@@ -79,7 +79,7 @@ export default function RandomCosmicGenerator() {
           ) : (
             <img 
               src={pattern.imageUrl} 
-              alt="Cosmic Oracle" 
+              alt={pattern.question ? `Cosmic oracle contemplation: ${pattern.question}` : "Cosmic oracle celestial starlight contemplation"} 
               className="w-full h-full object-cover transition-transform hover:scale-105 duration-500" 
               loading="lazy"
             />

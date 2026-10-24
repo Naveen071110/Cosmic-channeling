@@ -124,7 +124,7 @@ export default function HolographicIdCard({
               {photoURL ? (
                 <img
                   src={photoURL}
-                  alt={username || 'User avatar'}
+                  alt={username ? `${username}'s cosmic identity holographic portrait` : 'Cosmic citizen avatar portrait'}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-purple-400/60 shadow-lg shadow-purple-950/60"
                 />
               ) : (

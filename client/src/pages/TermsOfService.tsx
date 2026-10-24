@@ -1,11 +1,7 @@
 import React from 'react';
 import SEO from '@/components/SEO';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { FileText, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 const TermsOfService = () => {
   return (
@@ -15,102 +11,72 @@ const TermsOfService = () => {
         description="Review the terms and conditions for exploring Cosmic Channeling, accessing public space telemetry, and using our meditation tools."
         canonical="https://cosmic-channeling.vercel.app/terms"
       />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Card className="bg-[#1E293B] border-[#334155]">
-        <CardHeader>
-          <h1 className="text-3xl text-center mb-2 font-space font-bold">
-            <span className="bg-gradient-to-r from-[#EC4899] to-[#0EA5E9] bg-clip-text text-transparent">
-              Terms of Service
-            </span>
+      <div className="container mx-auto px-4 py-16 max-w-4xl space-y-8">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono tracking-widest text-[#94A3B8] uppercase">
+            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Sanctuary Guidelines</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold font-space text-[#F8FAFC] tracking-tight">
+            Terms of Service
           </h1>
-          <p className="text-center text-muted-foreground">Last Updated: 04/21/2025</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-[#F1F5F9]">
-            By using Cosmic Channeling, you agree to these terms. If you disagree, the universe might side-eye you. 🌌
+          <p className="text-xs sm:text-sm text-[#94A3B8] font-mono">
+            Effective Date: October 24, 2026
+          </p>
+        </div>
+
+        <Card className="bg-white/[0.02] border-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-10 space-y-8 text-sm leading-relaxed text-[#94A3B8]">
+          <p className="text-[#E2E8F0]">
+            By accessing or using Cosmic Channeling, you agree to comply with and be bound by these Terms of Service. If you disagree with any part of these terms, please discontinue access to the sanctuary.
           </p>
 
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">1. Acceptance of Terms</h3>
-            <p className="text-[#F1F5F9]">
-              Accessing this website means you accept our Terms of Service and Privacy Policy.
+          <section className="space-y-3">
+            <h2 className="text-lg font-space font-semibold text-[#F8FAFC]">1. Acceptance of Terms</h2>
+            <p>
+              These Terms apply to all visitors, registered explorers, API consumers, and automated agents accessing Cosmic Channeling.
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">2. Intellectual Property</h3>
-            <p className="text-[#F1F5F9]">
-              All content (videos, Astro-Journals, meditations) is owned by Cosmic Channeling unless stated otherwise.
-            </p>
-            <p className="text-[#F1F5F9]">
-              You may share content for personal/non-commercial use with proper credit.
+          <section className="space-y-3">
+            <h2 className="text-lg font-space font-semibold text-[#F8FAFC]">2. Intellectual Property &amp; Open Science</h2>
+            <p>
+              All proprietary synthesis algorithms, audio engines, and curated interactive guides are protected by intellectual property laws. Public astronomical telemetry, NASA APOD imagery, and public domain celestial catalogs remain under their respective open licenses.
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">3. Disclaimer</h3>
-            <p className="text-[#F1F5F9]">
-              Our content blends science and spirituality but is not professional advice.
+          <section className="space-y-3">
+            <h2 className="text-lg font-space font-semibold text-[#F8FAFC]">3. Disclaimer of Scientific &amp; Medical Advice</h2>
+            <p>
+              The audio soundscapes (432Hz and 528Hz Solfeggio frequencies) and meditation breathing pacers provided on this platform are designed solely for relaxation, mindfulness, and educational appreciation of astronomy. They do not constitute licensed medical, psychological, or clinical therapy.
             </p>
-            <p className="text-[#F1F5F9]">
-              Cosmic Channeling is not liable for:
-            </p>
-            <ul className="list-disc pl-6 text-[#F1F5F9] space-y-1">
-              <li>Misinterpretations of cosmic insights.</li>
-              <li>Technical glitches during meditations (blame Mercury retrograde).</li>
-              <li>Decisions made based on our content.</li>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-space font-semibold text-[#F8FAFC]">4. Acceptable Use &amp; Developer API Rules</h2>
+            <p>When accessing our platform or public endpoints (OpenAPI 3.1 &amp; llms.txt), you agree not to:</p>
+            <ul className="list-disc pl-6 space-y-1">
+              <li>Deploy unauthorized distributed denial-of-service (DDoS) traffic or brute-force endpoints.</li>
+              <li>Circumvent client authentication barriers or exploit cross-site scripting vulnerabilities.</li>
+              <li>Transmit unlawful, abusive, or malicious content through community or feedback channels.</li>
             </ul>
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">4. User Conduct</h3>
-            <p className="text-[#F1F5F9]">Do not:</p>
-            <ul className="list-disc pl-6 text-[#F1F5F9] space-y-1">
-              <li>Hack our website to "channel" restricted data.</li>
-              <li>Spam the comments with non-cosmic propaganda.</li>
-              <li>Use our content for harmful or commercial purposes.</li>
-            </ul>
-          </section>
-
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">5. Payments & Refunds</h3>
-            <p className="text-[#F1F5F9]">
-              Digital products (e.g., frequency guides) are non-refundable unless defective.
-            </p>
-            <p className="text-[#F1F5F9]">
-              Subscriptions can be canceled anytime.
+          <section className="space-y-3">
+            <h2 className="text-lg font-space font-semibold text-[#F8FAFC]">5. Limitation of Liability</h2>
+            <p>
+              In no event shall Cosmic Channeling, its developers, or contributors be held liable for any indirect, incidental, or consequential damages resulting from platform downtime, network latency, or external astronomical feed disruptions.
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">6. Termination</h3>
-            <p className="text-[#F1F5F9]">
-              We reserve the right to ban users who violate these terms or disrupt the cosmic vibe.
-            </p>
+          <section className="space-y-3 pt-4 border-t border-white/[0.06]">
+            <h2 className="text-lg font-space font-semibold text-[#F8FAFC]">6. Governing Law &amp; Correspondence</h2>
+            <div className="space-y-1.5 text-xs">
+              <p><strong className="text-[#E2E8F0]">Jurisdiction:</strong> Bengaluru, Karnataka, India</p>
+              <p><strong className="text-[#E2E8F0]">Direct Inquiries:</strong> support@cosmic-channeling.vercel.app</p>
+            </div>
           </section>
-
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">7. Limitation of Liability</h3>
-            <p className="text-[#F1F5F9]">
-              Cosmic Channeling is not responsible for:
-            </p>
-            <ul className="list-disc pl-6 text-[#F1F5F9] space-y-1">
-              <li>Interstellar interruptions (e.g., internet outages).</li>
-              <li>Emotional reactions to cosmic horror stories.</li>
-            </ul>
-          </section>
-
-          <section className="space-y-2">
-            <h3 className="text-xl font-medium text-[#F1F5F9]">Contact Us</h3>
-            <p className="text-[#F1F5F9]">
-              For questions or cosmic complaints:
-              <br />
-              Email: singhnaveen360@gmail.com
-            </p>
-          </section>
-        </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
     </>
   );
 };

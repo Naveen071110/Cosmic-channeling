@@ -162,9 +162,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-    <!-- Favicon & Themes -->
-    <link rel="icon" type="image/svg+xml" href="/og-image.svg" />
-    <meta name="theme-color" content="#0F172A" />
+    <!-- Favicon Set & Mobile Web App Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#090A0F" />
+    <meta name="msapplication-TileColor" content="#090A0F" />
+
+    <!-- Privacy-Preserving Telemetry & Web Analytics -->
+    <script>
+      (function() {
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+        window.trackCosmicEvent = function(eventName, meta) {
+          try {
+            var consent = localStorage.getItem('app_consent_preferences');
+            if (consent) {
+              var parsed = JSON.parse(consent);
+              if (!parsed.analytics) return; // Respect GDPR analytics opt-out
+            }
+            if (window.va) window.va('event', { name: eventName, data: meta || {} });
+          } catch(e) {}
+        };
+      })();
+    </script>
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cosmic-channeling"}'></script>
   </head>
   <body class="bg-[#020617] text-white">
     <!-- Pre-Hydration Semantic HTML for Search Engines and Crawlers -->

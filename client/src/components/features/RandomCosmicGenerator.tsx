@@ -62,7 +62,7 @@ const RandomCosmicGenerator = () => {
               <div className="relative h-32 mb-3 overflow-hidden rounded">
                 <img 
                   src={currentPattern?.image || "https://images.unsplash.com/photo-1543722530-d2c3201371e7"} 
-                  alt="Cosmic image" 
+                  alt={currentPattern?.question ? `Cosmic pattern visual: ${currentPattern.question}` : "Deep space celestial contemplation visual"} 
                   className="w-full h-full object-cover" 
                   loading="lazy"
                 />

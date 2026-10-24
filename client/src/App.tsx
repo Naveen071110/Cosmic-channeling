@@ -9,6 +9,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StarBackground from "@/components/ui/StarBackground";
 import CookieBanner from "@/components/cookies/CookieBanner";
+import StickyMobileCta from "@/components/ui/StickyMobileCta";
 import { AuthProvider } from "./hooks/use-auth";
 
 // Lazy load pages to reduce initial bundle size
@@ -27,6 +28,7 @@ const Developers = lazy(() => import("./pages/Developers"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ThankYou = lazy(() => import("./pages/ThankYou"));
 
 
 function AppRouter() {
@@ -52,6 +54,7 @@ function AppRouter() {
             <Route path="/privacy" component={PrivacyPolicy} />
             <Route path="/about" component={About} />
             <Route path="/contact" component={Contact} />
+            <Route path="/thank-you" component={ThankYou} />
             <Route path="/developers" component={Developers} />
             <Route path="/docs" component={Developers} />
             <Route path="/" component={Home} />
@@ -81,6 +84,7 @@ function App() {
             <Toaster />
             <Router>
               <AppRouter />
+              <StickyMobileCta />
               <CookieBanner />
             </Router>
           </div>
