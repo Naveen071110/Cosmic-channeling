@@ -54,6 +54,8 @@ export default function MeditationTimer() {
 
   const timerIntervalRef = useRef<number | null>(null);
   const breathingIntervalRef = useRef<number | null>(null);
+  const targetEndTimeRef = useRef<number | null>(null);
+  const lastChimeElapsedRef = useRef<number>(0);
 
   // Auto-tune soundscape based on user's active archetype
   useEffect(() => {
@@ -75,6 +77,8 @@ export default function MeditationTimer() {
     if (timerState === 'running' || timerState === 'paused') {
       cosmicAudio.stopSoundscape();
     }
+    targetEndTimeRef.current = null;
+    lastChimeElapsedRef.current = 0;
     setSelectedDuration(minutes);
     const secs = minutes * 60;
     setTotalSeconds(secs);
@@ -111,10 +115,13 @@ export default function MeditationTimer() {
   // Start / Resume Timer
   const handleStart = () => {
     if (timerState === 'idle' || timerState === 'completed') {
+      targetEndTimeRef.current = Date.now() + totalSeconds * 1000;
+      lastChimeElapsedRef.current = 0;
       // Play start bell
       cosmicAudio.playBowlChime(528);
       cosmicAudio.startSoundscape(selectedSoundscape);
     } else if (timerState === 'paused') {
+      targetEndTimeRef.current = Date.now() + secondsRemaining * 1000;
       cosmicAudio.startSoundscape(selectedSoundscape);
     }
     setTimerState('running');
@@ -129,44 +136,63 @@ export default function MeditationTimer() {
   // Reset Timer
   const handleReset = () => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    targetEndTimeRef.current = null;
+    lastChimeElapsedRef.current = 0;
     cosmicAudio.stopSoundscape();
     setTimerState('idle');
     setSecondsRemaining(totalSeconds);
   };
 
-  // Countdown loop
+  // Countdown loop with tab throttle resistance and absolute target timestamp
   useEffect(() => {
     if (timerState === 'running') {
-      timerIntervalRef.current = window.setInterval(() => {
-        setSecondsRemaining((prev) => {
-          if (prev <= 1) {
-            // Session Completed!
-            if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-            cosmicAudio.stopSoundscape();
-            cosmicAudio.playBowlChime(432); // Deep closing chime
-            setTimeout(() => cosmicAudio.playBowlChime(528), 1500); // Harmonic twin chime
-            setTimerState('completed');
-            return 0;
-          }
+      const checkTimer = () => {
+        if (!targetEndTimeRef.current) return;
+        const now = Date.now();
+        const diff = Math.max(0, Math.ceil((targetEndTimeRef.current - now) / 1000));
 
-          // Interval Bell Check
-          const elapsed = totalSeconds - (prev - 1);
+        if (diff <= 0) {
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          targetEndTimeRef.current = null;
+          setSecondsRemaining(0);
+          setTimerState('completed');
+          cosmicAudio.stopSoundscape();
+          cosmicAudio.playBowlChime(432); // Deep closing chime
+          setTimeout(() => cosmicAudio.playBowlChime(528), 1500); // Harmonic twin chime
+          return;
+        }
+
+        setSecondsRemaining(diff);
+
+        // Interval Bell Check
+        const elapsed = totalSeconds - diff;
+        if (elapsed > 0 && elapsed !== lastChimeElapsedRef.current) {
           if (intervalBellOption === '1m' && elapsed % 60 === 0) {
+            lastChimeElapsedRef.current = elapsed;
             cosmicAudio.playBowlChime(528);
           } else if (intervalBellOption === '5m' && elapsed % 300 === 0) {
+            lastChimeElapsedRef.current = elapsed;
             cosmicAudio.playBowlChime(528);
           }
+        }
+      };
 
-          return prev - 1;
-        });
-      }, 1000);
+      timerIntervalRef.current = window.setInterval(checkTimer, 500);
+
+      const handleVisibilityChange = () => {
+        if (!document.hidden) {
+          checkTimer();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     } else {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     }
-
-    return () => {
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    };
   }, [timerState, totalSeconds, intervalBellOption]);
 
   // Box Breathing cycle (4s Inhale -> 4s Hold -> 4s Exhale -> 4s Hold)

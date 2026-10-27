@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,17 @@ const Header = () => {
     setIsMenuOpen(false);
     document.body.style.overflow = '';
   };
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeMenu();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   const isActive = (path: string) => location === path;
 
@@ -107,6 +118,8 @@ const Header = () => {
           <button 
             className="lg:hidden text-[#F1F5F9] p-1 ml-1" 
             aria-label="Menu" 
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-nav"
             onClick={toggleMenu}
           >
             <i className="ri-menu-line text-xl"></i>
@@ -116,7 +129,13 @@ const Header = () => {
 
       {/* Mobile Navigation Menu */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-[#090A0F]/98 backdrop-blur-xl z-50 p-6 flex flex-col justify-between">
+        <div 
+          id="mobile-nav"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation"
+          className="fixed inset-0 bg-[#090A0F]/98 backdrop-blur-xl z-50 p-6 flex flex-col justify-between"
+        >
           <div>
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center space-x-2.5">

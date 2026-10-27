@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import SEO from '@/components/SEO';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,33 +22,21 @@ interface MediumPost {
 }
 
 const Blog = () => {
-  const [posts, setPosts] = useState<MediumPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchMediumPosts();
-  }, []);
-
-  const fetchMediumPosts = async () => {
-    try {
-      // Fetch posts from Medium RSS feed via our backend
+  const { data, isLoading: loading, error: queryError, refetch } = useQuery<{ posts: MediumPost[] }>({
+    queryKey: ['/api/medium-posts'],
+    queryFn: async () => {
       const response = await fetch('/api/medium-posts');
-      
       if (!response.ok) {
         const errorData: any = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to fetch Medium posts');
       }
+      return response.json();
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes cache
+  });
 
-      const data: any = await response.json();
-      setPosts(data.posts || []);
-    } catch (err: any) {
-      console.error('Error fetching Medium posts:', err);
-      setError(err?.message || 'Unable to load blog posts at the moment. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const posts = data?.posts || [];
+  const error = queryError ? (queryError as Error).message : null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -111,7 +99,7 @@ const Blog = () => {
             <CardContent className="text-center py-10">
               <p className="text-red-400 mb-4">{error}</p>
               <Button 
-                onClick={fetchMediumPosts}
+                onClick={() => refetch()}
                 variant="outline"
                 className="border-red-500/50 text-red-400 hover:bg-red-500/10"
               >
