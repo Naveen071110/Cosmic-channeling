@@ -32,7 +32,7 @@ class CosmicAudioEngine {
       this.ctx = new AudioCtx();
     }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
     if (!this.masterGain && this.ctx) {
       this.masterGain = this.ctx.createGain();
@@ -345,6 +345,9 @@ class CosmicAudioEngine {
             // ignore
           }
         });
+        if (this.ctx && !this.isPlaying && this.ctx.state === 'running') {
+          this.ctx.suspend().catch(() => {});
+        }
       }, 450);
 
       this.currentNodes.timers.push(timerId);

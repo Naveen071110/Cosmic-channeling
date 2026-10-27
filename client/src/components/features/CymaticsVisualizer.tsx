@@ -115,6 +115,21 @@ export default function CymaticsVisualizer() {
   const [modalM, setModalM] = useState<number>(4);
   const [useWebGpu, setUseWebGpu] = useState<boolean>(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const paramsRef = useRef({
+    freq: selectedPreset.freq,
+    modalN,
+    modalM,
+    auraHex: selectedPreset.auraHex,
+  });
+
+  useEffect(() => {
+    paramsRef.current = {
+      freq: selectedPreset.freq,
+      modalN,
+      modalM,
+      auraHex: selectedPreset.auraHex,
+    };
+  }, [selectedPreset, modalN, modalM]);
 
   const handleSelectPreset = (preset: SolfeggioPreset) => {
     setSelectedPreset(preset);
@@ -169,18 +184,20 @@ export default function CymaticsVisualizer() {
         const startTime = performance.now();
 
         const loop = frameLoop(gpu, (f) => {
+          if (document.hidden) return;
           const elapsed = (performance.now() - startTime) / 1000;
           const energy = cosmicAudio.getAverageEnergy();
+          const p = paramsRef.current;
 
           shader.set({
             uniforms: {
               resolution: output.size,
               time: elapsed,
-              frequency: selectedPreset.freq,
+              frequency: p.freq,
               audioEnergy: energy,
-              modalN: modalN,
-              modalM: modalM,
-              paletteAura: hexToVec3(selectedPreset.auraHex),
+              modalN: p.modalN,
+              modalM: p.modalM,
+              paletteAura: hexToVec3(p.auraHex),
             },
           });
           f.pass(output, shader);
@@ -202,7 +219,7 @@ export default function CymaticsVisualizer() {
       isDisposed = true;
       if (cleanupGpu) cleanupGpu();
     };
-  }, [useWebGpu, selectedPreset, modalN, modalM]);
+  }, [useWebGpu]);
 
   // ---------------------------------------------------------------------------
   // Canvas 2D Fallback
@@ -219,8 +236,10 @@ export default function CymaticsVisualizer() {
 
     const render2d = () => {
       time += 0.02;
-      canvas.width = canvas.clientWidth || 400;
-      canvas.height = canvas.clientHeight || 400;
+      const targetW = canvas.clientWidth || 400;
+      const targetH = canvas.clientHeight || 400;
+      if (canvas.width !== targetW) canvas.width = targetW;
+      if (canvas.height !== targetH) canvas.height = targetH;
       const w = canvas.width;
       const h = canvas.height;
       const energy = cosmicAudio.getAverageEnergy();
@@ -256,7 +275,20 @@ export default function CymaticsVisualizer() {
     };
 
     render2d();
-    return () => cancelAnimationFrame(animId);
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId);
+      } else {
+        animId = requestAnimationFrame(render2d);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [useWebGpu, selectedPreset, modalN, modalM]);
 
   return (

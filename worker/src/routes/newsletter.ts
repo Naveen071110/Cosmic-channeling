@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import type { Env } from "../env";
+import { enforceRateLimit } from "../rate-limiter";
 
 /**
  * Newsletter routes — uses Workers KV for persistence instead of filesystem.
@@ -22,6 +23,10 @@ const subscribeSchema = z.object({
  * POST /subscribe — Subscribe an email to the newsletter.
  */
 router.post("/subscribe", zValidator("json", subscribeSchema), async (c) => {
+  if (!enforceRateLimit(c, { limit: 10, windowSec: 60, keyPrefix: "newsletter-subscribe" })) {
+    return c.json({ message: "Rate limit exceeded. Please wait a moment." }, 429);
+  }
+
   const { email } = c.req.valid("json");
   const kv = (c.env as any).NEWSLETTER_KV;
 
@@ -55,6 +60,10 @@ router.post("/subscribe", zValidator("json", subscribeSchema), async (c) => {
  * POST /unsubscribe — Unsubscribe an email.
  */
 router.post("/unsubscribe", zValidator("json", subscribeSchema), async (c) => {
+  if (!enforceRateLimit(c, { limit: 10, windowSec: 60, keyPrefix: "newsletter-unsubscribe" })) {
+    return c.json({ message: "Rate limit exceeded. Please wait a moment." }, 429);
+  }
+
   const { email } = c.req.valid("json");
   const kv = (c.env as any).NEWSLETTER_KV;
 

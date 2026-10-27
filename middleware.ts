@@ -28,6 +28,8 @@ const VALID_PAGE_ROUTES = new Set([
   '/privacy',
   '/about',
   '/contact',
+  '/thank-you',
+  '/404',
   '/developers',
   '/docs',
 ]);

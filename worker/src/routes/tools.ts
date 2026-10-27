@@ -5,6 +5,7 @@ import type { Env } from "../env";
 import { requireAuth, getUser } from "../auth-middleware";
 import type { IStorage } from "../storage";
 import { authMiddleware } from "../auth-middleware";
+import { enforceRateLimit } from "../rate-limiter";
 
 const router = new Hono<{ Bindings: Env }>();
 router.use("*", authMiddleware);
@@ -137,6 +138,48 @@ router.post("/quiz-results", async (c) => {
 });
 
 /**
+ * POST /api/contact — Contact message submission with rate limiting and KV storage.
+ */
+const contactSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().email("Valid email is required"),
+  subject: z.string().min(3, "Subject must be at least 3 characters").max(200),
+  message: z.string().min(10, "Message must be at least 10 characters").max(5000),
+});
+
+router.post("/contact", zValidator("json", contactSchema), async (c) => {
+  if (!enforceRateLimit(c, { limit: 5, windowSec: 60, keyPrefix: "contact-form" })) {
+    return c.json({ message: "Too many contact requests. Please wait a moment." }, 429);
+  }
+
+  const body = c.req.valid("json");
+  const kv = (c.env as any).NEWSLETTER_KV;
+  const submissionId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  const submission = {
+    id: submissionId,
+    ...body,
+    submittedAt: new Date().toISOString(),
+    ip: c.req.header("cf-connecting-ip") || "unknown",
+  };
+
+  if (kv) {
+    try {
+      await kv.put(`contact:${submissionId}`, JSON.stringify(submission), {
+        expirationTtl: 60 * 60 * 24 * 90, // Retain for 90 days
+      });
+    } catch (err) {
+      console.error("Failed to persist contact message to KV:", err);
+    }
+  }
+
+  return c.json({
+    success: true,
+    message: "Message received successfully. Our stellar team will respond shortly.",
+    id: submissionId,
+  });
+});
+
+/**
  * POST /api/users/:id/subscription — Update user subscription (requires auth).
  */
 router.post("/users/:id/subscription", requireAuth, async (c) => {
@@ -153,6 +196,14 @@ router.post("/users/:id/subscription", requireAuth, async (c) => {
   const body = await c.req.json();
   if (typeof body.isSubscribed !== "boolean") {
     return c.json({ message: "Invalid subscription status" }, 400);
+  }
+
+  // Self-promotion to subscribed is blocked without verified payment webhook
+  if (body.isSubscribed === true) {
+    return c.json(
+      { message: "Subscription activation requires verified payment checkout." },
+      403
+    );
   }
 
   try {

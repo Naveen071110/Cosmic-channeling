@@ -43,34 +43,8 @@ async function verifyFirebaseIdToken(
       isSubscribed: false,
     };
   } catch (err) {
-    // If JWKS verification fails, check if payload is valid
-    try {
-      const decoded = jose.decodeJwt(token);
-      if (
-        decoded &&
-        decoded.aud === projectId &&
-        decoded.iss === `https://securetoken.google.com/${projectId}` &&
-        decoded.sub
-      ) {
-        const exp = (decoded.exp || 0) * 1000;
-        if (Date.now() < exp) {
-          const uid = decoded.sub;
-          let hash = 0;
-          for (let i = 0; i < uid.length; i++) {
-            hash = (hash << 5) - hash + uid.charCodeAt(i);
-            hash |= 0;
-          }
-          return {
-            id: Math.abs(hash),
-            username: (decoded.name as string) || (decoded.email as string)?.split("@")[0] || `user_${uid.substring(0, 6)}`,
-            email: (decoded.email as string) || null,
-            isSubscribed: false,
-          };
-        }
-      }
-    } catch {
-      // ignore
-    }
+    // Cryptographic signature or claim validation failed — reject token
+    console.warn("[Auth] Firebase ID token cryptographic verification failed:", err);
     return null;
   }
 }

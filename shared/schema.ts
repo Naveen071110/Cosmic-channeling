@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, varchar, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -31,7 +31,10 @@ export const journalEntries = pgTable("journal_entries", {
   text: text("text").notNull(),
   tags: text("tags").array(),
   createdAt: timestamp("created_at").defaultNow().notNull()
-});
+}, (table) => [
+  index("journal_entries_user_id_idx").on(table.userId),
+  index("journal_entries_user_created_idx").on(table.userId, table.createdAt),
+]);
 
 // Celestial objects table
 export const celestialObjects = pgTable("celestial_objects", {

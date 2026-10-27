@@ -72,6 +72,21 @@ export default function RelativisticBlackHoleViewer() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragStartRef = useRef<{ x: number; y: number; pX: number; pY: number }>({ x: 0, y: 0, pX: 0.5, pY: 0.4 });
+  const paramsRef = useRef({
+    pointer: [0.5, 0.4],
+    spinRate: 0.9,
+    temperature: 1.2,
+    lensingStrength: 1.0,
+  });
+
+  useEffect(() => {
+    paramsRef.current = {
+      pointer: [pointer.x, pointer.y],
+      spinRate,
+      temperature,
+      lensingStrength,
+    };
+  }, [pointer, spinRate, temperature, lensingStrength]);
 
   const handleSelectTarget = (target: BlackHoleTarget) => {
     setSelectedTarget(target);
@@ -133,16 +148,18 @@ export default function RelativisticBlackHoleViewer() {
         const startTime = performance.now();
 
         const loop = frameLoop(gpu, (f) => {
+          if (document.hidden) return;
           const elapsed = (performance.now() - startTime) / 1000;
+          const p = paramsRef.current;
 
           shader.set({
             uniforms: {
               resolution: output.size,
-              pointer: [pointer.x, pointer.y],
+              pointer: p.pointer,
               time: elapsed,
-              spinRate: spinRate,
-              diskTemperature: temperature,
-              lensingStrength: lensingStrength,
+              spinRate: p.spinRate,
+              diskTemperature: p.temperature,
+              lensingStrength: p.lensingStrength,
             },
           });
           f.pass(output, shader);
@@ -164,7 +181,7 @@ export default function RelativisticBlackHoleViewer() {
       isDisposed = true;
       if (cleanupGpu) cleanupGpu();
     };
-  }, [useWebGpu, pointer, spinRate, temperature, lensingStrength]);
+  }, [useWebGpu]);
 
   // ---------------------------------------------------------------------------
   // Canvas 2D Fallback
@@ -181,8 +198,10 @@ export default function RelativisticBlackHoleViewer() {
 
     const render2d = () => {
       time += 0.02;
-      canvas.width = canvas.clientWidth || 400;
-      canvas.height = canvas.clientHeight || 400;
+      const targetW = canvas.clientWidth || 400;
+      const targetH = canvas.clientHeight || 400;
+      if (canvas.width !== targetW) canvas.width = targetW;
+      if (canvas.height !== targetH) canvas.height = targetH;
       const w = canvas.width;
       const h = canvas.height;
 
@@ -214,7 +233,20 @@ export default function RelativisticBlackHoleViewer() {
     };
 
     render2d();
-    return () => cancelAnimationFrame(animId);
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId);
+      } else {
+        animId = requestAnimationFrame(render2d);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [useWebGpu]);
 
   return (

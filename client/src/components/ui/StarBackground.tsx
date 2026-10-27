@@ -44,6 +44,7 @@ export default function StarBackground() {
 
         // 60-120 FPS hardware-accelerated GPU render pass
         const loop = frameLoop(gpu, (f) => {
+          if (document.hidden) return;
           const elapsed = (performance.now() - startTime) / 1000;
           shader.set({
             uniforms: {
@@ -182,10 +183,21 @@ export default function StarBackground() {
 
     animationId = requestAnimationFrame(draw);
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationId);
+      } else {
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(draw);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener("resize", resizeCanvas);
       document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [useWebGpu]);
 

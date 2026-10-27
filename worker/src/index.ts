@@ -65,11 +65,25 @@ const HOME_MARKDOWN = `# Cosmic Channeling — Deep Space & Meditation Sanctuary
 
 // --- Global Middleware ---
 
+// Allowed frontend origins for credentialed CORS
+const ALLOWED_ORIGINS = new Set([
+  "https://cosmic-channeling.vercel.app",
+  "https://cosmic-channeling.singhnaveen360.workers.dev",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5173",
+]);
+
 // CORS — securely allow frontend origins to call API with credentials
 app.use(
   "*",
   cors({
-    origin: (origin) => origin || "*",
+    origin: (origin) => {
+      if (!origin) return "*";
+      if (ALLOWED_ORIGINS.has(origin)) return origin;
+      if (origin.endsWith(".vercel.app")) return origin;
+      return null;
+    },
     credentials: true,
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "Accept", "X-CSRF-Token"],
@@ -183,6 +197,8 @@ app.all("*", async (c) => {
     "/privacy",
     "/about",
     "/contact",
+    "/thank-you",
+    "/404",
     "/developers",
     "/docs",
   ]);

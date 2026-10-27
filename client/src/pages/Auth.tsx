@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import StarBackground from "@/components/ui/StarBackground";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Lock, Sparkles, Compass, Moon, BookOpen } from "lucide-react";
 
@@ -42,8 +41,6 @@ export default function AuthPage() {
       <div className="min-h-screen flex flex-col md:flex-row bg-[#020617] text-white">
       {/* Form column */}
       <div className="w-full md:w-1/2 px-4 py-12 flex flex-col justify-center items-center relative">
-        <StarBackground />
-        
         <Card className="w-full max-w-md bg-[#0F172A]/90 backdrop-blur-xl border-purple-500/30 shadow-2xl z-10">
           <CardHeader className="space-y-1 text-center">
             <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-purple-900/50">

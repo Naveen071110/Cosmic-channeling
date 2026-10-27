@@ -6,6 +6,7 @@ import { signToken, buildCookieHeader, buildClearCookieHeader } from "../jwt";
 import { hashPassword, verifyPassword } from "../password";
 import { authMiddleware, requireAuth, getUser } from "../auth-middleware";
 import { getGoogleAuthUrl, handleGoogleCallback, authenticateWithGoogle } from "../google-auth";
+import { enforceRateLimit } from "../rate-limiter";
 import type { IStorage } from "../storage";
 
 const router = new Hono<{ Bindings: Env }>();
@@ -14,11 +15,11 @@ const router = new Hono<{ Bindings: Env }>();
 router.use("*", authMiddleware);
 
 function getJwtSecret(env: Env): string {
-  if (env.JWT_SECRET) return env.JWT_SECRET;
+  if (env.JWT_SECRET && env.JWT_SECRET.length >= 32) return env.JWT_SECRET;
   if (env.ENVIRONMENT === "production") {
-    console.error("[CRITICAL SECURITY WARNING] JWT_SECRET is not configured in production environment!");
+    throw new Error("[CRITICAL] JWT_SECRET must be configured with at least 32 characters in production.");
   }
-  return "dev-secret-change-in-production";
+  return "dev-secret-change-in-production-cosmic-key-minimum-32-chars";
 }
 
 const registerSchema = z.object({
@@ -37,6 +38,10 @@ const loginSchema = z.object({
  * POST /api/register — Create a new user account.
  */
 router.post("/register", zValidator("json", registerSchema), async (c) => {
+  if (!enforceRateLimit(c, { limit: 5, windowSec: 60, keyPrefix: "auth-register" })) {
+    return c.json({ message: "Registration rate limit exceeded. Please wait a moment." }, 429);
+  }
+
   const body = c.req.valid("json");
   const storage: IStorage = c.get("storage");
 
@@ -55,12 +60,12 @@ router.post("/register", zValidator("json", registerSchema), async (c) => {
   // Hash password
   const hashedPassword = await hashPassword(body.password);
 
-  // Create user
+  // Create user (default isSubscribed to false regardless of client input)
   const user = await storage.createUser({
     username: body.username,
     email: body.email,
     password: hashedPassword,
-    isSubscribed: body.isSubscribed,
+    isSubscribed: false,
   });
 
   // Sign JWT
@@ -70,8 +75,8 @@ router.post("/register", zValidator("json", registerSchema), async (c) => {
     secret,
   );
 
-  // Set cookie and return user (omit password)
-  c.header("Set-Cookie", buildCookieHeader(token, !!c.env.JWT_SECRET));
+  const isProd = c.env.ENVIRONMENT === "production" || !c.req.url.includes("localhost");
+  c.header("Set-Cookie", buildCookieHeader(token, isProd));
   return c.json({
     id: user.id,
     username: user.username,
@@ -85,6 +90,10 @@ router.post("/register", zValidator("json", registerSchema), async (c) => {
  * POST /api/login — Authenticate and create a session.
  */
 router.post("/login", zValidator("json", loginSchema), async (c) => {
+  if (!enforceRateLimit(c, { limit: 10, windowSec: 60, keyPrefix: "auth-login" })) {
+    return c.json({ message: "Too many login attempts. Please wait a moment." }, 429);
+  }
+
   const body = c.req.valid("json");
   const storage: IStorage = c.get("storage");
 
@@ -107,8 +116,8 @@ router.post("/login", zValidator("json", loginSchema), async (c) => {
     secret,
   );
 
-  // Set cookie and return user (omit password)
-  c.header("Set-Cookie", buildCookieHeader(token, !!c.env.JWT_SECRET));
+  const isProd = c.env.ENVIRONMENT === "production" || !c.req.url.includes("localhost");
+  c.header("Set-Cookie", buildCookieHeader(token, isProd));
   return c.json({
     id: user.id,
     username: user.username,
@@ -122,7 +131,8 @@ router.post("/login", zValidator("json", loginSchema), async (c) => {
  * POST /api/logout — Clear the session cookie.
  */
 router.post("/logout", async (c) => {
-  c.header("Set-Cookie", buildClearCookieHeader(!!c.env.JWT_SECRET));
+  const isProd = c.env.ENVIRONMENT === "production" || !c.req.url.includes("localhost");
+  c.header("Set-Cookie", buildClearCookieHeader(isProd));
   return c.json({ message: "Logged out" });
 });
 
@@ -165,6 +175,14 @@ router.post("/user/subscription", requireAuth, async (c) => {
 
   if (typeof body.isSubscribed !== "boolean") {
     return c.json({ message: "Invalid subscription status" }, 400);
+  }
+
+  // Self-promotion to subscribed is blocked without verified payment checkout
+  if (body.isSubscribed === true) {
+    return c.json(
+      { message: "Subscription activation requires verified payment checkout." },
+      403
+    );
   }
 
   const updatedUser = await storage.updateUserSubscription(user.id, body.isSubscribed);
@@ -228,7 +246,7 @@ router.get("/auth/google/callback", async (c) => {
 
     // Exchange code for tokens and get user info
     const googleUser = await handleGoogleCallback(c.env, code);
-    const secret = c.env.JWT_SECRET || "dev-secret-change-in-production";
+    const secret = getJwtSecret(c.env);
     const storage: IStorage = c.get("storage");
 
     const { setCookie } = await authenticateWithGoogle(googleUser, storage, secret);
