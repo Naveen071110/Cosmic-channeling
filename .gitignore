@@ -11,6 +11,7 @@ server/public/
 
 # Environment and Secrets
 .env
+.env*
 .env.local
 .env.*.local
 *.pem

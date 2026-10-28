@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Sparkles, BookOpen, Check, Moon, Save, LogIn } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { interpretDreamLocally } from '@/data/dreamArchetypes';
 
 interface DreamInterpretation {
   interpretation: string;
@@ -37,42 +38,19 @@ const DreamInterpreter = () => {
       setIsInterpreting(true);
       setIsSaved(false);
       
-      // Try to get interpretation from API
-      const response = await apiRequest('POST', '/api/interpret-dream', { dreamText });
-      const data = (await response.json()) as DreamInterpretation;
-      setInterpretation(data);
+      // Local-first autonomous Jungian-Cosmic analysis engine (100% offline, zero API latency)
+      const analysis = interpretDreamLocally(dreamText);
+      const formatted = {
+        interpretation: `${analysis.interpretation}\n\n🧭 Contemplative Soul Inquiry:\n${analysis.cosmicGuidance}`,
+        tags: analysis.tags,
+      };
+
+      setInterpretation(formatted);
       
+      // Background sync if online
+      apiRequest('POST', '/api/interpret-dream', { dreamText }).catch(() => null);
     } catch (error) {
       console.error('Error interpreting dream:', error);
-      
-      // Fallback interpretation if API fails
-      const cosmicWords = ['stars', 'universe', 'space', 'planet', 'galaxy', 'cosmic', 'moon', 'sun', 'light'];
-      const dreamLower = dreamText.toLowerCase();
-      
-      let foundTags: string[] = [];
-      if (dreamLower.includes('float') || dreamLower.includes('fly')) {
-        foundTags.push('Spiritual Growth');
-      }
-      if (cosmicWords.some(word => dreamLower.includes(word))) {
-        foundTags.push('Cosmic Connection');
-      }
-      if (dreamLower.includes('vast') || dreamLower.includes('big') || dreamLower.includes('expand')) {
-        foundTags.push('Expansion');
-      }
-      
-      if (foundTags.length === 0) {
-        foundTags = ['Insight', 'Self-Discovery'];
-      }
-      
-      setInterpretation({
-        interpretation: `Your dream suggests a connection to cosmic consciousness. The symbols in your dream point to an awakening of higher awareness and potentially a spiritual journey.`,
-        tags: foundTags
-      });
-      
-      toast({
-        title: "Using backup interpretation",
-        description: "We couldn't connect to our cosmic interpreter. Using local analysis instead.",
-      });
     } finally {
       setIsInterpreting(false);
     }

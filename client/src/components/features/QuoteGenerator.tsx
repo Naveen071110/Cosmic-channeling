@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Sparkles, Quote as QuoteIcon } from 'lucide-react';
+import { getDailyWisdom, getRandomWisdom } from '@/data/cosmicWisdom365';
 
 interface CosmicQuote {
   id?: string;
@@ -22,28 +23,47 @@ interface CosmicQuote {
 }
 
 export default function QuoteGenerator() {
+  const initialDaily = getDailyWisdom();
   const [manualQuote, setManualQuote] = useState<CosmicQuote | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch daily quote
+  // Fetch daily quote with 365-day offline fallback
   const { data: dailyQuote, isLoading } = useQuery<CosmicQuote>({
     queryKey: ['/api/quotes/daily'],
+    queryFn: async () => {
+      const res = await fetch('/api/quotes/daily').catch(() => null);
+      if (res && res.ok) {
+        return (await res.json()) as CosmicQuote;
+      }
+      return {
+        text: initialDaily.text,
+        author: initialDaily.author,
+        source: `${initialDaily.tradition} • ${initialDaily.cosmicAlignment}`,
+        tags: initialDaily.tags,
+      };
+    },
+    initialData: {
+      text: initialDaily.text,
+      author: initialDaily.author,
+      source: `${initialDaily.tradition} • ${initialDaily.cosmicAlignment}`,
+      tags: initialDaily.tags,
+    },
     staleTime: 1000 * 60 * 60 * 12, // 12 hours
   });
 
   const currentQuote = manualQuote || dailyQuote;
 
-  // Fetch random cosmic quote on demand
+  // Instant zero-latency local cosmic rotation from 365-day engine
   const handleGetRandomQuote = async () => {
     setIsRefreshing(true);
     try {
-      const res = await fetch('/api/quotes/random');
-      if (res.ok) {
-        const quote = (await res.json()) as CosmicQuote;
-        setManualQuote(quote);
-      }
-    } catch (e) {
-      console.warn('Failed to fetch random quote, using local rotation:', e);
+      const localRandom = getRandomWisdom();
+      setManualQuote({
+        text: localRandom.text,
+        author: localRandom.author,
+        source: `${localRandom.tradition} • ${localRandom.cosmicAlignment}`,
+        tags: localRandom.tags,
+      });
     } finally {
       setIsRefreshing(false);
     }
