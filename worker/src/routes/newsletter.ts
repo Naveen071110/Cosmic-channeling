@@ -85,6 +85,10 @@ router.post("/unsubscribe", zValidator("json", subscribeSchema), async (c) => {
  * GET /count — Get subscriber count.
  */
 router.get("/count", async (c) => {
+  if (!enforceRateLimit(c, { limit: 60, windowSec: 60, keyPrefix: "newsletter-count" })) {
+    return c.json({ count: 0 }, 429);
+  }
+
   const kv = (c.env as any).NEWSLETTER_KV;
 
   if (!kv) {

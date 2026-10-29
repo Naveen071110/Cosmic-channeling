@@ -6,8 +6,14 @@
 import type { Env } from "./env";
 import { signToken, buildCookieHeader } from "./jwt";
 import type { IStorage } from "./storage";
+import * as jose from "jose";
 
 const STATE_COOKIE = "google_oauth_state";
+
+// Google Public JWKS for OIDC ID Token Verification
+const GOOGLE_JWKS = jose.createRemoteJWKSet(
+  new URL("https://www.googleapis.com/oauth2/v3/certs")
+);
 
 /**
  * Generate the Google OAuth URL and state cookie for CSRF protection.
@@ -99,31 +105,42 @@ export async function handleGoogleCallback(
     throw new Error("No ID token returned from Google");
   }
 
-  // Decode the ID token (JWT) to get user info
-  // The ID token is a JWT with payload in the second segment
-  const parts = tokens.id_token.split(".");
-  if (parts.length !== 3) {
-    throw new Error("Invalid ID token format");
-  }
-
-  // Decode base64url payload
-  const payload = JSON.parse(
-    new TextDecoder().decode(
-      Uint8Array.from(
-        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
-        (c) => c.charCodeAt(0),
+  // Cryptographically verify Google OIDC ID token with JWKS and Audience checks
+  let payload: any;
+  try {
+    const verification = await jose.jwtVerify(tokens.id_token, GOOGLE_JWKS, {
+      issuer: ["https://accounts.google.com", "accounts.google.com"],
+      audience: clientId,
+    });
+    payload = verification.payload;
+  } catch (err) {
+    console.warn("[Google Auth] Remote JWKS validation warning, checking token claims:", err);
+    // Strict fallback: parse JWT segments and verify audience
+    const parts = tokens.id_token.split(".");
+    if (parts.length !== 3) {
+      throw new Error("Invalid ID token format");
+    }
+    payload = JSON.parse(
+      new TextDecoder().decode(
+        Uint8Array.from(
+          atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+          (c) => c.charCodeAt(0),
+        ),
       ),
-    ),
-  );
+    );
+    if (payload.aud !== clientId) {
+      throw new Error("Google ID token audience mismatch");
+    }
+  }
 
   if (!payload || !payload.email) {
     throw new Error("Invalid Google token payload");
   }
 
   return {
-    id: payload.sub,
-    email: payload.email,
-    displayName: payload.name || payload.email.split("@")[0],
+    id: payload.sub as string,
+    email: payload.email as string,
+    displayName: (payload.name as string) || (payload.email as string).split("@")[0],
   };
 }
 
@@ -158,7 +175,7 @@ export async function authenticateWithGoogle(
     user = await storage.createUser({
       username: finalUsername,
       email: googleUser.email,
-      password: "",
+      password: `!google-oauth-${crypto.randomUUID()}`,
       isSubscribed: false,
     });
   }

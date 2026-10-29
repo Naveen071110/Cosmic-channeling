@@ -18,6 +18,10 @@ const dreamSchema = z.object({
 });
 
 router.post("/interpret-dream", zValidator("json", dreamSchema), (c) => {
+  if (!enforceRateLimit(c, { limit: 20, windowSec: 60, keyPrefix: "interpret-dream" })) {
+    return c.json({ message: "Rate limit exceeded. Please wait a moment." }, 429);
+  }
+
   const { dreamText } = c.req.valid("json");
   const dreamLower = dreamText.toLowerCase();
 
@@ -88,6 +92,10 @@ router.post("/interpret-dream", zValidator("json", dreamSchema), (c) => {
  * POST /api/quiz-results — Simple quiz archetype assignment (no auth required).
  */
 router.post("/quiz-results", async (c) => {
+  if (!enforceRateLimit(c, { limit: 20, windowSec: 60, keyPrefix: "quiz-results" })) {
+    return c.json({ message: "Rate limit exceeded. Please wait a moment." }, 429);
+  }
+
   const body = await c.req.json();
   const { answers } = body;
 

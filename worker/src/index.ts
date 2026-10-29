@@ -74,14 +74,17 @@ const ALLOWED_ORIGINS = new Set([
   "http://127.0.0.1:5173",
 ]);
 
+// Canonical preview domain pattern strictly for this project
+const VERCEL_PREVIEW_REGEX = /^https:\/\/cosmic-channeling(-[a-z0-9-]+)?\.vercel\.app$/;
+
 // CORS — securely allow frontend origins to call API with credentials
 app.use(
   "*",
   cors({
     origin: (origin) => {
-      if (!origin) return "*";
+      if (!origin) return null;
       if (ALLOWED_ORIGINS.has(origin)) return origin;
-      if (origin.endsWith(".vercel.app")) return origin;
+      if (VERCEL_PREVIEW_REGEX.test(origin)) return origin;
       return null;
     },
     credentials: true,
@@ -92,6 +95,15 @@ app.use(
 
 // Request logger
 app.use("*", logger());
+
+// Global Security Headers Middleware
+app.use("*", async (c, next) => {
+  await next();
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
+});
 
 // Add Vary header globally for content negotiation
 app.use("*", async (c, next) => {

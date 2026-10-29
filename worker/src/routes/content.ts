@@ -199,6 +199,10 @@ router.get("/space-news", async (c) => {
  * GET /api/medium-posts — Medium blog feed (cached 30 min).
  */
 router.get("/medium-posts", async (c) => {
+  if (!enforceRateLimit(c, { limit: 30, windowSec: 60, keyPrefix: "medium-posts" })) {
+    return c.json({ message: "Rate limit exceeded for blog feed. Please wait a moment." }, 429);
+  }
+
   const CACHE_KEY = "medium-posts";
   const cached = cache.get(CACHE_KEY);
   if (cached) {
@@ -343,6 +347,10 @@ function decodeHtml(text: string): string {
  * GET /api/journal-entries — Get all journal entries for the authenticated user.
  */
 router.get("/journal-entries", requireAuth, async (c) => {
+  if (!enforceRateLimit(c, { limit: 60, windowSec: 60, keyPrefix: "journal-list" })) {
+    return c.json({ message: "Rate limit exceeded. Please wait a moment." }, 429);
+  }
+
   const user = getUser(c);
   if (!user) {
     return c.json({ message: "Unauthorized" }, 401);
@@ -357,6 +365,10 @@ router.get("/journal-entries", requireAuth, async (c) => {
  * POST /api/journal-entries — Create a journal entry for the authenticated user.
  */
 router.post("/journal-entries", requireAuth, async (c) => {
+  if (!enforceRateLimit(c, { limit: 30, windowSec: 60, keyPrefix: "journal-create" })) {
+    return c.json({ message: "Rate limit exceeded for creating journal entries." }, 429);
+  }
+
   const user = getUser(c);
   if (!user) {
     return c.json({ message: "Unauthorized" }, 401);
@@ -381,6 +393,10 @@ router.post("/journal-entries", requireAuth, async (c) => {
  * PUT /api/journal-entries/:id — Update a journal entry.
  */
 router.put("/journal-entries/:id", requireAuth, async (c) => {
+  if (!enforceRateLimit(c, { limit: 30, windowSec: 60, keyPrefix: "journal-update" })) {
+    return c.json({ message: "Rate limit exceeded for updating journal entries." }, 429);
+  }
+
   const user = getUser(c);
   if (!user) {
     return c.json({ message: "Unauthorized" }, 401);
@@ -397,6 +413,7 @@ router.put("/journal-entries/:id", requireAuth, async (c) => {
 
   const body = await c.req.json();
   const updated = await storage.updateJournalEntry(id, {
+    userId: user.id,
     text: body.text ?? existing.text,
     tags: Array.isArray(body.tags) ? body.tags : existing.tags,
   });
@@ -408,6 +425,10 @@ router.put("/journal-entries/:id", requireAuth, async (c) => {
  * DELETE /api/journal-entries/:id — Delete a journal entry.
  */
 router.delete("/journal-entries/:id", requireAuth, async (c) => {
+  if (!enforceRateLimit(c, { limit: 30, windowSec: 60, keyPrefix: "journal-delete" })) {
+    return c.json({ message: "Rate limit exceeded." }, 429);
+  }
+
   const user = getUser(c);
   if (!user) {
     return c.json({ message: "Unauthorized" }, 401);

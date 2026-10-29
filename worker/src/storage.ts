@@ -531,7 +531,15 @@ export class KVStorage implements IStorage {
   }
 
   async getJournalEntry(id: number): Promise<JournalEntry | undefined> {
-    return this.memFallback.getJournalEntry(id);
+    const mem = await this.memFallback.getJournalEntry(id);
+    if (mem) return mem;
+    try {
+      const raw = await this.kv.get(`journal:entry_${id}`, "text");
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.warn("KV getJournalEntry error:", e);
+    }
+    return undefined;
   }
 
   async createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry> {
@@ -550,6 +558,8 @@ export class KVStorage implements IStorage {
         const existing = await this.getJournalEntriesByUserId(userId);
         const updated = [newEntry, ...existing];
         await this.kv.put(`journal:user_${userId}`, JSON.stringify(updated));
+        // Maintain entry ID index for O(1) single-entry lookups
+        await this.kv.put(`journal:entry_${id}`, JSON.stringify(newEntry));
       }
     } catch (e) {
       console.warn("KV createJournalEntry error:", e);
@@ -560,24 +570,28 @@ export class KVStorage implements IStorage {
   }
 
   async updateJournalEntry(id: number, entry: Partial<InsertJournalEntry>): Promise<JournalEntry | undefined> {
-    if (!entry.userId) return undefined;
     try {
-      const existing = await this.getJournalEntriesByUserId(entry.userId);
-      let found: JournalEntry | undefined;
-      const updated = existing.map((e) => {
-        if (e.id === id) {
-          found = {
-            ...e,
-            text: entry.text !== undefined ? entry.text : e.text,
-            tags: entry.tags !== undefined ? (entry.tags as string[]) : e.tags,
-          };
+      const existingEntry = await this.getJournalEntry(id);
+      const userId = entry.userId ?? existingEntry?.userId;
+      if (userId) {
+        const existing = await this.getJournalEntriesByUserId(userId);
+        let found: JournalEntry | undefined;
+        const updated = existing.map((e) => {
+          if (e.id === id) {
+            found = {
+              ...e,
+              text: entry.text !== undefined ? entry.text : e.text,
+              tags: entry.tags !== undefined ? (entry.tags as string[]) : e.tags,
+            };
+            return found;
+          }
+          return e;
+        });
+        if (found) {
+          await this.kv.put(`journal:user_${userId}`, JSON.stringify(updated));
+          await this.kv.put(`journal:entry_${id}`, JSON.stringify(found));
           return found;
         }
-        return e;
-      });
-      if (found) {
-        await this.kv.put(`journal:user_${entry.userId}`, JSON.stringify(updated));
-        return found;
       }
     } catch (e) {
       console.warn("KV updateJournalEntry error:", e);
@@ -586,6 +600,18 @@ export class KVStorage implements IStorage {
   }
 
   async deleteJournalEntry(id: number): Promise<boolean> {
+    try {
+      const entry = await this.getJournalEntry(id);
+      if (entry && entry.userId) {
+        const existing = await this.getJournalEntriesByUserId(entry.userId);
+        const filtered = existing.filter((e) => e.id !== id);
+        await this.kv.put(`journal:user_${entry.userId}`, JSON.stringify(filtered));
+        await this.kv.delete(`journal:entry_${id}`);
+        return true;
+      }
+    } catch (e) {
+      console.warn("KV deleteJournalEntry error:", e);
+    }
     return this.memFallback.deleteJournalEntry(id);
   }
 

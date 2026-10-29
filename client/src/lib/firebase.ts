@@ -12,15 +12,15 @@ import {
   User as FirebaseUser,
 } from "firebase/auth";
 
-// Firebase configuration (Loaded from environment variables with fallback)
+// Firebase configuration (Loaded strictly from environment variables)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyB-SXSPiTaWZNa0JGXaVO8WCl8CCT8hqsw",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "cosmic-channeling.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "cosmic-channeling",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "cosmic-channeling.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "291863078941",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:291863078941:web:08ffa6bea0de0e5ee57ef4",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-1MYQ3NM73W"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
 // Initialize Firebase (safely avoid double initialization)
